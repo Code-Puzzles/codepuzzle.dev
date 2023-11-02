@@ -1,56 +1,19 @@
 import util from "node:util";
-import path from "node:path";
 import { Builder, WebDriver } from "selenium-webdriver";
-import firefox from "selenium-webdriver/firefox";
-
-type BrowserType = "firefox";
-
-const withTimeout = <T>(
-  operationName: string,
-  ms: number,
-  func: () => Promise<T>
-) =>
-  new Promise<T>((resolve, reject) => {
-    console.log("Operation:", operationName);
-    console.time(operationName);
-    const timeout = setTimeout(
-      () => reject(new Error(`Operation timed out: ${operationName}`)),
-      ms
-    );
-    func()
-      .then(resolve, reject)
-      .finally(() => {
-        clearTimeout(timeout);
-        console.timeEnd(operationName);
-      });
-  });
+import { withTimeout } from "./lambda-utils";
+import { Browser } from "./browsers";
 
 declare global {
   var browserDriver: WebDriver | undefined;
 }
 
-const startBrowser = async (type: BrowserType, isDev: boolean) => {
+const startBrowser = async (browser: Browser) => {
   if (!global.browserDriver) {
-    switch (type) {
-      case "firefox": {
-        global.browserDriver = await new Builder()
-          .forBrowser(type)
-          .setFirefoxOptions(getFirefoxOpts(isDev))
-          .build();
-        break;
-      }
-    }
+    global.browserDriver = await browser
+      .getWebdriverOptions(new Builder())
+      .build();
   }
   return global.browserDriver;
-};
-
-const getFirefoxOpts = (isDev: boolean) => {
-  const opts = new firefox.Options().headless();
-  return isDev
-    ? opts
-    : opts.setBinary(
-        path.join(__dirname, ".browser", "firefox", "firefox-bin")
-      );
 };
 
 export interface JudgeOpts {
@@ -59,13 +22,13 @@ export interface JudgeOpts {
   solution: string;
 }
 
-export const judge = async (opts: JudgeOpts) => {
-  const driver = await withTimeout("startBrowser", 20_000, () =>
-    startBrowser("firefox", true)
+export const judge = async (opts: JudgeOpts, browser: Browser) => {
+  const driver = await withTimeout("startBrowser", 90_000, () =>
+    startBrowser(browser)
   );
   try {
     const result: { passed: boolean; value?: string; err?: string } =
-      await withTimeout("runSolution", 2_000, async () =>
+      await withTimeout("runSolution", 10_000, async () =>
         driver.executeScript<{ passed: boolean; value: string }>(
           [
             `return (${computeResult.toString()})()((() => {`,

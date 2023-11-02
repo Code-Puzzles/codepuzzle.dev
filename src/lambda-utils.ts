@@ -34,3 +34,23 @@ export const lambdaHandler =
       };
     }
   };
+
+export const withTimeout = <T>(
+  operationName: string,
+  ms: number,
+  func: () => Promise<T>
+) =>
+  new Promise<T>((resolve, reject) => {
+    console.log("Operation:", operationName);
+    console.time(operationName);
+    const timeout = setTimeout(
+      () => reject(new Error(`Operation timed out: ${operationName}`)),
+      ms
+    );
+    func()
+      .then(resolve, reject)
+      .finally(() => {
+        clearTimeout(timeout);
+        console.timeEnd(operationName);
+      });
+  });

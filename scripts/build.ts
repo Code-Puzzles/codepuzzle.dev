@@ -1,9 +1,8 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 import esbuild from "esbuild";
-import decompress from "decompress";
 import { SpawnOptions, spawn } from "node:child_process";
-import { BROWSERS, LAMBDA_PLATFORM, NODE_VERSION } from "./constants";
+import { BROWSER_FUNCS, LAMBDA_PLATFORM, NODE_VERSION } from "./constants";
 
 interface PackageLock {
   packages: Record<string, { dependencies?: Record<string, string> }>;
@@ -14,19 +13,16 @@ const distDir = path.join(rootDir, "dist");
 
 export const build = async () => {
   console.log("Cleaning dist directory...");
-  await fs.rm(distDir, { recursive: true, force: true });
+  await fs.rm(path.join(distDir, "judge"), { recursive: true, force: true });
 
-  const entryPoints: Record<string, string> = {};
-  for (const [key, downloadUrl] of Object.entries(BROWSERS)) {
-    const data = await downloadBrowser(key, downloadUrl);
-    console.log(`Decompressing ${key}...`);
-    await decompress(data, path.join(distDir, "judge", key, ".browser"));
-    entryPoints[`judge/${key}/index`] = path.join(
-      rootDir,
-      "src",
-      "endpoint.ts"
-    );
-  }
+  const entryPoints = Object.fromEntries(
+    Object.entries(BROWSER_FUNCS).flatMap(([name, versions]) =>
+      versions.map((version) => [
+        `judge/${name}/${version}/index`,
+        path.join(rootDir, "src", "endpoint.ts"),
+      ])
+    )
+  );
 
   console.log("Building...");
   const copyImportedNodeModulesPlugin: esbuild.Plugin = {
@@ -93,25 +89,11 @@ export const build = async () => {
     outdir: distDir,
     entryPoints,
     platform: "node",
-    target: "node20",
+    target: `node${NODE_VERSION}`,
     sourcemap: "external",
     bundle: true,
     plugins: [copyImportedNodeModulesPlugin],
   });
-};
-
-const downloadBrowser = async (key: string, downloadUrl: string) => {
-  const browserCacheDir = path.join(__dirname, "..", ".browsercache");
-  const cacheFilePath = path.join(browserCacheDir, key);
-  const cachedFile = await fs.readFile(cacheFilePath).catch(() => undefined);
-  if (cachedFile) return cachedFile;
-
-  console.log(`Downloading ${key}...`);
-  const res = await fetch(downloadUrl);
-  const data = await res.arrayBuffer();
-  await fs.mkdir(browserCacheDir, { recursive: true });
-  await fs.writeFile(cacheFilePath, new Uint8Array(data));
-  return Buffer.from(data);
 };
 
 const run = async (
