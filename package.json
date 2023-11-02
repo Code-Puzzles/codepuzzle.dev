@@ -1,7 +1,7 @@
 {
   "name": "rttw-judge",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "Judge server for Return True to Win puzzles.",
   "main": "scripts/deploy.ts",
   "type": "commonjs",
   "license": "MIT",
