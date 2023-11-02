@@ -1,0 +1,3 @@
+name: rttw-judge
+runtime: nodejs
+description: Judge server for Return True to Win puzzles.

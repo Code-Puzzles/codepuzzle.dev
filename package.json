@@ -1,0 +1,36 @@
+{
+  "name": "rttw-judge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "scripts/deploy.ts",
+  "type": "commonjs",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsx ./scripts/dev.ts",
+    "dev:watch": "tsx watch ./scripts/dev.ts",
+    "build": "tsx ./scripts/build.ts",
+    "build:ts": "tsx ./scripts/build-ts.ts",
+    "deploy": "npm run build && pulumi up --stack dev --yes"
+  },
+  "dependencies": {
+    "geckodriver": "^4.2.1",
+    "selenium-webdriver": "^4.14.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@pulumi/aws": "^6.6.1",
+    "@pulumi/aws-apigateway": "^2.0.0-alpha.1",
+    "@pulumi/awsx": "^2.0.3",
+    "@pulumi/pulumi": "^3.91.1",
+    "@tsconfig/node20": "^20.1.2",
+    "@tsconfig/strictest": "^2.0.2",
+    "@types/decompress": "^4.2.6",
+    "@types/selenium-webdriver": "^4.1.19",
+    "aws-lambda": "^1.0.7",
+    "aws-sdk": "^2.1485.0",
+    "decompress": "^4.2.1",
+    "esbuild": "^0.19.5",
+    "tsx": "^3.14.0",
+    "typescript": "^5.2.2"
+  }
+}
