@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
-import { BrowserName } from "../src/browsers";
+import { BrowserName } from "../src/browser/browsers";
 
 export const LAMBDA_PLATFORM = "linux/amd64";
 

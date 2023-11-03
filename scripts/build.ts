@@ -13,7 +13,7 @@ const distDir = path.join(rootDir, "dist");
 
 export const build = async () => {
   console.log("Cleaning dist directory...");
-  await fs.rm(path.join(distDir, "judge"), { recursive: true, force: true });
+  await fs.rm(distDir, { recursive: true, force: true });
 
   const entryPoints = Object.fromEntries(
     Object.entries(BROWSER_FUNCS).flatMap(([name, versions]) =>
@@ -68,6 +68,8 @@ export const build = async () => {
           LAMBDA_PLATFORM,
           "-v",
           `${tempDir}:/usr/src/app`,
+          "-v",
+          `${tempDir}/npm-cache:/root/.npm`,
           "-w",
           "/usr/src/app",
           `node:${NODE_VERSION}`,

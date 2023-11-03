@@ -13,6 +13,8 @@
     "deploy": "npm run build && pulumi up --stack dev --yes"
   },
   "dependencies": {
+    "@pulumi/docker": "^4.4.4",
+    "axios": "^1.6.0",
     "geckodriver": "^4.2.1",
     "selenium-webdriver": "^4.14.0",
     "tar-fs": "^3.0.4",

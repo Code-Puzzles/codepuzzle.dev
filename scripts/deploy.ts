@@ -1,7 +1,33 @@
+import path from "node:path";
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
+import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
 import { BROWSER_FUNCS, NODE_VERSION } from "./constants";
+
+const judgeLambdaContainerRepo = new aws.ecrpublic.Repository(
+  "judge-lambda-container",
+  { repositoryName: "judge-lambda-container" }
+);
+
+const containerDir = path.join(__dirname, "..", "lambda-container");
+const judgeLambdaImage = new docker.Image("judge-lambda-image", {
+  imageName: pulumi.interpolate`${judgeLambdaContainerRepo.repositoryUri}:latest`,
+  build: {
+    platform: "linux/amd64",
+    context: containerDir,
+    dockerfile: path.join(containerDir, "Dockerfile"),
+  },
+  registry: {
+    server: judgeLambdaContainerRepo.repositoryUri,
+    username: judgeLambdaContainerRepo.registryId,
+    password: judgeLambdaContainerRepo.registryId
+      .apply((registryId) =>
+        aws.ecr.getCredentials({ registryId }, { async: true })
+      )
+      .apply((creds) => creds.authorizationToken),
+  },
+});
 
 const judgeFuncs = Object.entries(BROWSER_FUNCS).flatMap(([name, versions]) =>
   versions.map((version) => {
@@ -33,9 +59,10 @@ const judgeFuncs = Object.entries(BROWSER_FUNCS).flatMap(([name, versions]) =>
       runtime: `nodejs${NODE_VERSION}.x`,
       architectures: ["x86_64"],
       memorySize: 2048,
+      imageUri: judgeLambdaImage.imageName,
       role: role.arn,
       handler: "index.handler",
-      timeout: 2 * 60,
+      timeout: 5 * 60,
       environment: {
         variables: {
           BROWSER_NAME: name,
