@@ -27,10 +27,11 @@ export const lambdaHandler =
         body: JSON.stringify(await handler(body, evt)),
       };
     } catch (err) {
+      console.error("Uncaught error:", err);
       return {
         statusCode: 500,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ error: String(err) }),
+        body: JSON.stringify({ error: "Internal server error" }),
       };
     }
   };

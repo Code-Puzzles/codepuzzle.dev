@@ -13,27 +13,15 @@
     "deploy": "npm run build && pulumi up --stack dev --yes"
   },
   "dependencies": {
-    "@pulumi/docker": "^4.4.4",
-    "axios": "^1.6.0",
-    "geckodriver": "^4.2.1",
-    "selenium-webdriver": "^4.14.0",
-    "tar-fs": "^3.0.4",
-    "unbzip2-stream": "^1.4.3",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@pulumi/aws": "^6.6.1",
     "@pulumi/aws-apigateway": "^2.0.0-alpha.1",
-    "@pulumi/awsx": "^2.0.3",
-    "@pulumi/pulumi": "^3.91.1",
+    "@pulumi/docker": "^4.4.4",
     "@tsconfig/node20": "^20.1.2",
     "@tsconfig/strictest": "^2.0.2",
-    "@types/decompress": "^4.2.6",
-    "@types/selenium-webdriver": "^4.1.19",
-    "@types/tar-fs": "^2.0.3",
-    "@types/unbzip2-stream": "^1.4.2",
-    "aws-lambda": "^1.0.7",
-    "aws-sdk": "^2.1485.0",
+    "@types/aws-lambda": "^8.10.125",
     "esbuild": "^0.19.5",
     "tsx": "^3.14.0",
     "typescript": "^5.2.2"
