@@ -1,8 +1,10 @@
 import path from "node:path";
 import { spawn, ChildProcess } from "node:child_process";
 import { promisify } from "node:util";
+import { APIGatewayProxyResult } from "aws-lambda";
 import { build } from "./build";
 import { JudgeOpts } from "../src/endpoints/judge";
+import { BROWSER_CONFIGS } from "./constants";
 
 const sleep = promisify(setTimeout);
 
@@ -17,23 +19,6 @@ const main = async () => {
     "firefox.Dockerfile"
   );
 
-  console.log(
-    [
-      "build",
-      "--tag",
-      "rttw-judge-dev",
-      "--platform",
-      "linux/amd64",
-      "--file",
-      firefoxDockerfile,
-      "--build-arg",
-      "FIREFOX_VERSION=119.0",
-      "--build-arg",
-      "GECKODRIVER_VERSION=0.33.0",
-      ".",
-    ].join(" ")
-  );
-
   await processPromise(
     spawn(
       "docker",
@@ -45,10 +30,9 @@ const main = async () => {
         "linux/amd64",
         "--file",
         firefoxDockerfile,
-        "--build-arg",
-        "FIREFOX_VERSION=119.0",
-        "--build-arg",
-        "GECKODRIVER_VERSION=0.33.0",
+        ...Object.entries(
+          BROWSER_CONFIGS.firefox.dockerBuildArgs("119.0")
+        ).flatMap(([key, value]) => ["--build-arg", `${key}=${value}`]),
         ".",
       ],
       {
@@ -106,7 +90,7 @@ const main = async () => {
           body: JSON.stringify({ body: btoa(JSON.stringify(opts)) }),
         }
       );
-      const data = await res.json();
+      const data = (await res.json()) as APIGatewayProxyResult;
       console.log("=== data", data.statusCode, JSON.parse(data.body));
     })(),
   ]);

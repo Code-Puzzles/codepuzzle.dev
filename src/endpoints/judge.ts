@@ -1,4 +1,3 @@
-import util from "node:util";
 import { z } from "zod";
 import { Browser } from "../browser/types";
 import { lambdaHandler, withTimeout } from "../lambda-utils";
@@ -90,7 +89,7 @@ function evaluateSolution(opts: JudgeOpts): JudgeResult {
   function callPuzzle() {
     if (isValueSet) return;
     isValueSet = true;
-    value = puzzle.apply(undefined, arguments);
+    value = puzzle.apply(undefined, arguments as unknown as unknown[]);
   }
 
   try {

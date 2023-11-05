@@ -51,7 +51,8 @@ export class FirefoxBrowser extends Browser {
         const res = await fetch(`${this.baseUrl}/status`, {
           method: "GET",
         });
-        if ((await res.json()).value.ready === true) break;
+        const data = (await res.json()) as { value: { ready: boolean } };
+        if (data.value.ready === true) break;
       } catch {}
 
       await sleep(200);
@@ -75,7 +76,11 @@ export class FirefoxBrowser extends Browser {
         },
       }),
     });
-    this.sessionId = (await sessionResponse.json()).value.sessionId;
+    const sessionData = (await sessionResponse.json()) as {
+      value: { sessionId: string };
+    };
+    console.log("=== sessionData", sessionData);
+    this.sessionId = sessionData.value.sessionId;
 
     const scriptResponse = await fetch(
       `${this.baseUrl}/session/${this.sessionId}/execute/sync`,
@@ -85,7 +90,8 @@ export class FirefoxBrowser extends Browser {
         body: JSON.stringify({ script, args: [] }),
       }
     );
-    const result = (await scriptResponse.json()).value as T;
+    const scriptData = (await scriptResponse.json()) as { value: T };
+    const result = scriptData.value as T;
 
     await fetch(`${this.baseUrl}/session/${this.sessionId}`, {
       method: "DELETE",
