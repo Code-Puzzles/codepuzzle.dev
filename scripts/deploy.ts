@@ -1,4 +1,5 @@
 import path from "node:path";
+import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
@@ -12,7 +13,7 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
       const namePrefix = `judge-${name}-${version.replace(/\W/g, "_")}`;
 
       const repo = new aws.ecr.Repository(`${namePrefix}-repo`, {
-        name: namePrefix,
+        name: `${namePrefix}-${pulumi.getStack()}`,
         forceDelete: true,
       });
 
