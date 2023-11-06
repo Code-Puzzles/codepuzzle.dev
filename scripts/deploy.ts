@@ -1,9 +1,8 @@
-import path from "node:path";
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
-import { BROWSER_CONFIGS } from "./constants";
+import { BROWSER_CONFIGS, DOCKER_CONTEXT } from "./constants";
 
 const ecrAuthToken = aws.ecr.getAuthorizationToken();
 
@@ -22,7 +21,7 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
         build: {
           dockerfile: buildConfig.dockerfilePath(version),
           platform: "linux/amd64",
-          context: path.join(__dirname, "..", "dist", "judge"),
+          context: DOCKER_CONTEXT,
           args: buildConfig.dockerBuildArgs(version),
         },
         registry: {
@@ -79,6 +78,7 @@ const api = new apigateway.RestAPI("api", {
   routes: [
     ...judgeFuncs.map(
       (func): apigateway.types.input.RouteArgs => ({
+        // TODO: update path once we have more than one
         path: "/judge",
         method: "POST",
         eventHandler: func,

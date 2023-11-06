@@ -4,7 +4,7 @@ import { promisify } from "node:util";
 import { APIGatewayProxyResult } from "aws-lambda";
 import { build } from "./build";
 import { JudgeOpts } from "../src/endpoints/judge";
-import { BROWSER_CONFIGS } from "./constants";
+import { BROWSER_CONFIGS, DOCKER_CONTEXT } from "./constants";
 
 const sleep = promisify(setTimeout);
 
@@ -37,7 +37,7 @@ const main = async () => {
       ],
       {
         stdio: "inherit",
-        cwd: path.join(__dirname, "..", "dist", "judge"),
+        cwd: DOCKER_CONTEXT,
         env: {
           ...process.env,
           DOCKER_BUILDKIT: "0",

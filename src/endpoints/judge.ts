@@ -65,7 +65,7 @@ const judge = async (opts: JudgeOpts, browser: Browser) => {
  * - The result of the user code is only saved by the first call to `callPuzzle`
  * so that we don't need a return in the user code (which could be bypassed with
  * injection attacks).
- * - No using `"value" in result` because `Object.protoype` may have been
+ * - No using `"value" in result` because `Object.prototype` may have been
  * manipulated by user code.
  */
 function evaluateSolution(opts: JudgeOpts): JudgeResult {
