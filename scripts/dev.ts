@@ -36,17 +36,18 @@ const buildImage = async ($: Execa$, name: string) => {
 const logStream = (prefix: string, stream: Readable) => {
   stream.setEncoding('utf-8');
   stream.on('data', (chunk: string) =>
-    chunk.split(/\r?\n/).forEach(
-      (line) =>
-        line.trim().length &&
+    chunk.split(/\r?\n/).forEach((line) => {
+      line = line.trim();
+      if (line.length) {
         process.stderr.write(
           `${prefix}: ${line
             // sometimes geckodriver emits ascii control characters which messes up the output
             .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ')
             // also collapse all whitespace down into a single space - easier to read
             .replace(/\s\s+/g, ' ')}\n`
-        )
-    )
+        );
+      }
+    })
   );
 };
 
