@@ -10,10 +10,12 @@ import type { Execa$ } from 'execa';
 
 const sleep = promisify(setTimeout);
 
+// NOTE: set this to true to have an interactive shell in the built image
+const interactive = false;
+
 const execa = async () => {
   const { $ } = await import('execa');
   return $({
-    stdio: 'inherit',
     cwd: DOCKER_CONTEXT,
     env: {
       ...process.env,
@@ -54,13 +56,16 @@ const runContainer = async ($: Execa$, name: string) => {
 
   console.log('Running...');
   const mount = `${path.join(__dirname, '..', 'dist', 'judge')}:/var/task`;
-  // To manually inspect image:
-  // "--interactive --tty --entrypoint /bin/bash",
   const proc = $({
-    stdio: 'pipe',
-  })`docker run --rm --name ${name} --platform linux/amd64 --publish 9000:8080 -v ${mount} ${name}`;
-  logStream(c.yellow(`${name}[stdout]`), proc.stdout!);
-  logStream(c.red(`${name}[stderr]`), proc.stderr!);
+    stdio: interactive ? 'inherit' : 'pipe',
+  })`docker run --rm --name ${name} --platform linux/amd64 --publish 9000:8080 -v ${mount} ${
+    interactive ? [`--interactive`, `--tty`, `--entrypoint=/bin/bash`, name] : [name]
+  }`;
+
+  if (!interactive) {
+    logStream(c.yellow(`${name}[stdout]`), proc.stdout!);
+    logStream(c.red(`${name}[stderr]`), proc.stderr!);
+  }
 
   const opts: JudgeOpts = {
     puzzleName: 'id',
