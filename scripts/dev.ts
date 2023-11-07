@@ -13,16 +13,15 @@ const sleep = promisify(setTimeout);
 // NOTE: set this to true to have an interactive shell in the built image
 const interactive = false;
 
-const execa = async () => {
-  const { $ } = await import('execa');
-  return $({
+const execa = import('execa').then(({ $ }) =>
+  $({
     cwd: DOCKER_CONTEXT,
     env: {
       ...process.env,
       DOCKER_BUILDKIT: '0',
     },
-  });
-};
+  })
+);
 
 const buildImage = async ($: Execa$, name: string) => {
   console.log('Building docker image...');
@@ -91,7 +90,7 @@ const runContainer = async ($: Execa$, name: string) => {
 };
 
 const main = async () => {
-  const $ = await execa();
+  const $ = await execa;
   const name = 'rttw-judge-dev';
 
   await build();
