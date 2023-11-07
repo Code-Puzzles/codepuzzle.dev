@@ -23,6 +23,7 @@ export class FirefoxBrowser extends Browser {
       this.geckodriverProc = spawn(
         path.resolve("/opt/geckodriver"),
         [
+          `--log=fatal`,
           `--host=${GECKODRIVER_HOST}`,
           `--port=${GECKODRIVER_PORT}`,
           `--profile-root=${profileRoot}`,

@@ -19,7 +19,7 @@ export const build = async () => {
     ])
   );
 
-  console.log("Building...");
+  console.log("Building lambda...");
   await esbuild.build({
     outdir: distDir,
     entryPoints,
