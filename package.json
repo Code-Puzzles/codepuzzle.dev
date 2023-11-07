@@ -16,6 +16,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@aws-sdk/client-ecr": "^3.441.0",
     "@pulumi/aws": "^6.6.1",
     "@pulumi/aws-apigateway": "^2.0.0-alpha.1",
     "@pulumi/docker": "^4.4.4",

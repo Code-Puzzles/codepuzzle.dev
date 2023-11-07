@@ -2,9 +2,12 @@ import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
+import { ECR } from "@aws-sdk/client-ecr";
 import { BROWSER_CONFIGS, DOCKER_CONTEXT } from "./constants";
 
 const ecrAuthToken = aws.ecr.getAuthorizationToken();
+
+const ecr = new ECR({ region: aws.config.region! });
 
 const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
   ([name, buildConfig]) =>
@@ -60,6 +63,32 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
         role: role.arn,
         timeout: 2 * 60,
       });
+
+      // Delete all images from registry except the one we just added
+      pulumi
+        .all([repo.registryId, repo.name, image.repoDigest])
+        .apply(async ([registryId, repositoryName, repoDigest]) => {
+          const newImageDigest = repoDigest.split("@").pop()!;
+          const images = await ecr.describeImages({
+            repositoryName,
+            registryId,
+          });
+
+          const imageIdsToDelete = images
+            .imageDetails!.filter(
+              (image) => image.imageDigest !== newImageDigest
+            )
+            .map((image) => ({ imageDigest: image.imageDigest! }));
+
+          console.log("Deleting old ECR Docker images", { imageIdsToDelete });
+          if (imageIdsToDelete.length > 0) {
+            await ecr.batchDeleteImage({
+              registryId,
+              repositoryName,
+              imageIds: imageIdsToDelete,
+            });
+          }
+        });
 
       return func;
     })
