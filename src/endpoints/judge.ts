@@ -85,11 +85,13 @@ function evaluateSolution(opts: JudgeOpts): JudgeResult {
   }
 
   var value: unknown;
-  var isValueSet = false;
+  var isCallerReturned = false;
   function callPuzzle() {
-    if (isValueSet) return;
-    isValueSet = true;
-    value = puzzle.apply(undefined, arguments as unknown as unknown[]);
+    if (isCallerReturned) return undefined;
+    isCallerReturned = true;
+    return function () {
+      value = puzzle.apply(undefined, arguments as unknown as unknown[]);
+    };
   }
 
   try {
@@ -99,7 +101,7 @@ function evaluateSolution(opts: JudgeOpts): JudgeResult {
       [
         opts.puzzleSource,
         ";setPuzzle(" + opts.puzzleName + ");",
-        "callPuzzle(" + opts.solution + ");",
+        "callPuzzle()(" + opts.solution + ");",
       ].join("\n")
     );
     userCode(setPuzzle, callPuzzle);
