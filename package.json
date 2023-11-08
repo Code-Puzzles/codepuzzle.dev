@@ -7,10 +7,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx ./scripts/dev.ts",
-    "dev:watch": "tsx watch ./scripts/dev.ts",
     "build": "tsx ./scripts/build.ts",
-    "build:ts": "tsx ./scripts/build-ts.ts",
-    "deploy": "npm run build && pulumi up --stack dev --yes"
+    "deploy": "npm run build && pulumi up --stack dev --yes",
+    "delete-old-stacks": "tsx ./scripts/delete-old-stacks.ts"
   },
   "dependencies": {
     "zod": "^3.22.4"
