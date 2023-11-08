@@ -7,6 +7,7 @@ on:
 jobs:
   delete-old-stacks:
     runs-on: ubuntu-latest
+    environment: Maintenance
     steps:
       - uses: actions/checkout@v3
         with:
