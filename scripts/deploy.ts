@@ -5,21 +5,26 @@ import * as apigateway from "@pulumi/aws-apigateway";
 import { ECR } from "@aws-sdk/client-ecr";
 import { BROWSER_CONFIGS, DOCKER_CONTEXT } from "./constants";
 
+const stackName = pulumi.getStack();
+const ecr = new ECR({ region: aws.config.region! });
 const ecrAuthToken = aws.ecr.getAuthorizationToken();
 
-const ecr = new ECR({ region: aws.config.region! });
+const namePrefix = `${stackName}`;
 
 const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
   ([name, buildConfig]) =>
     buildConfig.versions.map((version) => {
-      const namePrefix = `judge-${name}-${version.replace(/\W/g, "_")}`;
+      const lambdaPrefix = `${namePrefix}-judge-${name}-${version.replace(
+        /\W/g,
+        "_"
+      )}`;
 
-      const repo = new aws.ecr.Repository(`${namePrefix}-repo`, {
-        name: `${namePrefix}-${pulumi.getStack()}`,
+      const repo = new aws.ecr.Repository(`${lambdaPrefix}-repo`, {
+        name: lambdaPrefix,
         forceDelete: true,
       });
 
-      const image = new docker.Image(`${namePrefix}-image`, {
+      const image = new docker.Image(`${lambdaPrefix}-image`, {
         imageName: repo.repositoryUrl,
         build: {
           dockerfile: buildConfig.dockerfilePath(version),
@@ -34,7 +39,7 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
         },
       });
 
-      const role = new aws.iam.Role(`${namePrefix}-lambda-role`, {
+      const role = new aws.iam.Role(`${lambdaPrefix}-lambda-role`, {
         assumeRolePolicy: {
           Version: "2012-10-17",
           Statement: [
@@ -49,13 +54,13 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
           ],
         },
       });
-      new aws.iam.RolePolicyAttachment(`${namePrefix}-lambda-role-attach`, {
+      new aws.iam.RolePolicyAttachment(`${lambdaPrefix}-lambda-role-attach`, {
         role: role,
         policyArn: aws.iam.ManagedPolicies.AWSLambdaExecute,
       });
 
       // TODO: Disable internet access
-      const func = new aws.lambda.Function(`${namePrefix}-func`, {
+      const func = new aws.lambda.Function(`${lambdaPrefix}-func`, {
         packageType: "Image",
         imageUri: image.repoDigest,
         architectures: ["x86_64"],
@@ -94,16 +99,19 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
     })
 );
 
-const helloHandler = new aws.lambda.CallbackFunction("helloHandler", {
-  async callback() {
-    return {
-      statusCode: 200,
-      body: { msg: "hi werld" },
-    };
-  },
-});
+const helloHandler = new aws.lambda.CallbackFunction(
+  `${namePrefix}-helloHandler`,
+  {
+    async callback() {
+      return {
+        statusCode: 200,
+        body: { msg: "hi werld" },
+      };
+    },
+  }
+);
 
-const api = new apigateway.RestAPI("api", {
+const api = new apigateway.RestAPI(`${namePrefix}-api`, {
   routes: [
     ...judgeFuncs.map(
       (func): apigateway.types.input.RouteArgs => ({
