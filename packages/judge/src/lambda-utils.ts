@@ -4,13 +4,13 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 export const lambdaHandler =
   <Body>(
     bodyShape: z.ZodType<Body>,
-    handler: (body: Body, event: APIGatewayProxyEvent) => Promise<unknown>
+    handler: (body: Body, event: APIGatewayProxyEvent) => Promise<unknown>,
   ) =>
   async (evt: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     let body: Body;
     try {
       body = bodyShape.parse(
-        JSON.parse(Buffer.from(evt.body!, "base64").toString())
+        JSON.parse(Buffer.from(evt.body!, "base64").toString()),
       );
     } catch (err) {
       return {
@@ -39,14 +39,14 @@ export const lambdaHandler =
 export const withTimeout = <T>(
   operationName: string,
   ms: number,
-  func: () => Promise<T>
+  func: () => Promise<T>,
 ) =>
   new Promise<T>((resolve, reject) => {
     console.log("Operation:", operationName);
     console.time(operationName);
     const timeout = setTimeout(
       () => reject(new Error(`Operation timed out: ${operationName}`)),
-      ms
+      ms,
     );
     func()
       .then(resolve, reject)

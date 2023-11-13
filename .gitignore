@@ -16,4 +16,5 @@ CVS
 .yarnrc
 config.gypi
 dist/
+dist-*/
 .env

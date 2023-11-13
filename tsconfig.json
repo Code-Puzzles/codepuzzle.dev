@@ -1,4 +1,7 @@
 {
   "extends": ["@tsconfig/strictest/tsconfig", "@tsconfig/node20/tsconfig"],
-  "exclude": ["./dist/**/*"]
+  "exclude": ["**/dist/**/*", "**/dist-*/**/*"],
+  "compilerOptions": {
+    "composite": true
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "name": "@rttw/infrastructure",
+  "type": "commonjs",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@rttw/common": "*",
+    "@rttw/judge": "*"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-ecr": "^3.441.0",
+    "@pulumi/aws": "^6.6.1",
+    "@pulumi/aws-apigateway": "^2.0.0-alpha.1",
+    "@pulumi/docker": "^4.4.4",
+    "@types/node": "^18.18.8"
+  }
+}

@@ -1,31 +1,33 @@
 {
   "name": "rttw-judge",
+  "private": true,
   "version": "0.0.1",
   "description": "Judge server for Return True to Win puzzles.",
   "main": "scripts/deploy.ts",
   "type": "commonjs",
   "license": "MIT",
+  "workspaces": [
+    "./packages/*"
+  ],
   "scripts": {
+    "build": "tsc --build tsconfig.build.json",
     "dev": "tsx ./scripts/dev.ts",
-    "build": "tsx ./scripts/build.ts",
-    "deploy": "npm run build && pulumi up --stack dev --yes",
-    "delete-old-stacks": "tsx ./scripts/delete-old-stacks.ts"
+    "deploy": "npm run build && cd packages/infrastructure && pulumi up --stack dev --yes",
+    "delete-old-stacks": "tsx ./scripts/delete-old-stacks.ts",
+    "format": "prettier --check '**/*.{js,ts,json,md}'",
+    "format:fix": "npm run format -- --write"
   },
   "dependencies": {
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@aws-sdk/client-ecr": "^3.441.0",
-    "@pulumi/aws": "^6.6.1",
-    "@pulumi/aws-apigateway": "^2.0.0-alpha.1",
-    "@pulumi/docker": "^4.4.4",
     "@tsconfig/node20": "^20.1.2",
     "@tsconfig/strictest": "^2.0.2",
-    "@types/aws-lambda": "^8.10.125",
     "@types/node": "^18.18.8",
     "chalk": "^5.3.0",
     "esbuild": "^0.19.5",
     "execa": "^8.0.1",
+    "prettier": "^3.0.3",
     "tsx": "^3.14.0",
     "typescript": "^5.2.2"
   }

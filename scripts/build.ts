@@ -1,28 +1,28 @@
 import path from "node:path";
 import fs from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import esbuild from "esbuild";
-import { NODE_VERSION } from "./constants";
+import {
+  DIST_BUNDLES_DIR,
+  JUDGE_ENDPOINT,
+  REPO_ROOT,
+} from "../packages/common/src";
 
-const rootDir = path.join(__dirname, "..");
-const distDir = path.join(rootDir, "dist");
-const endpointsDir = path.join(__dirname, "..", "src", "endpoints");
+const NODE_VERSION = readFileSync(
+  path.join(REPO_ROOT, ".nvmrc"),
+  "utf8",
+).trim();
 
 export const build = async () => {
   console.log("Cleaning dist directory...");
-  await fs.rm(distDir, { recursive: true, force: true });
-
-  const endpointFiles = await fs.readdir(endpointsDir);
-  const entryPoints = Object.fromEntries(
-    endpointFiles.map((filename) => [
-      `${path.parse(filename).name}/index`,
-      path.join(endpointsDir, filename),
-    ])
-  );
+  await fs.rm(DIST_BUNDLES_DIR, { recursive: true, force: true });
 
   console.log("Building lambda...");
   await esbuild.build({
-    outdir: distDir,
-    entryPoints,
+    outdir: DIST_BUNDLES_DIR,
+    entryPoints: {
+      "judge/index": JUDGE_ENDPOINT,
+    },
     platform: "node",
     target: `node${NODE_VERSION}`,
     sourcemap: "external",

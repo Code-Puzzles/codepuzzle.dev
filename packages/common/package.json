@@ -1,0 +1,7 @@
+{
+  "name": "@rttw/common",
+  "type": "commonjs",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "src/index.ts"
+}

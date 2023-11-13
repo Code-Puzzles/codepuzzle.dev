@@ -29,7 +29,7 @@ export class FirefoxBrowser extends Browser {
           `--profile-root=${profileRoot}`,
           `--binary=${path.resolve("/opt/firefox/firefox-bin")}`,
         ],
-        { stdio: "inherit" }
+        { stdio: "inherit" },
       );
     }
 
@@ -45,7 +45,7 @@ export class FirefoxBrowser extends Browser {
             this.geckodriverProc?.exitCode
               ? ` (exit code: ${this.geckodriverProc?.exitCode})`
               : ""
-          }`
+          }`,
         );
 
       try {
@@ -89,7 +89,7 @@ export class FirefoxBrowser extends Browser {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ script, args: [] }),
-      }
+      },
     );
     const scriptData = (await scriptResponse.json()) as { value: T };
     const result = scriptData.value as T;

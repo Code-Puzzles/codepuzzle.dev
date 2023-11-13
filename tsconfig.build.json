@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true
+  },
+  "references": [
+    {
+      "path": "./packages/judge/tsconfig.json"
+    },
+    {
+      "path": "./packages/infrastructure/tsconfig.json"
+    }
+  ]
+}

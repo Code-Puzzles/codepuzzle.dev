@@ -1,13 +1,11 @@
-import path from "node:path";
 import * as pulumi from "@pulumi/pulumi";
-
-const ROOT_DIR = path.join(__dirname, "..");
+import { INFRASTRUCTURE_DIR } from "../packages/common/src";
 
 const PROTECTED_STACK_NAME = "rttw/prod";
 
 const run = async () => {
   const workspace = await pulumi.automation.LocalWorkspace.create({
-    workDir: ROOT_DIR,
+    workDir: INFRASTRUCTURE_DIR,
   });
 
   const stacks = await workspace.listStacks();
@@ -17,13 +15,13 @@ const run = async () => {
 
     const stackName = stackSummary.name;
     const stack = await pulumi.automation.LocalWorkspace.selectStack({
-      workDir: ROOT_DIR,
+      workDir: INFRASTRUCTURE_DIR,
       stackName,
     });
 
     const stackLastDeployDate = new Date(stackSummary.lastUpdate!);
     console.log(
-      `Stack ${stackName} last deployed at ${stackSummary.lastUpdate}`
+      `Stack ${stackName} last deployed at ${stackSummary.lastUpdate}`,
     );
     if (Date.now() - stackLastDeployDate.getTime() < 7 * 24 * 60 * 60 * 1000) {
       console.log("Not deleting stack because it was deployed too recently");

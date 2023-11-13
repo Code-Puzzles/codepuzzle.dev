@@ -1,6 +1,5 @@
 import path from "node:path";
-import fs from "node:fs";
-import { BrowserName } from "../src/browser/browsers";
+import { BrowserName } from "./browser/browsers";
 
 export interface BrowserBuildConfig {
   versions: string[];
@@ -9,10 +8,6 @@ export interface BrowserBuildConfig {
 }
 
 export const DOCKER_CONTEXT = path.join(__dirname, "..");
-
-export const NODE_VERSION = fs
-  .readFileSync(path.join(__dirname, "..", ".nvmrc"), "utf8")
-  .trim();
 
 export const BROWSER_CONFIGS: Record<BrowserName, BrowserBuildConfig> = {
   firefox: {
@@ -23,7 +18,7 @@ export const BROWSER_CONFIGS: Record<BrowserName, BrowserBuildConfig> = {
       // https://firefox-source-docs.mozilla.org/testing/geckodriver/Support.html
       const GECKODRIVER_COMPATIBILITY: [
         minFirefoxMajorVersion: number,
-        geckodriverVersion: string
+        geckodriverVersion: string,
       ][] = [
         [102, "0.33.0"],
         [91, "0.31.0"],
@@ -39,7 +34,7 @@ export const BROWSER_CONFIGS: Record<BrowserName, BrowserBuildConfig> = {
 
       const firefoxMajorVersion = +version.split(".", 1)[0]!;
       const result = GECKODRIVER_COMPATIBILITY.find(
-        ([minFirefoxVersion]) => firefoxMajorVersion >= minFirefoxVersion
+        ([minFirefoxVersion]) => firefoxMajorVersion >= minFirefoxVersion,
       );
       const geckodriverVersion = result?.[1];
       if (!geckodriverVersion)

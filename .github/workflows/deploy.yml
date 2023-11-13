@@ -32,5 +32,6 @@ jobs:
         with:
           command: up
           stack-name: rttw/rttw-judge/prod
+          work-dir: packages/infrastructure
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

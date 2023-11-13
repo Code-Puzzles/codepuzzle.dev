@@ -3,7 +3,7 @@ import * as aws from "@pulumi/aws";
 import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
 import { ECR } from "@aws-sdk/client-ecr";
-import { BROWSER_CONFIGS, DOCKER_CONTEXT } from "./constants";
+import { BROWSER_CONFIGS, DOCKER_CONTEXT } from "@rttw/judge";
 
 const stackName = pulumi.getStack();
 const ecr = new ECR({ region: aws.config.region! });
@@ -16,7 +16,7 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
     buildConfig.versions.map((version) => {
       const lambdaPrefix = `${namePrefix}-judge-${name}-${version.replace(
         /\W/g,
-        "_"
+        "_",
       )}`;
 
       const repo = new aws.ecr.Repository(`${lambdaPrefix}-repo`, {
@@ -81,7 +81,7 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
 
           const imageIdsToDelete = images
             .imageDetails!.filter(
-              (image) => image.imageDigest !== newImageDigest
+              (image) => image.imageDigest !== newImageDigest,
             )
             .map((image) => ({ imageDigest: image.imageDigest! }));
 
@@ -96,7 +96,7 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
         });
 
       return func;
-    })
+    }),
 );
 
 const helloHandler = new aws.lambda.CallbackFunction(
@@ -108,7 +108,7 @@ const helloHandler = new aws.lambda.CallbackFunction(
         body: { msg: "hi werld" },
       };
     },
-  }
+  },
 );
 
 const api = new apigateway.RestAPI(`${namePrefix}-api`, {
@@ -119,7 +119,7 @@ const api = new apigateway.RestAPI(`${namePrefix}-api`, {
         path: "/judge",
         method: "POST",
         eventHandler: func,
-      })
+      }),
     ),
     {
       path: "/hello",

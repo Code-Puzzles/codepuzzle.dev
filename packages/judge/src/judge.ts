@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { Browser } from "../browser/types";
-import { lambdaHandler, withTimeout } from "../lambda-utils";
-import { BrowserName, BROWSERS } from "../browser/browsers";
+import { Browser } from "./browser/types";
+import { lambdaHandler, withTimeout } from "./lambda-utils";
+import { BrowserName, BROWSERS } from "./browser/browsers";
 
 const judgeOptsShape = z.object({
   puzzleSource: z.string(),
@@ -23,12 +23,12 @@ export const handler = lambdaHandler(judgeOptsShape, async (opts) => {
   const browserName = process.env["BROWSER_NAME"] as BrowserName | undefined;
   if (!browserName || !(browserName in BROWSERS))
     throw new Error(
-      `Invalid BROWSER_NAME environment variable: ${browserName}`
+      `Invalid BROWSER_NAME environment variable: ${browserName}`,
     );
   const browserVersion = process.env["BROWSER_VERSION"];
   if (!browserVersion)
     throw new Error(
-      `Invalid BROWSER_VERSION environment variable: ${browserVersion}`
+      `Invalid BROWSER_VERSION environment variable: ${browserVersion}`,
     );
 
   // Trick tools like geckodriver into using a writable home directory
@@ -42,8 +42,8 @@ const judge = async (opts: JudgeOpts, browser: Browser) => {
   await withTimeout("browserStart", 60_000, () => browser.start());
   const result = await withTimeout("runSolution", 60_000, async () =>
     browser.execute<JudgeResult>(
-      `return (${evaluateSolution.toString()})(${JSON.stringify(opts)})`
-    )
+      `return (${evaluateSolution.toString()})(${JSON.stringify(opts)})`,
+    ),
   );
   return {
     numChars: opts.solution.length,
@@ -102,7 +102,7 @@ function evaluateSolution(opts: JudgeOpts): JudgeResult {
         opts.puzzleSource,
         ";setPuzzle(" + opts.puzzleName + ");",
         "callPuzzle()(" + opts.solution + ");",
-      ].join("\n")
+      ].join("\n"),
     );
     userCode(setPuzzle, callPuzzle);
     return { passed: value === true, value: stringify(value) };

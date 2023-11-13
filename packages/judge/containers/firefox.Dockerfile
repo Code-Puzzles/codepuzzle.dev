@@ -6,9 +6,9 @@ ARG GECKODRIVER_VERSION
 ENV BROWSER_NAME="firefox"
 ENV BROWSER_VERSION="${FIREFOX_VERSION}"
 
-COPY ./containers/firefox.sh .
+COPY ./packages/judge/containers/firefox.sh .
 RUN ./firefox.sh && rm ./firefox.sh
 
-COPY ./dist/judge .
+COPY ./dist-bundles/judge .
 
 CMD [ "index.handler" ]

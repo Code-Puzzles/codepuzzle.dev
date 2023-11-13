@@ -1,0 +1,13 @@
+{
+  "name": "@rttw/judge",
+  "type": "commonjs",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.125"
+  }
+}
