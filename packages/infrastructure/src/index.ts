@@ -3,7 +3,8 @@ import * as aws from "@pulumi/aws";
 import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
 import { ECR } from "@aws-sdk/client-ecr";
-import { BROWSER_CONFIGS, DOCKER_CONTEXT } from "@rttw/judge";
+import { BROWSER_CONFIGS } from "@rttw/judge";
+import { REPO_ROOT } from "@rttw/common";
 
 const stackName = pulumi.getStack();
 const ecr = new ECR({ region: aws.config.region! });
@@ -29,7 +30,7 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
         build: {
           dockerfile: buildConfig.dockerfilePath(version),
           platform: "linux/amd64",
-          context: DOCKER_CONTEXT,
+          context: REPO_ROOT,
           args: buildConfig.dockerBuildArgs(version),
         },
         registry: {

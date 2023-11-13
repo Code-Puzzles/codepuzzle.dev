@@ -2,7 +2,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { Readable } from "node:stream";
 import { APIGatewayProxyResult } from "aws-lambda";
-import { build } from "./build";
+import { build } from "./bundle";
 import { JudgeOpts } from "../packages/judge/src/judge";
 import { BROWSER_CONFIGS } from "../packages/judge/src/constants";
 import { CONTAINERS_DIR, REPO_ROOT } from "../packages/common/src";

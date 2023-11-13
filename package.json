@@ -10,7 +10,9 @@
     "./packages/*"
   ],
   "scripts": {
-    "build": "tsc --build tsconfig.build.json",
+    "build": "npm run build:tsc && npm run build:bundles",
+    "build:tsc": "tsc --build tsconfig.build.json",
+    "build:bundles": "tsx ./scripts/bundle.ts",
     "dev": "tsx ./scripts/dev.ts",
     "deploy": "npm run build && cd packages/infrastructure && pulumi up --stack dev --yes",
     "delete-old-stacks": "tsx ./scripts/delete-old-stacks.ts",

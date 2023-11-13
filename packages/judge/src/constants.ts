@@ -7,8 +7,6 @@ export interface BrowserBuildConfig {
   dockerBuildArgs: (version: string) => Record<string, string>;
 }
 
-export const DOCKER_CONTEXT = path.join(__dirname, "..");
-
 export const BROWSER_CONFIGS: Record<BrowserName, BrowserBuildConfig> = {
   firefox: {
     versions: ["119.0"],
