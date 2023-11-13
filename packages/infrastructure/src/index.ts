@@ -4,7 +4,7 @@ import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
 import { ECR } from "@aws-sdk/client-ecr";
 import { BROWSER_CONFIGS } from "@rttw/judge";
-import { REPO_ROOT } from "@rttw/common";
+import { REPO_ROOT } from "@rttw/common-node";
 
 const stackName = pulumi.getStack();
 const ecr = new ECR({ region: aws.config.region! });

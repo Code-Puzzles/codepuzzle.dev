@@ -1,103 +1,19 @@
-import { promisify } from "node:util";
-import { Readable } from "node:stream";
-import { APIGatewayProxyResult } from "aws-lambda";
-import { build } from "./bundle.js";
-import { JudgeOpts } from "../packages/judge/src/judge.js";
-import { BROWSER_CONFIGS } from "../packages/judge/src/constants.js";
-import { REPO_ROOT } from "../packages/common/src/index.js";
-import { $ } from "execa";
-import c from "chalk";
+import concurrently from "concurrently";
 
-const sleep = promisify(setTimeout);
-
-// NOTE: set this to true to have an interactive shell in the built image
-const interactive = false;
-
-const $$ = $({
-  cwd: REPO_ROOT,
-  env: {
-    ...process.env,
-    DOCKER_BUILDKIT: "0",
+concurrently(
+  [
+    {
+      name: "lambda",
+      command: "npm run dev:backend",
+      prefixColor: "magenta",
+    },
+    {
+      name: "svelte",
+      command: "npm run dev:frontend",
+      prefixColor: "yellow",
+    },
+  ],
+  {
+    killOthers: ["success", "failure"],
   },
-});
-
-const buildImage = async (name: string) => {
-  console.log("Building docker image...");
-  const version = "119.0";
-  const buildArgs = Object.entries(
-    BROWSER_CONFIGS.firefox.dockerBuildArgs(version),
-  ).flatMap(([key, value]) => ["--build-arg", `${key}=${value}`]);
-  const firefoxDockerfile = BROWSER_CONFIGS.firefox.dockerfilePath(version);
-  await $$({
-    stdio: "inherit",
-  })`docker build --tag ${name} --platform linux/amd64 --file ${firefoxDockerfile} ${buildArgs} .`;
-};
-
-const logStream = (prefix: string, stream: Readable) => {
-  stream.setEncoding("utf-8");
-  stream.on("data", (chunk: string) =>
-    chunk.split(/\r?\n/).forEach((line) => {
-      line = line.trim();
-      if (line.length) {
-        process.stderr.write(
-          `${prefix}: ${line
-            // sometimes geckodriver emits ascii control characters which messes up the output
-            .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
-            // also collapse all whitespace down into a single space - easier to read
-            .replace(/\s\s+/g, " ")}\n`,
-        );
-      }
-    }),
-  );
-};
-
-const runContainer = async (name: string) => {
-  console.log("Running...");
-  const proc = $$({
-    stdio: interactive ? "inherit" : "pipe",
-  })`docker run --rm --name ${name} --platform linux/amd64 --publish 9000:8080 ${
-    interactive
-      ? [`--interactive`, `--tty`, `--entrypoint=/bin/bash`, name]
-      : [name]
-  }`;
-
-  if (!interactive) {
-    logStream(c.yellow(`${name}[stdout]`), proc.stdout!);
-    logStream(c.red(`${name}[stderr]`), proc.stderr!);
-  }
-
-  const opts: JudgeOpts = {
-    puzzleName: "id",
-    puzzleSource: "function id(x) {\n  return x;\n}",
-    solution: "!0",
-  };
-
-  await Promise.race([
-    proc,
-    (async () => {
-      await sleep(1000);
-      console.log("=== Making request", opts);
-      const res = await fetch(
-        "http://localhost:9000/2015-03-31/functions/function/invocations",
-        {
-          method: "POST",
-          body: JSON.stringify({ body: btoa(JSON.stringify(opts)) }),
-        },
-      );
-      const data = (await res.json()) as APIGatewayProxyResult;
-      console.log("=== data", data.statusCode, JSON.parse(data.body));
-    })(),
-  ]);
-
-  proc.kill();
-};
-
-const main = async () => {
-  const name = "rttw-judge-dev";
-
-  await build();
-  await buildImage(name);
-  await runContainer(name);
-};
-
-main();
+);

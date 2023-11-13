@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "src/index.ts",
   "dependencies": {
-    "@rttw/common": "*",
+    "@rttw/common-node": "*",
     "zod": "^3.22.4"
   },
   "devDependencies": {

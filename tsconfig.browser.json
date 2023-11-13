@@ -1,0 +1,12 @@
+// This config is used by all packages which target browser environments.
+{
+  "extends": ["@tsconfig/strictest/tsconfig"],
+  "exclude": ["**/dist/**/*", "**/dist-*/**/*"],
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2016", "DOM", "DOM.Iterable"],
+    "types": []
+  }
+}

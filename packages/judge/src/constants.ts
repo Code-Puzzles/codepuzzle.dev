@@ -1,6 +1,6 @@
 import path from "node:path";
 import { BrowserName } from "./browser/browsers.js";
-import { CONTAINERS_DIR } from "@rttw/common";
+import { CONTAINERS_DIR } from "@rttw/common-node";
 
 export interface BrowserBuildConfig {
   versions: string[];

@@ -10,27 +10,39 @@
     "./packages/*"
   ],
   "scripts": {
-    "build": "npm run build:tsc && npm run build:bundles",
-    "build:tsc": "tsc --build tsconfig.build.json",
     "build:bundles": "tsx ./scripts/bundle.ts",
-    "dev": "tsx ./scripts/dev.ts",
-    "deploy": "npm run build && cd packages/infrastructure && pulumi up --stack dev --yes",
-    "deploy:preview" : "npm run build && cd packages/infrastructure && pulumi preview --stack dev",
+    "build:frontend": "cd packages/frontend && vite build",
+    "build:tsc": "tsc --build tsconfig.build.json",
+    "build": "npm run build:tsc && npm run build:frontend && npm run build:bundles",
+    "check:frontend": "cd packages/frontend && svelte-check --tsconfig ./tsconfig.json",
+    "check": "npm run check:frontend",
     "delete-old-stacks": "tsx ./scripts/delete-old-stacks.ts",
+    "deploy:preview": "npm run build && cd packages/infrastructure && pulumi preview --stack dev",
+    "deploy": "npm run build && cd packages/infrastructure && pulumi up --stack dev --yes",
+    "dev:backend": "tsx ./scripts/dev-backend.ts",
+    "dev:frontend": "cd packages/frontend && vite",
+    "dev": "tsx ./scripts/dev.ts",
+    "format:fix": "npm run format -- --write",
     "format": "prettier --check '**/*.{js,ts,json,md}'",
-    "format:fix": "npm run format -- --write"
+    "postinstall": "npm run build:tsc"
   },
   "dependencies": {
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.4.2",
     "@tsconfig/node20": "^20.1.2",
     "@tsconfig/strictest": "^2.0.2",
+    "@tsconfig/svelte": "^5.0.2",
     "@types/node": "^18.18.8",
     "chalk": "^5.3.0",
+    "concurrently": "^8.2.2",
     "esbuild": "^0.19.5",
     "execa": "^8.0.1",
     "prettier": "^3.0.3",
+    "serve": "^14.2.1",
+    "svelte": "^4.0.5",
+    "svelte-check": "^3.4.6",
     "tsx": "^3.14.0",
     "typescript": "^5.2.2"
   }

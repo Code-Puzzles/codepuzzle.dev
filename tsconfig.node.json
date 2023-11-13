@@ -1,0 +1,11 @@
+// This config is used by all packages which target node environments.
+{
+  "extends": ["@tsconfig/strictest/tsconfig"],
+  "exclude": ["**/dist/**/*", "**/dist-*/**/*"],
+  "compilerOptions": {
+    "composite": true,
+    "module": "Node16",
+    "types": ["node"],
+    "lib": []
+  }
+}

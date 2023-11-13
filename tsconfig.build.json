@@ -1,15 +1,21 @@
+// This config is used to trigger building all the child packages in the monorepo.
+// It emits nothing itself, but uses TypeScript's Project References to trigger
+// each child package's build.
+//
+// Any time a new package is added to the monorepo, a reference to it must be
+// added here too.
 {
-  "extends": "./tsconfig.json",
+  "exclude": ["**/*"],
   "compilerOptions": {
     "composite": true,
     "noEmit": true
   },
   "references": [
-    {
-      "path": "./packages/judge/tsconfig.json"
-    },
-    {
-      "path": "./packages/infrastructure/tsconfig.json"
-    }
+    { "path": "./packages/common-browser/tsconfig.json" },
+    { "path": "./packages/common-node/tsconfig.json" },
+    { "path": "./packages/common/tsconfig.json" },
+    { "path": "./packages/frontend/tsconfig.json" },
+    { "path": "./packages/infrastructure/tsconfig.json" },
+    { "path": "./packages/judge/tsconfig.json" }
   ]
 }

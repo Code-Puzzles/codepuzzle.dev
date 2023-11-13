@@ -1,0 +1,13 @@
+{
+  "extends": ["@tsconfig/svelte/tsconfig.json", "../../tsconfig.browser.json"],
+  "include": ["src/**/*.ts", "src/**/*.svelte"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": true
+  },
+  "references": [{ "path": "../common/tsconfig.json" }]
+}

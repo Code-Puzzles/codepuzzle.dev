@@ -1,0 +1,19 @@
+{
+  "name": "@rttw/frontend",
+  "type": "module",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.11.0",
+    "@codemirror/lang-javascript": "^6.2.1",
+    "@codemirror/state": "^6.3.1",
+    "@codemirror/view": "^6.22.0",
+    "@rttw/common-browser": "*",
+    "codemirror": "^6.0.1",
+    "debounce": "^1.2.1"
+  },
+  "devDependencies": {
+    "@types/debounce": "^1.2.4"
+  }
+}

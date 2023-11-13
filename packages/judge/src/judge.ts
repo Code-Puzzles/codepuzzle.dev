@@ -2,6 +2,11 @@ import { z } from "zod";
 import { Browser } from "./browser/types.js";
 import { lambdaHandler, withTimeout } from "./lambda-utils.js";
 import { BrowserName, BROWSERS } from "./browser/browsers.js";
+import {
+  JudgeResult,
+  JudgeResultWithCount,
+  LOG_PREFIX,
+} from "@rttw/common-node";
 
 const judgeOptsShape = z.object({
   puzzleSource: z.string(),
@@ -11,24 +16,18 @@ const judgeOptsShape = z.object({
 
 export type JudgeOpts = z.TypeOf<typeof judgeOptsShape>;
 
-interface JudgeResult {
-  passed: boolean;
-  value?: string;
-  error?: string;
-}
-
 export const handler = lambdaHandler(judgeOptsShape, async (opts) => {
-  console.log("==== opts", opts);
+  console.log(`${LOG_PREFIX} opts`, opts);
 
   const browserName = process.env["BROWSER_NAME"] as BrowserName | undefined;
   if (!browserName || !(browserName in BROWSERS))
     throw new Error(
-      `Invalid BROWSER_NAME environment variable: ${browserName}`,
+      `${LOG_PREFIX} Invalid BROWSER_NAME environment variable: ${browserName}`,
     );
   const browserVersion = process.env["BROWSER_VERSION"];
   if (!browserVersion)
     throw new Error(
-      `Invalid BROWSER_VERSION environment variable: ${browserVersion}`,
+      `${LOG_PREFIX} Invalid BROWSER_VERSION environment variable: ${browserVersion}`,
     );
 
   // Trick tools like geckodriver into using a writable home directory
@@ -36,11 +35,14 @@ export const handler = lambdaHandler(judgeOptsShape, async (opts) => {
 
   const browser = new BROWSERS[browserName](browserVersion);
   const result = await judge(opts, browser);
-  console.log("==== result", result);
+  console.log(`${LOG_PREFIX} result`, result);
   return result;
 });
 
-const judge = async (opts: JudgeOpts, browser: Browser) => {
+const judge = async (
+  opts: JudgeOpts,
+  browser: Browser,
+): Promise<JudgeResultWithCount> => {
   await withTimeout("browserStart", 60_000, () => browser.start());
   const result = await withTimeout("runSolution", 60_000, async () =>
     browser.execute<JudgeResult>(
