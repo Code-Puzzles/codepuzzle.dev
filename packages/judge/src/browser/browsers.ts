@@ -1,5 +1,5 @@
-import { FirefoxBrowser } from "./firefox";
-import { Browser } from "./types";
+import { FirefoxBrowser } from "./firefox.js";
+import { Browser } from "./types.js";
 
 export const BROWSERS = {
   firefox: FirefoxBrowser,

@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { Browser } from "./browser/types";
-import { lambdaHandler, withTimeout } from "./lambda-utils";
-import { BrowserName, BROWSERS } from "./browser/browsers";
+import { Browser } from "./browser/types.js";
+import { lambdaHandler, withTimeout } from "./lambda-utils.js";
+import { BrowserName, BROWSERS } from "./browser/browsers.js";
 
 const judgeOptsShape = z.object({
   puzzleSource: z.string(),
@@ -35,7 +35,9 @@ export const handler = lambdaHandler(judgeOptsShape, async (opts) => {
   process.env["HOME"] = "/tmp";
 
   const browser = new BROWSERS[browserName](browserVersion);
-  return judge(opts, browser);
+  const result = await judge(opts, browser);
+  console.log("==== result", result);
+  return result;
 });
 
 const judge = async (opts: JudgeOpts, browser: Browser) => {

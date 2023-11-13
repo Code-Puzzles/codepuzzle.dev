@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { ChildProcess, spawn } from "node:child_process";
 import { promisify } from "node:util";
-import { Browser } from "./types";
+import { Browser } from "./types.js";
 
 const sleep = promisify(setTimeout);
 

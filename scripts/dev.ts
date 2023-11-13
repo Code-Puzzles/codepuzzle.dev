@@ -1,36 +1,34 @@
-import path from "node:path";
 import { promisify } from "node:util";
 import { Readable } from "node:stream";
 import { APIGatewayProxyResult } from "aws-lambda";
-import { build } from "./bundle";
-import { JudgeOpts } from "../packages/judge/src/judge";
-import { BROWSER_CONFIGS } from "../packages/judge/src/constants";
-import { CONTAINERS_DIR, REPO_ROOT } from "../packages/common/src";
-// @ts-ignore just importing a type
-import type { Execa$ } from "execa";
+import { build } from "./bundle.js";
+import { JudgeOpts } from "../packages/judge/src/judge.js";
+import { BROWSER_CONFIGS } from "../packages/judge/src/constants.js";
+import { REPO_ROOT } from "../packages/common/src/index.js";
+import { $ } from "execa";
+import c from "chalk";
 
 const sleep = promisify(setTimeout);
 
 // NOTE: set this to true to have an interactive shell in the built image
 const interactive = false;
 
-const execa = import("execa").then(({ $ }) =>
-  $({
-    cwd: REPO_ROOT,
-    env: {
-      ...process.env,
-      DOCKER_BUILDKIT: "0",
-    },
-  }),
-);
+const $$ = $({
+  cwd: REPO_ROOT,
+  env: {
+    ...process.env,
+    DOCKER_BUILDKIT: "0",
+  },
+});
 
-const buildImage = async ($: Execa$, name: string) => {
+const buildImage = async (name: string) => {
   console.log("Building docker image...");
+  const version = "119.0";
   const buildArgs = Object.entries(
-    BROWSER_CONFIGS.firefox.dockerBuildArgs("119.0"),
+    BROWSER_CONFIGS.firefox.dockerBuildArgs(version),
   ).flatMap(([key, value]) => ["--build-arg", `${key}=${value}`]);
-  const firefoxDockerfile = path.join(CONTAINERS_DIR, "firefox.Dockerfile");
-  await $({
+  const firefoxDockerfile = BROWSER_CONFIGS.firefox.dockerfilePath(version);
+  await $$({
     stdio: "inherit",
   })`docker build --tag ${name} --platform linux/amd64 --file ${firefoxDockerfile} ${buildArgs} .`;
 };
@@ -53,11 +51,9 @@ const logStream = (prefix: string, stream: Readable) => {
   );
 };
 
-const runContainer = async ($: Execa$, name: string) => {
-  const { default: c } = await import("chalk");
-
+const runContainer = async (name: string) => {
   console.log("Running...");
-  const proc = $({
+  const proc = $$({
     stdio: interactive ? "inherit" : "pipe",
   })`docker run --rm --name ${name} --platform linux/amd64 --publish 9000:8080 ${
     interactive
@@ -97,12 +93,11 @@ const runContainer = async ($: Execa$, name: string) => {
 };
 
 const main = async () => {
-  const $ = await execa;
   const name = "rttw-judge-dev";
 
   await build();
-  await buildImage($, name);
-  await runContainer($, name);
+  await buildImage(name);
+  await runContainer(name);
 };
 
 main();

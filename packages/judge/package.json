@@ -1,10 +1,11 @@
 {
   "name": "@rttw/judge",
-  "type": "commonjs",
+  "type": "module",
   "private": true,
   "main": "dist/index.js",
   "types": "src/index.ts",
   "dependencies": {
+    "@rttw/common": "*",
     "zod": "^3.22.4"
   },
   "devDependencies": {

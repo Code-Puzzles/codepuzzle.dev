@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "Judge server for Return True to Win puzzles.",
   "main": "scripts/deploy.ts",
-  "type": "commonjs",
+  "type": "module",
   "license": "MIT",
   "workspaces": [
     "./packages/*"
@@ -15,6 +15,7 @@
     "build:bundles": "tsx ./scripts/bundle.ts",
     "dev": "tsx ./scripts/dev.ts",
     "deploy": "npm run build && cd packages/infrastructure && pulumi up --stack dev --yes",
+    "deploy:preview" : "npm run build && cd packages/infrastructure && pulumi preview --stack dev",
     "delete-old-stacks": "tsx ./scripts/delete-old-stacks.ts",
     "format": "prettier --check '**/*.{js,ts,json,md}'",
     "format:fix": "npm run format -- --write"

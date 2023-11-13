@@ -1,12 +1,13 @@
 import path from "node:path";
 import fs from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import esbuild from "esbuild";
 import {
   DIST_BUNDLES_DIR,
   JUDGE_ENDPOINT,
   REPO_ROOT,
-} from "../packages/common/src";
+} from "../packages/common/src/index.js";
 
 const NODE_VERSION = readFileSync(
   path.join(REPO_ROOT, ".nvmrc"),
@@ -30,8 +31,4 @@ export const build = async () => {
   });
 };
 
-if (require.main === module)
-  build().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+if (fileURLToPath(import.meta.url) === process.argv[1]) await build();

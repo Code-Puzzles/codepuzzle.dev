@@ -1,5 +1,6 @@
 import path from "node:path";
-import { BrowserName } from "./browser/browsers";
+import { BrowserName } from "./browser/browsers.js";
+import { CONTAINERS_DIR } from "@rttw/common";
 
 export interface BrowserBuildConfig {
   versions: string[];
@@ -10,8 +11,7 @@ export interface BrowserBuildConfig {
 export const BROWSER_CONFIGS: Record<BrowserName, BrowserBuildConfig> = {
   firefox: {
     versions: ["119.0"],
-    dockerfilePath: () =>
-      path.join(__dirname, "..", "containers", "firefox.Dockerfile"),
+    dockerfilePath: () => path.join(CONTAINERS_DIR, "firefox.Dockerfile"),
     dockerBuildArgs(version) {
       // https://firefox-source-docs.mozilla.org/testing/geckodriver/Support.html
       const GECKODRIVER_COMPATIBILITY: [

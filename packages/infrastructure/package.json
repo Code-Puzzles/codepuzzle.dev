@@ -1,6 +1,6 @@
 {
   "name": "@rttw/infrastructure",
-  "type": "commonjs",
+  "type": "module",
   "private": true,
   "main": "dist/index.js",
   "types": "src/index.ts",

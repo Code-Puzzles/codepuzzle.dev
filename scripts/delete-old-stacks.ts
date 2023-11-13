@@ -1,5 +1,6 @@
+import { fileURLToPath } from "node:url";
 import * as pulumi from "@pulumi/pulumi";
-import { INFRASTRUCTURE_DIR } from "../packages/common/src";
+import { INFRASTRUCTURE_DIR } from "../packages/common/src/index.js";
 
 const PROTECTED_STACK_NAME = "rttw/prod";
 
@@ -34,8 +35,4 @@ const run = async () => {
   }
 };
 
-if (require.main === module)
-  run().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+if (fileURLToPath(import.meta.url) === process.argv[1]) await run();
