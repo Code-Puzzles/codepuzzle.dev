@@ -6,7 +6,7 @@
     "composite": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2016", "DOM", "DOM.Iterable"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": []
   }
 }

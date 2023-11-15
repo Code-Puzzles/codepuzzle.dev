@@ -7,6 +7,7 @@
 
   export let puzzle: Puzzle = season1[0]!;
   export let result: JudgeResultWithCount | undefined = undefined;
+  export let loading = false;
 
   let root: HTMLElement;
   let view: EditorView;
@@ -21,7 +22,10 @@
 
   function onSubmit() {
     result = undefined;
-    submitToBackend(puzzle, solution).then((r) => (result = r));
+    loading = true;
+    submitToBackend(puzzle, solution)
+      .then((r) => (result = r))
+      .finally(() => (loading = false));
   }
 
   function putPuzzleIntoEditor(puzzle: Puzzle) {

@@ -6,6 +6,7 @@
 
   let openedPuzzle: Puzzle | undefined = season1[0];
   let result: JudgeResultWithCount | undefined = undefined;
+  let loading: boolean;
 </script>
 
 <div class="container">
@@ -16,8 +17,12 @@
   />
   <main>
     {#if openedPuzzle}
-      <CodeMirror puzzle={openedPuzzle} bind:result />
-      <Results bind:result />
+      <CodeMirror puzzle={openedPuzzle} bind:result bind:loading />
+      {#if loading}
+        checking solution...
+      {:else}
+        <Results bind:result />
+      {/if}
     {/if}
   </main>
 </div>

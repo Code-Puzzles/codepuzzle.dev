@@ -57,6 +57,7 @@ export async function submitToBackend(
     }
 
     const data: LambdaResponse = await resp.json();
+    console.log("Backend result", data);
     return JSON.parse(data.body);
   }
 }
