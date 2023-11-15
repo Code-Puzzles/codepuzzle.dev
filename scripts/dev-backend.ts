@@ -60,8 +60,8 @@ const logStream = (prefix: string, stream: Readable) => {
             // also collapse all whitespace down into a single space - easier to read
             .replace(/\s\s+/g, " ")}\n`
             // and finally highlight output from our lambda so it's easier to find
-            .replace(new RegExp(`${LOG_PREFIX}.+`), (txt) =>
-              chalk.bold.cyan(txt),
+            .replace(new RegExp(`\s*${LOG_PREFIX}\s*(.+)`), (_, $1) =>
+              chalk.bold.cyan(`${$1}`),
             ),
         );
       }
