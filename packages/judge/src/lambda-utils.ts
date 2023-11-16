@@ -28,6 +28,14 @@ export const lambdaHandler =
         body: JSON.stringify(await handler(body, evt)),
       };
     } catch (err) {
+      if (err instanceof ClientError) {
+        return {
+          statusCode: 400,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ error: String(err) }),
+        };
+      }
+
       console.error("Uncaught error:", err);
       return {
         statusCode: 500,
@@ -36,6 +44,8 @@ export const lambdaHandler =
       };
     }
   };
+
+export class ClientError extends Error {}
 
 export const withTimeout = <T>(
   operationName: string,

@@ -6,10 +6,11 @@ import {
   JudgeResult,
   JudgeResultWithCount,
   LOG_PREFIX,
+  puzzles,
 } from "@rttw/common-node";
 
 const judgeOptsShape = z.object({
-  puzzleSource: z.string(),
+  puzzleNamespace: z.string(),
   puzzleName: z.string(),
   solution: z.string(),
 });
@@ -44,9 +45,16 @@ const judge = async (
   browser: Browser,
 ): Promise<JudgeResultWithCount> => {
   await withTimeout("browserStart", 60_000, () => browser.start());
+  const puzzleList = puzzles[opts.puzzleNamespace];
+  if (!puzzleList)
+    throw new Error(`Puzzle namespace not found: ${opts.puzzleNamespace}`);
+  const puzzle = puzzleList.find((puzzle) => puzzle.name === opts.puzzleName);
+  if (!puzzle) throw new Error(`Puzzle not found: ${opts.puzzleName}`);
   const result = await withTimeout("runSolution", 60_000, async () =>
     browser.execute<JudgeResult>(
-      `return (${evaluateSolution.toString()})(${JSON.stringify(opts)})`,
+      `return (${evaluateSolution.toString()})(${JSON.stringify(
+        opts,
+      )}, ${JSON.stringify(puzzle.source)})`,
     ),
   );
   return {
@@ -72,11 +80,12 @@ const judge = async (
  * - No using `"value" in result` because `Object.prototype` may have been
  * manipulated by user code.
  */
-function evaluateSolution(opts: JudgeOpts): JudgeResult {
+function evaluateSolution(opts: JudgeOpts, puzzleSource: string): JudgeResult {
   var jsonStringify = JSON.stringify;
   var toString = String;
   function stringify(value: unknown) {
     try {
+      if (value instanceof Error) return toString(value);
       return jsonStringify(value);
     } catch {
       return toString(value);
@@ -103,7 +112,7 @@ function evaluateSolution(opts: JudgeOpts): JudgeResult {
       "setPuzzle",
       "callPuzzle",
       [
-        opts.puzzleSource,
+        puzzleSource,
         ";setPuzzle(" + opts.puzzleName + ");",
         "callPuzzle()(" + opts.solution + ");",
       ].join("\n"),

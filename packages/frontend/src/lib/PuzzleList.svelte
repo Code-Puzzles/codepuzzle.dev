@@ -1,6 +1,6 @@
 <script lang="ts">
   // TODO: get this from backend with fetch
-  import { season1 } from "@rttw/common-browser";
+  import { puzzles } from "@rttw/common-browser";
 
   export let onPuzzleClick: (puzzleId: string) => void | undefined;
 
@@ -18,7 +18,7 @@
 </script>
 
 <ul class="list">
-  {#each season1 as puzzle}
+  {#each puzzles["season1"] ?? [] as puzzle}
     {@const userPuzzle = userState.puzzlesSolved[puzzle.name]}
     <li>
       <a

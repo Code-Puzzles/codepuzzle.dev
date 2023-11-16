@@ -5,11 +5,11 @@ export interface Puzzle {
 }
 
 /**
- * These puzzles belong to the orignal author of Return True To Win.
+ * These puzzles belong to the original author of Return True To Win.
  * https://alf.nu/ReturnTrue
  */
 
-export const season1: Puzzle[] = [
+const season1: Puzzle[] = [
   {
     index: 0,
     name: "id",
@@ -216,7 +216,7 @@ function json(x, y) {
   },
 ];
 
-export const season2: Puzzle[] = [
+const season2: Puzzle[] = [
   {
     index: 24,
     name: "countOnMe",
@@ -591,3 +591,8 @@ function andBeyond(x) {
 }`,
   },
 ];
+
+export const puzzles: Record<string, Puzzle[]> = {
+  season1,
+  season2,
+};

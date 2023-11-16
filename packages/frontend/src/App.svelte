@@ -2,13 +2,13 @@
   import Sidebar from "./lib/Sidebar.svelte";
   import CodeMirror from "./lib/CodeMirror.svelte";
   import {
-    season1,
+    puzzles,
     type Puzzle,
     type JudgeResultWithCount,
   } from "@rttw/common-browser";
   import Results from "./lib/Results.svelte";
 
-  let openedPuzzle: Puzzle | undefined = season1[0];
+  let openedPuzzle: Puzzle | undefined = puzzles["season1"]![0];
   let result: JudgeResultWithCount | undefined = undefined;
   let loading: boolean;
 </script>
@@ -16,7 +16,7 @@
 <div class="container">
   <Sidebar
     onPuzzleClick={(puzzleId) => {
-      openedPuzzle = season1.find((p) => p.name === puzzleId);
+      openedPuzzle = puzzles["season1"]?.find((p) => p.name === puzzleId);
     }}
   />
   <main>

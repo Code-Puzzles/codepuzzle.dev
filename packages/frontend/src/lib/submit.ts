@@ -36,8 +36,8 @@ export async function submitToBackend(
       body: JSON.stringify({
         body: btoa(
           JSON.stringify({
+            puzzleNamespace: "season1",
             puzzleName: puzzle.name,
-            puzzleSource: puzzle.source,
             solution,
           }),
         ),

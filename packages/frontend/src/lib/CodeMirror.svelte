@@ -1,7 +1,7 @@
 <script lang="ts">
   import { EditorView } from "@codemirror/view";
   import {
-    season1,
+    puzzles,
     type Puzzle,
     type JudgeResultWithCount,
   } from "@rttw/common-browser";
@@ -9,7 +9,7 @@
   import { getEditorState } from "./CodeMirror";
   import { evalInBrowser, submitToBackend } from "./submit";
 
-  export let puzzle: Puzzle = season1[0]!;
+  export let puzzle: Puzzle = puzzles["season1"]![0]!;
   export let result: JudgeResultWithCount | undefined = undefined;
   export let loading = false;
 
