@@ -12,6 +12,7 @@ import { EditorView, keymap } from "@codemirror/view";
 import { autocompletion } from "@codemirror/autocomplete";
 import { basicSetup } from "codemirror";
 import { type Puzzle } from "@jspuzzles/common-browser";
+import { dracula } from "thememirror";
 
 export function getEditorState(
   puzzle: Puzzle,
@@ -40,6 +41,8 @@ export function getEditorState(
       puzzleReadOnlyExtension,
       // fires the following callback whenever something is changed
       onChangeHandler(onChange),
+      // theme
+      dracula,
       // make sure popup doesn't obscure results view (which is below the editor)
       autocompletion({ aboveCursor: true }),
       // syntax highlighting for js

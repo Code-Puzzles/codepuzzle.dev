@@ -49,8 +49,6 @@
 
 <style>
   .editor {
-    background: white;
-    color: black;
-    border: 1px solid red;
+    font-size: 1.5em;
   }
 </style>

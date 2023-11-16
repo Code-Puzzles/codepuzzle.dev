@@ -11,9 +11,7 @@
     "@codemirror/view": "^6.22.0",
     "@jspuzzles/common-browser": "*",
     "codemirror": "^6.0.1",
-    "debounce": "^1.2.1"
+    "thememirror": "^2.0.1"
   },
-  "devDependencies": {
-    "@types/debounce": "^1.2.4"
-  }
+  "devDependencies": {}
 }
