@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { LOG_PREFIX } from "@rttw/common-node";
 
 export const lambdaHandler =
   <Body>(
@@ -42,16 +43,19 @@ export const withTimeout = <T>(
   func: () => Promise<T>,
 ) =>
   new Promise<T>((resolve, reject) => {
-    console.log("Operation:", operationName);
-    console.time(operationName);
+    console.log(`${LOG_PREFIX} Operation:`, operationName);
+    console.time(`${LOG_PREFIX}${operationName}`);
     const timeout = setTimeout(
-      () => reject(new Error(`Operation timed out: ${operationName}`)),
+      () =>
+        reject(
+          new Error(`${LOG_PREFIX} Operation timed out: ${operationName}`),
+        ),
       ms,
     );
     func()
       .then(resolve, reject)
       .finally(() => {
         clearTimeout(timeout);
-        console.timeEnd(operationName);
+        console.timeEnd(`${LOG_PREFIX}${operationName}`);
       });
   });

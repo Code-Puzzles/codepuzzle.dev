@@ -31,7 +31,7 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
           dockerfile: buildConfig.dockerfilePath(version),
           platform: "linux/amd64",
           context: REPO_ROOT,
-          args: buildConfig.dockerBuildArgs(version),
+          args: buildConfig.dockerBuildArgs(version, { dev: false }),
         },
         registry: {
           server: repo.repositoryUrl,

@@ -15,7 +15,7 @@ const NODE_VERSION = readFileSync(
 ).trim();
 
 export const bundle = async (
-  watchCallback?: (result: BuildResult) => Promise<void>,
+  watchCallback?: (result: BuildResult) => Promise<boolean>,
 ) => {
   console.log(`Cleaning ${relative(process.cwd(), DIST_BUNDLES_DIR)}...`);
   await fs.rm(DIST_BUNDLES_DIR, { recursive: true, force: true });
@@ -34,7 +34,13 @@ export const bundle = async (
     plugins: [
       {
         name: "onBuildEndCallback",
-        setup: (build) => watchCallback && build.onEnd(watchCallback),
+        setup: (build) => {
+          if (!watchCallback) return;
+          build.onEnd(async (result) => {
+            const shouldContinue = await watchCallback(result);
+            if (!shouldContinue) await ctx.dispose();
+          });
+        },
       },
     ],
   });

@@ -3,6 +3,7 @@ import path from "node:path";
 import { ChildProcess, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { Browser } from "./types.js";
+import { LOG_PREFIX } from "@rttw/common-node";
 
 const sleep = promisify(setTimeout);
 
@@ -12,15 +13,38 @@ const GECKODRIVER_PORT = 4444;
 export class FirefoxBrowser extends Browser {
   dir = path.resolve("/tmp/browser");
   baseUrl = `http://${GECKODRIVER_HOST}:${GECKODRIVER_PORT}`;
-  geckodriverProc?: ChildProcess;
   sessionId?: string;
 
+  // NOTE: static so each instance shares the same process (otherwise port
+  // conflicts occur, and the same process isn't reused)
+  static geckodriverProc?: ChildProcess;
+
+  isRunning() {
+    if (!FirefoxBrowser.geckodriverProc) return false;
+    return (
+      FirefoxBrowser.geckodriverProc.exitCode === null &&
+      FirefoxBrowser.geckodriverProc.signalCode === null
+    );
+  }
+
+  async ping() {
+    try {
+      const res = await fetch(`${this.baseUrl}/status`, {
+        method: "GET",
+      });
+      const data = (await res.json()) as { value: { ready: boolean } };
+      return data.value.ready === true;
+    } catch {
+      return false;
+    }
+  }
+
   async start() {
-    if (this.geckodriverProc?.exitCode !== null) {
+    if (!this.isRunning()) {
       const profileRoot = path.resolve("/tmp/profile");
       await fs.mkdir(profileRoot, { recursive: true });
 
-      this.geckodriverProc = spawn(
+      FirefoxBrowser.geckodriverProc = spawn(
         path.resolve("/opt/geckodriver"),
         [
           `--log=fatal`,
@@ -39,27 +63,25 @@ export class FirefoxBrowser extends Browser {
       if (Date.now() > startTime + geckodriverStartupTimeout)
         throw new Error("Geckodriver startup timed out");
 
-      if (!this.geckodriverProc || this.geckodriverProc?.exitCode !== null)
+      if (!this.isRunning())
         throw new Error(
           `Geckodriver is not running${
-            this.geckodriverProc?.exitCode
-              ? ` (exit code: ${this.geckodriverProc?.exitCode})`
+            FirefoxBrowser.geckodriverProc?.exitCode
+              ? ` (exit code: ${FirefoxBrowser.geckodriverProc?.exitCode})`
+              : FirefoxBrowser.geckodriverProc?.signalCode
+              ? ` (signal: ${FirefoxBrowser.geckodriverProc?.signalCode})`
               : ""
           }`,
         );
 
-      try {
-        const res = await fetch(`${this.baseUrl}/status`, {
-          method: "GET",
-        });
-        const data = (await res.json()) as { value: { ready: boolean } };
-        if (data.value.ready === true) break;
-      } catch {}
+      if (await this.ping()) {
+        break;
+      }
 
       await sleep(200);
     }
 
-    console.log("Geckodriver ready");
+    console.log(`${LOG_PREFIX} Geckodriver ready`);
   }
 
   async execute<T>(script: string) {
@@ -80,7 +102,7 @@ export class FirefoxBrowser extends Browser {
     const sessionData = (await sessionResponse.json()) as {
       value: { sessionId: string };
     };
-    console.log("=== sessionData", sessionData);
+    console.log(`${LOG_PREFIX} sessionData`, sessionData);
     this.sessionId = sessionData.value.sessionId;
 
     const scriptResponse = await fetch(
@@ -102,6 +124,6 @@ export class FirefoxBrowser extends Browser {
   }
 
   async close() {
-    this.geckodriverProc?.kill();
+    FirefoxBrowser.geckodriverProc?.kill();
   }
 }

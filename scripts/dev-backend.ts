@@ -1,8 +1,8 @@
 import { Readable } from "node:stream";
 import { bundle } from "./bundle.js";
 import { BROWSER_CONFIGS } from "../packages/judge/src/constants.js";
-import { LOG_PREFIX, REPO_ROOT } from "@rttw/common-node";
-import { $, ExecaChildProcess } from "execa";
+import { DIST_BUNDLES_DIR, LOG_PREFIX, REPO_ROOT } from "@rttw/common-node";
+import { $, ExecaChildProcess, Options } from "execa";
 import chalk from "chalk";
 
 // NOTE: set this to true to have an interactive shell in the built image
@@ -21,7 +21,7 @@ const buildImage = async () => {
   console.log("Building docker image...");
   const version = "119.0";
   const buildArgs = Object.entries(
-    BROWSER_CONFIGS.firefox.dockerBuildArgs(version),
+    BROWSER_CONFIGS.firefox.dockerBuildArgs(version, { dev: true }),
   ).flatMap(([key, value]) => ["--build-arg", `${key}=${value}`]);
   const firefoxDockerfile = BROWSER_CONFIGS.firefox.dockerfilePath(version);
   await $$({
@@ -31,13 +31,16 @@ const buildImage = async () => {
 
 const runContainer = () => {
   console.log("Running...");
+
+  const mount = `${DIST_BUNDLES_DIR}/judge:/var/task`;
+  const finalArgs = interactive
+    ? [`--interactive`, `--tty`, `--entrypoint=/bin/bash`, imageName]
+    : ["--entrypoint=/dev-loop.sh", imageName];
+
   const proc = $$({
+    reject: false,
     stdio: interactive ? "inherit" : "pipe",
-  })`docker run --rm --name ${imageName} --platform linux/amd64 --publish 9000:8080 ${
-    interactive
-      ? [`--interactive`, `--tty`, `--entrypoint=/bin/bash`, imageName]
-      : [imageName]
-  }`;
+  })`docker run --rm --name ${imageName} -v ${mount} --platform linux/amd64 --publish 9000:8080 ${finalArgs}`;
 
   if (!interactive) {
     logStream(chalk.yellow("[stdout]"), proc.stdout!);
@@ -69,17 +72,18 @@ const logStream = (prefix: string, stream: Readable) => {
   );
 };
 
-let count = 0;
 let proc: ExecaChildProcess | null = null;
+const devLoop = async () => {
+  if (!proc) {
+    await buildImage();
+    proc = runContainer();
 
-await bundle(async () => {
-  if (proc) {
-    proc.kill();
-    await proc.finally();
-    proc = null;
+    if (interactive) {
+      proc.on("exit", () => process.exit(0));
+    }
   }
 
-  await buildImage();
-  proc = runContainer();
-  console.log(chalk.yellow(`Backend rebuild count: ${chalk.cyan(++count)}`));
-});
+  return true;
+};
+
+await bundle(devLoop);
