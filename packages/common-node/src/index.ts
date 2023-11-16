@@ -1,2 +1,2 @@
-export * from "@rttw/common";
+export * from "@jspuzzles/common";
 export * from "./paths.js";

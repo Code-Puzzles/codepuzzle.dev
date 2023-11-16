@@ -4,7 +4,7 @@
     puzzles,
     type Puzzle,
     type JudgeResultWithCount,
-  } from "@rttw/common-browser";
+  } from "@jspuzzles/common-browser";
   import { onMount } from "svelte";
   import { getEditorState } from "./CodeMirror";
   import { evalInBrowser, submitToBackend } from "./submit";

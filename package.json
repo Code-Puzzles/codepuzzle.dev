@@ -1,8 +1,8 @@
 {
-  "name": "rttw-judge",
+  "name": "@jspuzzles/monorepo",
   "private": true,
   "version": "0.0.1",
-  "description": "Judge server for Return True to Win puzzles.",
+  "description": "JavaScript puzzles (code golf, return true to win, etc.)",
   "main": "scripts/deploy.ts",
   "type": "module",
   "license": "MIT",

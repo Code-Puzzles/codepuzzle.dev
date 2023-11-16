@@ -1,4 +1,4 @@
-_Judge server for Return True to Win puzzles._
+_JavaScript puzzles (code golf, return true to win, etc.)_
 
 1. Run dev loop:
    - Install Node.js v18 or use nvm

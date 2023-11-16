@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { LOG_PREFIX } from "@rttw/common-node";
+import { LOG_PREFIX } from "@jspuzzles/common-node";
 
 export const lambdaHandler =
   <Body>(

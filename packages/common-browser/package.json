@@ -1,10 +1,10 @@
 {
-  "name": "@rttw/common-browser",
+  "name": "@jspuzzles/common-browser",
   "type": "module",
   "private": true,
   "main": "dist/index.js",
   "types": "src/index.ts",
   "dependencies": {
-    "@rttw/common": "*"
+    "@jspuzzles/common": "*"
   }
 }

@@ -5,7 +5,7 @@
     puzzles,
     type Puzzle,
     type JudgeResultWithCount,
-  } from "@rttw/common-browser";
+  } from "@jspuzzles/common-browser";
   import Results from "./lib/Results.svelte";
 
   let openedPuzzle: Puzzle | undefined = puzzles["season1"]![0];

@@ -3,7 +3,7 @@ import path from "node:path";
 import { ChildProcess, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { Browser } from "./types.js";
-import { LOG_PREFIX } from "@rttw/common-node";
+import { LOG_PREFIX } from "@jspuzzles/common-node";
 
 const sleep = promisify(setTimeout);
 

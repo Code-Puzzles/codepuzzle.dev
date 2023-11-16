@@ -1,6 +1,6 @@
 <script lang="ts">
   // TODO: get this from backend with fetch
-  import { puzzles } from "@rttw/common-browser";
+  import { puzzles } from "@jspuzzles/common-browser";
 
   export let onPuzzleClick: (puzzleId: string) => void | undefined;
 

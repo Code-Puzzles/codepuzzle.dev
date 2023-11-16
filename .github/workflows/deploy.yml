@@ -31,7 +31,7 @@ jobs:
         uses: pulumi/actions@v3
         with:
           command: up
-          stack-name: rttw/rttw-judge/prod
+          stack-name: JS-Puzzles/JS-Puzzles/prod
           work-dir: packages/infrastructure
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

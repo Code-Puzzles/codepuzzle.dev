@@ -1,5 +1,5 @@
-name: rttw-judge
-description: Judge server for Return True to Win puzzles.
+name: JS-Puzzles/JS-Puzzles
+description: JavaScript puzzles (code golf, return true to win, etc.)
 runtime:
   name: nodejs
   options:

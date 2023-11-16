@@ -7,7 +7,7 @@ import {
   JudgeResultWithCount,
   LOG_PREFIX,
   puzzles,
-} from "@rttw/common-node";
+} from "@jspuzzles/common-node";
 
 const judgeOptsShape = z.object({
   puzzleNamespace: z.string(),

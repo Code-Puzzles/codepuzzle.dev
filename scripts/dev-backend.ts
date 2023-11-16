@@ -1,13 +1,17 @@
 import { Readable } from "node:stream";
 import { bundle } from "./bundle.js";
 import { BROWSER_CONFIGS } from "../packages/judge/src/constants.js";
-import { DIST_BUNDLES_DIR, LOG_PREFIX, REPO_ROOT } from "@rttw/common-node";
+import {
+  DIST_BUNDLES_DIR,
+  LOG_PREFIX,
+  REPO_ROOT,
+} from "@jspuzzles/common-node";
 import { $, ExecaChildProcess, Options } from "execa";
 import chalk from "chalk";
 
 // NOTE: set this to true to have an interactive shell in the built image
 const interactive = process.argv.includes("--interactive");
-const imageName = "rttw-judge-dev";
+const imageName = "js-puzzles-judge-dev";
 
 const $$ = $({
   cwd: REPO_ROOT,

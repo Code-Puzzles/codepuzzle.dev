@@ -1,5 +1,5 @@
 {
-  "name": "@rttw/frontend",
+  "name": "@jspuzzles/frontend",
   "type": "module",
   "private": true,
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
     "@codemirror/lang-javascript": "^6.2.1",
     "@codemirror/state": "^6.3.1",
     "@codemirror/view": "^6.22.0",
-    "@rttw/common-browser": "*",
+    "@jspuzzles/common-browser": "*",
     "codemirror": "^6.0.1",
     "debounce": "^1.2.1"
   },

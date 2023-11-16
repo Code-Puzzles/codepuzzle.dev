@@ -1,1 +1,1 @@
-export * from "@rttw/common";
+export * from "@jspuzzles/common";

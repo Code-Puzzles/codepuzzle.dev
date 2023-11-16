@@ -1,12 +1,12 @@
 {
-  "name": "@rttw/infrastructure",
+  "name": "@jspuzzles/infrastructure",
   "type": "module",
   "private": true,
   "main": "dist/index.js",
   "types": "src/index.ts",
   "dependencies": {
-    "@rttw/common-node": "*",
-    "@rttw/judge": "*"
+    "@jspuzzles/common-node": "*",
+    "@jspuzzles/judge": "*"
   },
   "devDependencies": {
     "@aws-sdk/client-ecr": "^3.441.0",

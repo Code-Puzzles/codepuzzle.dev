@@ -11,7 +11,7 @@ import {
 import { EditorView, keymap } from "@codemirror/view";
 import { autocompletion } from "@codemirror/autocomplete";
 import { basicSetup } from "codemirror";
-import { type Puzzle } from "@rttw/common-browser";
+import { type Puzzle } from "@jspuzzles/common-browser";
 
 export function getEditorState(
   puzzle: Puzzle,
