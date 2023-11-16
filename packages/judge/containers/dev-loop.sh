@@ -32,7 +32,7 @@ for (const line of fs.readFileSync(0, "utf-8").trim().split("\n")) {
 
 spawn();
 '
-find -type f | head -n2 | node -e "$script" &
+find -type f | node -e "$script" &
 
 # blocks indefinitely, since the subprocess above never exits
 wait
