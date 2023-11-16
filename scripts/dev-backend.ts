@@ -21,7 +21,7 @@ const buildImage = async () => {
   console.log("Building docker image...");
   const version = "119.0";
   const buildArgs = Object.entries(
-    BROWSER_CONFIGS.firefox.dockerBuildArgs(version, { dev: true }),
+    BROWSER_CONFIGS.firefox.dockerBuildArgs(version),
   ).flatMap(([key, value]) => ["--build-arg", `${key}=${value}`]);
   const firefoxDockerfile = BROWSER_CONFIGS.firefox.dockerfilePath(version);
   await $$({

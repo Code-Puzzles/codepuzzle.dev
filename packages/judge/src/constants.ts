@@ -2,24 +2,17 @@ import path from "node:path";
 import { BrowserName } from "./browser/browsers.js";
 import { CONTAINERS_DIR } from "@rttw/common-node";
 
-export interface DockerBuildOptions {
-  dev: boolean;
-}
-
 export interface BrowserBuildConfig {
   versions: string[];
   dockerfilePath: (version: string) => string;
-  dockerBuildArgs: (
-    version: string,
-    options: DockerBuildOptions,
-  ) => Record<string, string>;
+  dockerBuildArgs: (version: string) => Record<string, string>;
 }
 
 export const BROWSER_CONFIGS: Record<BrowserName, BrowserBuildConfig> = {
   firefox: {
     versions: ["119.0"],
     dockerfilePath: () => path.join(CONTAINERS_DIR, "firefox.Dockerfile"),
-    dockerBuildArgs(version, { dev }) {
+    dockerBuildArgs(version) {
       // https://firefox-source-docs.mozilla.org/testing/geckodriver/Support.html
       const GECKODRIVER_COMPATIBILITY: [
         minFirefoxMajorVersion: number,
@@ -45,16 +38,10 @@ export const BROWSER_CONFIGS: Record<BrowserName, BrowserBuildConfig> = {
       if (!geckodriverVersion)
         throw new Error("Could not find compatible geckodriver version");
 
-      const args: Record<string, string> = {
+      return {
         FIREFOX_VERSION: version,
         GECKODRIVER_VERSION: geckodriverVersion,
       };
-
-      if (dev) {
-        args["DEV_LOOP"] = "1";
-      }
-
-      return args;
     },
   },
 };

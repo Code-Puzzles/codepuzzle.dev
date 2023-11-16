@@ -6,15 +6,33 @@
 >&2 echo "Watching for changes in $(pwd)..."
 
 # ensure we spawn this as a subprocess, so this script can respond to signals
-(
-  while true; do
-    /lambda-entrypoint.sh index.handler & pid=$!
-    >&2 inotifywait -e modify -e move -e create -e delete -e attrib --recursive --quiet `pwd`
-    kill $pid
-    wait
-    pid=
-  done
-) &
+script='
+cp = require("child_process");
+fs = require("fs");
+
+proc = null;
+function spawn() {
+  if (proc) proc.kill();
+  proc = cp.spawn("/lambda-entrypoint.sh", ["index.handler"], { stdio: "inherit" });
+  proc.on("error", err => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+watch = (event, path) => {
+  process.stderr.write(`[${event}]: ${path}\n`);
+  spawn();
+}
+
+for (const line of fs.readFileSync(0, "utf-8").trim().split("\n")) {
+  process.stderr.write(`fs.watch("${line}")...\n`);
+  fs.watch(line.trim(), watch);
+}
+
+spawn();
+'
+find -type f | head -n2 | node -e "$script" &
 
 # blocks indefinitely, since the subprocess above never exits
 wait
