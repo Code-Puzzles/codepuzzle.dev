@@ -6,7 +6,7 @@
 >&2 echo "Watching for changes in $(pwd)..."
 
 # ensure we spawn this as a subprocess, so this script can respond to signals
-script='
+find -type f | node -e '
 cp = require("child_process");
 fs = require("fs");
 
@@ -31,8 +31,7 @@ for (const line of fs.readFileSync(0, "utf-8").trim().split("\n")) {
 }
 
 spawn();
-'
-find -type f | node -e "$script" &
+' &
 
 # blocks indefinitely, since the subprocess above never exits
 wait
