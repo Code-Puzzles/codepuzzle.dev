@@ -78,7 +78,7 @@ const puzzleFacet = Facet.define<PuzzleFacet, PuzzleFacet>({
 
 function createPuzzleFacet(puzzle: Puzzle): PuzzleFacet {
   const prefix = `// This is your function...\n${puzzle.source}\n\n// ... now make it return \`true\`!\n${puzzle.name}(`;
-  const suffix = `);`;
+  const suffix = `);\n`;
   return { prefix, suffix };
 }
 
@@ -99,7 +99,6 @@ const getBounds = (
 
 // extension to only allow edits between certain ranges
 // https://discuss.codemirror.net/t/migrating-readonly-textmarkers-from-codemirror-5-to-6/7337/5
-// FIXME: undo transactions are getting clipped and not processed correctly
 const puzzleReadOnlyExtension = EditorState.transactionFilter.of(
   (tr: Transaction): TransactionSpec | readonly TransactionSpec[] => {
     // Get the previous value for the puzzle and the current one, to check for changes
@@ -134,6 +133,13 @@ const puzzleReadOnlyExtension = EditorState.transactionFilter.of(
           ],
         },
       ];
+    }
+
+    // allow all undo/redo transactions, since the transactions that created them
+    // should already have been processed by us
+    // https://discuss.codemirror.net/t/detect-if-transaction-is-an-undo-redo-event/7421
+    if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
+      return tr as TransactionSpec;
     }
 
     // get the bounds after this transaction would be applied
