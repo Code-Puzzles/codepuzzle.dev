@@ -1,4 +1,4 @@
-name: JS-Puzzles/JS-Puzzles
+name: JS-Puzzles
 description: JavaScript puzzles (code golf, return true to win, etc.)
 runtime:
   name: nodejs
