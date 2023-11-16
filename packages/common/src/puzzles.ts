@@ -452,12 +452,9 @@ const abs = Math.abs;
 
 function absoluteError(a, b) {
   return abs(a - b);
-}`,
-  },
-  {
-    index: 39,
-    name: "",
-    source: `function random6(x) {
+}
+
+function random6(x) {
   return absoluteError(x, secret) < 1e-9;
 }`,
   },

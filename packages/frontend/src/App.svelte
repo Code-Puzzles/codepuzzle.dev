@@ -7,37 +7,55 @@
     type JudgeResultWithCount,
   } from "@jspuzzles/common-browser";
   import Results from "./lib/Results.svelte";
+  import Header from "./lib/Header.svelte";
+
+  let selectedNamespace: string;
+  let selectedPuzzle: string | undefined;
 
   let openedPuzzle: Puzzle | undefined = puzzles["season1"]![0];
+  $: openedPuzzle = puzzles[selectedNamespace]?.find(
+    (p) => p.name === selectedPuzzle,
+  );
+
   let result: JudgeResultWithCount | undefined = undefined;
   let loading: boolean;
 </script>
 
-<div class="container">
-  <Sidebar
-    onPuzzleClick={(puzzleId) => {
-      openedPuzzle = puzzles["season1"]?.find((p) => p.name === puzzleId);
-    }}
-  />
-  <main>
-    {#if openedPuzzle}
-      <CodeMirror puzzle={openedPuzzle} bind:result bind:loading />
+<div class="root">
+  <Header {selectedNamespace} {selectedPuzzle} />
+  <div class="body">
+    <Sidebar bind:selectedNamespace bind:selectedPuzzle />
+
+    <main>
+      {#if openedPuzzle}
+        <CodeMirror puzzle={openedPuzzle} bind:result bind:loading />
+      {/if}
+
       {#if loading}
         checking solution...
       {:else}
         <Results bind:result />
       {/if}
-    {/if}
-  </main>
+    </main>
+  </div>
 </div>
 
 <style>
-  .container {
+  .root {
     display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
   }
 
   main {
-    flex-grow: 1;
-    margin: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
 </style>
