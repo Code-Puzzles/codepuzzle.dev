@@ -1,8 +1,12 @@
 <script lang="ts">
-  import Sidebar from './lib/Sidebar.svelte';
-  import CodeMirror from './lib/CodeMirror.svelte';
-  import { season1, type Puzzle, type JudgeResultWithCount } from '@rttw/common-browser';
-  import Results from './lib/Results.svelte';
+  import Sidebar from "./lib/Sidebar.svelte";
+  import CodeMirror from "./lib/CodeMirror.svelte";
+  import {
+    season1,
+    type Puzzle,
+    type JudgeResultWithCount,
+  } from "@rttw/common-browser";
+  import Results from "./lib/Results.svelte";
 
   let openedPuzzle: Puzzle | undefined = season1[0];
   let result: JudgeResultWithCount | undefined = undefined;

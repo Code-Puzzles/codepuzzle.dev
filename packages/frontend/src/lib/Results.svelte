@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { JudgeResultWithCount } from '@rttw/common-browser';
+  import type { JudgeResultWithCount } from "@rttw/common-browser";
 
   export let result: JudgeResultWithCount | undefined = undefined;
 </script>

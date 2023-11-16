@@ -23,10 +23,9 @@
     "dev:frontend": "cd packages/frontend && vite",
     "dev": "tsx ./scripts/dev.ts",
     "format:fix": "npm run format -- --write",
-    "format": "prettier --check '**/*.{js,ts,json,md}'",
+    "format": "prettier --check '**/*.{js,ts,svelte,json,md}'",
     "postinstall": "npm run build:tsc"
   },
-  "dependencies": {},
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
     "@tsconfig/node20": "^20.1.2",
@@ -38,6 +37,7 @@
     "esbuild": "^0.19.5",
     "execa": "^8.0.1",
     "prettier": "^3.0.3",
+    "prettier-plugin-svelte": "^3.1.0",
     "serve": "^14.2.1",
     "svelte": "^4.0.5",
     "svelte-check": "^3.4.6",

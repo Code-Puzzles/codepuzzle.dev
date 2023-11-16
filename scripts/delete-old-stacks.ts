@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import * as pulumi from "@pulumi/pulumi";
-import { INFRASTRUCTURE_DIR } from "../packages/common/src/index.js";
+import { INFRASTRUCTURE_DIR } from "../packages/common-node/src/index.js";
 
 const PROTECTED_STACK_NAME = "rttw/prod";
 

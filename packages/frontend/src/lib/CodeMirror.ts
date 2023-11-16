@@ -27,7 +27,7 @@ export function getEditorState(
       // our custom keybindings, ensure these override anything else so put them first
       keymap.of([
         {
-          key: "Ctrl-Enter",
+          key: "Mod-Enter",
           run: () => {
             onSubmit();
             return true;

@@ -1,6 +1,6 @@
 <script lang="ts">
   // TODO: get this from backend with fetch
-  import { season1 } from '@rttw/common-browser';
+  import { season1 } from "@rttw/common-browser";
 
   export let onPuzzleClick: (puzzleId: string) => void | undefined;
 
@@ -21,7 +21,12 @@
   {#each season1 as puzzle}
     {@const userPuzzle = userState.puzzlesSolved[puzzle.name]}
     <li>
-      <a on:click={() => onPuzzleClick?.(puzzle.name)} role="button" tabindex="-1" href={`#${puzzle.name}`}>
+      <a
+        on:click={() => onPuzzleClick?.(puzzle.name)}
+        role="button"
+        tabindex="-1"
+        href={`#${puzzle.name}`}
+      >
         <input type="checkbox" checked={!!userPuzzle} />
         {puzzle.name}
         {#if userPuzzle}

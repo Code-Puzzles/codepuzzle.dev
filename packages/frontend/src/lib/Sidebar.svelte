@@ -1,5 +1,5 @@
 <script lang="ts">
-  import PuzzleList from './PuzzleList.svelte';
+  import PuzzleList from "./PuzzleList.svelte";
 
   export let onPuzzleClick: (puzzleId: string) => void | undefined;
 </script>
