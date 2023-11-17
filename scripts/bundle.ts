@@ -1,18 +1,13 @@
 import path, { relative } from "node:path";
 import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { readFileSync } from "node:fs";
 import esbuild, { BuildResult } from "esbuild";
 import {
   DIST_BUNDLES_DIR,
+  ENDPOINTS_DIR,
   JUDGE_ENDPOINT,
-  REPO_ROOT,
+  NODE_VERSION,
 } from "../packages/common-node/src/index.js";
-
-const NODE_VERSION = readFileSync(
-  path.join(REPO_ROOT, ".nvmrc"),
-  "utf8",
-).trim();
 
 export const bundle = async (
   watchCallback?: (result: BuildResult) => Promise<boolean>,
@@ -23,6 +18,7 @@ export const bundle = async (
   const ctx = await esbuild.context({
     outdir: DIST_BUNDLES_DIR,
     entryPoints: {
+      ...(await entryPointsFromDir(ENDPOINTS_DIR)),
       "judge/index": JUDGE_ENDPOINT,
     },
     format: "esm",
@@ -34,7 +30,7 @@ export const bundle = async (
     plugins: [
       {
         name: "onBuildEndCallback",
-        setup: (build) => {
+        setup(build) {
           if (!watchCallback) return;
           build.onEnd(async (result) => {
             const shouldContinue = await watchCallback(result);
@@ -53,6 +49,28 @@ export const bundle = async (
     await ctx.rebuild();
     await ctx.dispose();
   }
+};
+
+const entryPointsFromDir = async (dir: string) => {
+  const entryPoints: Record<string, string> = {};
+
+  const visitDir = async (relativeDir: string) => {
+    const entries = await fs.readdir(path.join(dir, relativeDir), {
+      withFileTypes: true,
+    });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        await visitDir(path.join(relativeDir, entry.name));
+      } else if (entry.isFile()) {
+        entryPoints[
+          path.posix.join(relativeDir, path.parse(entry.name).name, "index")
+        ] = path.join(entry.path, entry.name);
+      }
+    }
+  };
+  await visitDir("");
+
+  return entryPoints;
 };
 
 if (fileURLToPath(import.meta.url) === process.argv[1]) await bundle();

@@ -4,13 +4,33 @@ import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
 import { ECR } from "@aws-sdk/client-ecr";
 import { BROWSER_CONFIGS } from "@jspuzzles/judge";
-import { REPO_ROOT } from "@jspuzzles/common-node";
+import { NODE_VERSION, REPO_ROOT } from "@jspuzzles/common-node";
 
 const stackName = pulumi.getStack();
 const ecr = new ECR({ region: aws.config.region! });
 const ecrAuthToken = aws.ecr.getAuthorizationToken();
 
 const namePrefix = `${stackName}`;
+
+const lambdaRole = new aws.iam.Role(`${namePrefix}-lambda-role`, {
+  assumeRolePolicy: {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Action: "sts:AssumeRole",
+        Principal: {
+          Service: "lambda.amazonaws.com",
+        },
+        Effect: "Allow",
+        Sid: "",
+      },
+    ],
+  },
+});
+new aws.iam.RolePolicyAttachment(`${namePrefix}-lambda-role-attach`, {
+  role: lambdaRole,
+  policyArn: aws.iam.ManagedPolicies.AWSLambdaExecute,
+});
 
 const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
   ([name, buildConfig]) =>
@@ -40,33 +60,13 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
         },
       });
 
-      const role = new aws.iam.Role(`${lambdaPrefix}-lambda-role`, {
-        assumeRolePolicy: {
-          Version: "2012-10-17",
-          Statement: [
-            {
-              Action: "sts:AssumeRole",
-              Principal: {
-                Service: "lambda.amazonaws.com",
-              },
-              Effect: "Allow",
-              Sid: "",
-            },
-          ],
-        },
-      });
-      new aws.iam.RolePolicyAttachment(`${lambdaPrefix}-lambda-role-attach`, {
-        role: role,
-        policyArn: aws.iam.ManagedPolicies.AWSLambdaExecute,
-      });
-
       // TODO: Disable internet access
       const func = new aws.lambda.Function(`${lambdaPrefix}-func`, {
         packageType: "Image",
         imageUri: image.repoDigest,
         architectures: ["x86_64"],
         memorySize: 2048,
-        role: role.arn,
+        role: lambdaRole.arn,
         timeout: 2 * 60,
       });
 
@@ -100,17 +100,19 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
     }),
 );
 
-const helloHandler = new aws.lambda.CallbackFunction(
-  `${namePrefix}-helloHandler`,
-  {
-    async callback() {
-      return {
-        statusCode: 200,
-        body: { msg: "hi werld" },
-      };
+const otherFuncs = ["/login/github"].map((pathname) => ({
+  pathname,
+  func: new aws.lambda.Function(
+    `${namePrefix}-${pathname.replace(/\W/g, "-")}-func`,
+    {
+      architectures: ["x86_64"],
+      memorySize: 256,
+      role: lambdaRole.arn,
+      timeout: 5,
+      runtime: `nodejs${NODE_VERSION}.x`,
     },
-  },
-);
+  ),
+}));
 
 const api = new apigateway.RestAPI(`${namePrefix}-api`, {
   routes: [
@@ -122,11 +124,13 @@ const api = new apigateway.RestAPI(`${namePrefix}-api`, {
         eventHandler: func,
       }),
     ),
-    {
-      path: "/hello",
-      method: "POST",
-      eventHandler: helloHandler,
-    },
+    ...otherFuncs.map(
+      ({ pathname, func }): apigateway.types.input.RouteArgs => ({
+        path: pathname,
+        method: "POST",
+        eventHandler: func,
+      }),
+    ),
   ],
 });
 

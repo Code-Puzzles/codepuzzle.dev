@@ -1,12 +1,12 @@
 {
-  "name": "@jspuzzles/judge",
+  "name": "@jspuzzles/backend",
   "type": "module",
   "private": true,
   "main": "dist/index.js",
   "types": "src/index.ts",
   "dependencies": {
     "@jspuzzles/common-node": "*",
-    "@jspuzzles/backend": "*",
+    "octokit": "^3.1.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {

@@ -16,6 +16,7 @@
     { "path": "./packages/common/tsconfig.json" },
     { "path": "./packages/frontend/tsconfig.json" },
     { "path": "./packages/infrastructure/tsconfig.json" },
-    { "path": "./packages/judge/tsconfig.json" }
+    { "path": "./packages/judge/tsconfig.json" },
+    { "path": "./packages/backend/tsconfig.json" }
   ]
 }

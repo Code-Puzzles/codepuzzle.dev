@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Browser } from "./browser/types.js";
-import { lambdaHandler, withTimeout } from "./lambda-utils.js";
+import { lambdaHandler, withTimeout } from "@jspuzzles/backend";
 import { BrowserName, BROWSERS } from "./browser/browsers.js";
 import {
   JudgeResult,

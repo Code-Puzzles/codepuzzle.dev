@@ -9,5 +9,5 @@
     "allowJs": true,
     "checkJs": true
   },
-  "references": [{ "path": "../common/tsconfig.json" }]
+  "references": [{ "path": "../common-browser/tsconfig.json" }]
 }

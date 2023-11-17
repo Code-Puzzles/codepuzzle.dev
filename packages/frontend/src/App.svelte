@@ -1,9 +1,11 @@
 <script lang="ts">
   import {
+    GITHUB_OAUTH_CLIENT_ID,
     puzzles,
     type Puzzle,
     type JudgeResultWithCount,
   } from "@jspuzzles/common-browser";
+  import { onMount } from "svelte";
   import {
     Sidebar,
     SidebarDropdownWrapper,
@@ -36,6 +38,24 @@
   function selectPuzzle(namespace: keyof typeof puzzles, puzzleId: string) {
     puzzle = puzzles[namespace]?.find((p) => p.name === puzzleId);
   }
+
+  const GITHUB_LOGIN_PATH = "https://localhost:5173/login/github";
+
+  onMount(async () => {
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (!code) return;
+
+    try {
+      await fetch("/api/login/github", {
+        method: "POST",
+        body: JSON.stringify({ code }),
+      });
+    } finally {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete("code");
+      history.replaceState(null, "", newUrl);
+    }
+  });
 </script>
 
 <div class="flex flex-col h-full">
@@ -89,6 +109,17 @@
               </NavLi>
             </svelte:fragment>
           </DarkMode>
+          <NavLi
+            href="https://github.com/login/oauth/authorize?{new URLSearchParams(
+              {
+                client_id: GITHUB_OAUTH_CLIENT_ID,
+                redirect_uri: GITHUB_LOGIN_PATH,
+                // TODO: Pass random state
+              },
+            )}"
+          >
+            Login with GitHub
+          </NavLi>
         </NavUl>
       </NavContainer>
     </Navbar>
