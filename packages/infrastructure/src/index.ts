@@ -1,10 +1,15 @@
+import path from "node:path";
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as docker from "@pulumi/docker";
 import * as apigateway from "@pulumi/aws-apigateway";
 import { ECR } from "@aws-sdk/client-ecr";
 import { BROWSER_CONFIGS } from "@jspuzzles/judge";
-import { NODE_VERSION, REPO_ROOT } from "@jspuzzles/common-node";
+import {
+  DIST_BUNDLES_DIR,
+  NODE_VERSION,
+  REPO_ROOT,
+} from "@jspuzzles/common-node";
 
 const stackName = pulumi.getStack();
 const ecr = new ECR({ region: aws.config.region! });
@@ -100,19 +105,28 @@ const judgeFuncs = Object.entries(BROWSER_CONFIGS).flatMap(
     }),
 );
 
-const otherFuncs = ["/login/github"].map((pathname) => ({
-  pathname,
-  func: new aws.lambda.Function(
-    `${namePrefix}-${pathname.replace(/\W/g, "-")}-func`,
-    {
-      architectures: ["x86_64"],
-      memorySize: 256,
-      role: lambdaRole.arn,
-      timeout: 5,
-      runtime: `nodejs${NODE_VERSION}.x`,
-    },
-  ),
-}));
+const otherFuncs = ["/login/github"].map((pathname) => {
+  const pathNoLeadingSlash = pathname.replace(/^\//, "");
+  return {
+    pathname,
+    func: new aws.lambda.Function(
+      `${namePrefix}-${pathNoLeadingSlash.replace(/\W/g, "-")}-func`,
+      {
+        architectures: ["x86_64"],
+        memorySize: 256,
+        role: lambdaRole.arn,
+        timeout: 5,
+        runtime: `nodejs${NODE_VERSION}.x`,
+        code: new pulumi.asset.AssetArchive({
+          ".": new pulumi.asset.FileArchive(
+            path.join(DIST_BUNDLES_DIR, pathNoLeadingSlash),
+          ),
+        }),
+        handler: "index.handler",
+      },
+    ),
+  };
+});
 
 const api = new apigateway.RestAPI(`${namePrefix}-api`, {
   routes: [
