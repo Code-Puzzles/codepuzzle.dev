@@ -1,17 +1,20 @@
 <script lang="ts">
   import { EditorView } from "@codemirror/view";
+  import { twMerge } from "tailwind-merge";
   import {
-    puzzles,
     type Puzzle,
     type JudgeResultWithCount,
   } from "@jspuzzles/common-browser";
   import { onMount } from "svelte";
-  import { getEditorState } from "./CodeMirror";
+  import { emptyEditorState, getEditorState } from "./CodeMirror";
   import { evalInBrowser, submitToBackend } from "./submit";
 
-  export let puzzle: Puzzle = puzzles["season1"]![0]!;
-  export let result: JudgeResultWithCount | undefined = undefined;
-  export let loading = false;
+  export let puzzle: Puzzle | undefined = undefined;
+
+  // TODO: this submitting stuff probably shouldn't be in this component
+  export let localResult: JudgeResultWithCount | undefined = undefined;
+  export let verifiedResult: JudgeResultWithCount | undefined = undefined;
+  export let submitting = false;
 
   let root: HTMLElement;
   let view: EditorView;
@@ -20,20 +23,24 @@
   $: view && putPuzzleIntoEditor(puzzle);
 
   function onChange(value: string) {
+    if (!puzzle) return;
     solution = value;
-    result = evalInBrowser(puzzle, value);
+    localResult = evalInBrowser(puzzle, value);
   }
 
   function onSubmit() {
-    result = undefined;
-    loading = true;
+    if (!puzzle) return;
+    verifiedResult = undefined;
+    submitting = true;
     submitToBackend(puzzle, solution)
-      .then((r) => (result = r))
-      .finally(() => (loading = false));
+      .then((r) => (verifiedResult = r))
+      .finally(() => (submitting = false));
   }
 
-  function putPuzzleIntoEditor(puzzle: Puzzle) {
-    view.setState(getEditorState(puzzle, onChange, onSubmit));
+  function putPuzzleIntoEditor(puzzle?: Puzzle) {
+    view.setState(
+      puzzle ? getEditorState(puzzle, onChange, onSubmit) : emptyEditorState(),
+    );
     view.focus();
   }
 
@@ -45,10 +52,10 @@
   });
 </script>
 
-<div class="editor" bind:this={root} />
-
-<style>
-  .editor {
-    font-size: 1.5em;
-  }
-</style>
+<div
+  class={twMerge(
+    "text-base h-full border-b-2 dark:border-gray-950",
+    $$props["class"],
+  )}
+  bind:this={root}
+/>

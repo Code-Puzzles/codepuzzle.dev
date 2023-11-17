@@ -7,11 +7,20 @@
   "dependencies": {
     "@codemirror/autocomplete": "^6.11.0",
     "@codemirror/lang-javascript": "^6.2.1",
+    "@codemirror/language": "^6.9.2",
     "@codemirror/state": "^6.3.1",
+    "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.22.0",
     "@jspuzzles/common-browser": "*",
+    "@lezer/highlight": "^1.2.0",
+    "autoprefixer": "^10.4.16",
     "codemirror": "^6.0.1",
-    "thememirror": "^2.0.1"
-  },
-  "devDependencies": {}
+    "flowbite": "^2.1.1",
+    "flowbite-svelte": "^0.44.19",
+    "flowbite-svelte-icons": "^0.4.5",
+    "postcss": "^8.4.31",
+    "postcss-load-config": "^4.0.1",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss": "^3.3.5"
+  }
 }

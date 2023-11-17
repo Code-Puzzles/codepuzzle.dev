@@ -1,3 +1,4 @@
+import "./CodeMirror.postcss";
 import { javascript } from "@codemirror/lang-javascript";
 import {
   Compartment,
@@ -12,7 +13,43 @@ import { EditorView, keymap } from "@codemirror/view";
 import { autocompletion } from "@codemirror/autocomplete";
 import { basicSetup } from "codemirror";
 import { type Puzzle } from "@jspuzzles/common-browser";
-import { dracula } from "thememirror";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { tags, type Highlighter } from "@lezer/highlight";
+
+const displayExtension = [
+  // fixed height editor, which scrolls vertically
+  EditorView.theme({
+    // FIXME: the editor expands infinitely and pushed away the results
+    "&": { height: "100%" },
+    "&.cm-focused": { outline: "none" },
+    ".cm-scroller": { overflow: "auto" },
+  }),
+  // wrap long horizontal lines
+  EditorView.lineWrapping,
+  // theme
+  syntaxHighlighting(
+    <Highlighter>HighlightStyle.define([
+      { tag: tags.atom, class: "cmt-atom" },
+      { tag: tags.comment, class: "cmt-comment" },
+      { tag: tags.keyword, class: "cmt-keyword" },
+      { tag: tags.literal, class: "cmt-literal" },
+      { tag: tags.number, class: "cmt-number" },
+      { tag: tags.operator, class: "cmt-operator" },
+      { tag: tags.separator, class: "cmt-separator" },
+      { tag: tags.string, class: "cmt-string" },
+    ]),
+  ),
+  // syntax highlighting
+  javascript(),
+];
+
+export function emptyEditorState(): EditorState {
+  const readOnly = EditorState.transactionFilter.of(() => []);
+  return EditorState.create({
+    doc: "//\n// Please choose a puzzle!\n//",
+    extensions: [readOnly, displayExtension],
+  });
+}
 
 export function getEditorState(
   puzzle: Puzzle,
@@ -41,12 +78,9 @@ export function getEditorState(
       puzzleReadOnlyExtension,
       // fires the following callback whenever something is changed
       onChangeHandler(onChange),
-      // theme
-      dracula,
+      displayExtension,
       // make sure popup doesn't obscure results view (which is below the editor)
       autocompletion({ aboveCursor: true }),
-      // syntax highlighting for js
-      javascript(),
       // basic editor setup - we might want to remove this and roll out own at some point
       basicSetup,
     ],
@@ -139,7 +173,7 @@ const puzzleReadOnlyExtension = EditorState.transactionFilter.of(
     // should already have been processed by us
     // https://discuss.codemirror.net/t/detect-if-transaction-is-an-undo-redo-event/7421
     if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
-      return tr as TransactionSpec;
+      return <TransactionSpec>tr;
     }
 
     // get the bounds after this transaction would be applied
@@ -178,7 +212,7 @@ const puzzleReadOnlyExtension = EditorState.transactionFilter.of(
     );
     if (!selectionOob) {
       // allow this transaction, since its changes and selections are within bounds
-      return tr as TransactionSpec;
+      return <TransactionSpec>tr;
     }
 
     // clip the selection within bounds
