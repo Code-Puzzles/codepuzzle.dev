@@ -1,0 +1,12 @@
+encryptionsalt: v1:S2JgKu385sc=:v1:8S41uhIbRBEo6SA7:3yNcVqtlqlfYzWhUFY59jdGrO61KcA==
+config:
+  aws:accessKey: localAccessKey
+  aws:endpoints:
+    - iam: http://localhost:4566
+    - apigateway: http://localhost:4566
+    - lambda: http://localhost:4566
+    - dynamodb: http://localhost:4566
+  aws:region: us-east-1
+  aws:secretKey: localSecretKey
+  aws:skipCredentialsValidation: "true"
+  aws:skipRequestingAccountId: "true"

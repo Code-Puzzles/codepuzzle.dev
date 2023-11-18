@@ -27,11 +27,12 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
-      - name: Deploy
-        uses: pulumi/actions@v3
-        with:
-          command: up
-          stack-name: JS-Puzzles/JS-Puzzles/prod
-          work-dir: packages/infrastructure
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      # TODO: Fix
+      # - name: Deploy
+      #   uses: pulumi/actions@v3
+      #   with:
+      #     command: up
+      #     stack-name: JS-Puzzles/JS-Puzzles/prod
+      #     work-dir: packages/infrastructure
+      #   env:
+      #     PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

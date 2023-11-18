@@ -5,12 +5,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "references": [
-    {
-      "path": "../common-node/tsconfig.json"
-    },
-    {
-      "path": "../judge/tsconfig.json"
-    }
-  ]
+  "references": [{ "path": "../backend/tsconfig.json" }]
 }

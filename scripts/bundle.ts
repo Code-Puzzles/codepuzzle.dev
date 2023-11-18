@@ -5,9 +5,8 @@ import esbuild, { BuildResult } from "esbuild";
 import {
   DIST_BUNDLES_DIR,
   ENDPOINTS_DIR,
-  JUDGE_ENDPOINT,
   NODE_VERSION,
-} from "../packages/common-node/src/index.js";
+} from "@jspuzzles/infrastructure";
 
 export const bundle = async (
   watchCallback?: (result: BuildResult) => Promise<boolean>,
@@ -17,10 +16,7 @@ export const bundle = async (
 
   const ctx = await esbuild.context({
     outdir: DIST_BUNDLES_DIR,
-    entryPoints: {
-      ...(await entryPointsFromDir(ENDPOINTS_DIR)),
-      "judge/index": JUDGE_ENDPOINT,
-    },
+    entryPoints: await entryPointsFromDir(ENDPOINTS_DIR),
     format: "esm",
     outExtension: { ".js": ".mjs" },
     platform: "node",

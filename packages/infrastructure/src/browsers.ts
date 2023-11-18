@@ -1,6 +1,6 @@
 import path from "node:path";
-import { BrowserName } from "./browser/browsers.js";
-import { CONTAINERS_DIR } from "@jspuzzles/common-node";
+import { BrowserName } from "@jspuzzles/backend";
+import { CONTAINERS_DIR } from "./paths.js";
 
 export interface BrowserBuildConfig {
   versions: string[];

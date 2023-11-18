@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { Browser } from "./browser/types.js";
-import { lambdaHandler, withTimeout } from "@jspuzzles/backend";
-import { BrowserName, BROWSERS } from "./browser/browsers.js";
 import {
   JudgeResult,
   JudgeResultWithCount,
   LOG_PREFIX,
   puzzles,
-} from "@jspuzzles/common-node";
+} from "@jspuzzles/common";
+import { Browser } from "../browser/types.js";
+import { lambdaHandler, withTimeout } from "../lambda-utils.js";
+import { BrowserName, BROWSERS } from "../browser/browsers.js";
 
 const judgeOptsShape = z.object({
   puzzleNamespace: z.string(),

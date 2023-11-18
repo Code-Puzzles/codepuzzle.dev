@@ -2,10 +2,9 @@
   "name": "@jspuzzles/backend",
   "type": "module",
   "private": true,
-  "main": "dist/index.js",
-  "types": "src/index.ts",
+  "main": "src/index.ts",
   "dependencies": {
-    "@jspuzzles/common-node": "*",
+    "@jspuzzles/common": "*",
     "octokit": "^3.1.2",
     "zod": "^3.22.4"
   },

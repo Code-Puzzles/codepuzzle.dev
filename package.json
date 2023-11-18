@@ -17,14 +17,12 @@
     "check:frontend": "cd packages/frontend && svelte-check --tsconfig ./tsconfig.json",
     "check": "npm run check:frontend",
     "delete-old-stacks": "tsx ./scripts/delete-old-stacks.ts",
-    "deploy:preview": "npm run build && cd packages/infrastructure && pulumi preview --stack dev",
-    "deploy": "npm run build && cd packages/infrastructure && pulumi up --stack dev --yes",
-    "dev:backend": "tsx ./scripts/dev-backend.ts",
+    "dev:backend": "tsx ./scripts/dev/backend.ts",
     "dev:frontend": "cd packages/frontend && vite",
     "dev": "tsx ./scripts/dev.ts",
     "format:fix": "npm run format -- --write",
     "format": "prettier --check '**/*.{js,ts,svelte,json,md}'",
-    "postinstall": "npm run build:tsc"
+    "deploy": "tsx ./scripts/deploy.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.2",

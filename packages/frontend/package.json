@@ -2,8 +2,7 @@
   "name": "@jspuzzles/frontend",
   "type": "module",
   "private": true,
-  "main": "dist/index.js",
-  "types": "src/index.ts",
+  "main": "src/index.ts",
   "dependencies": {
     "@codemirror/autocomplete": "^6.11.0",
     "@codemirror/lang-javascript": "^6.2.1",
@@ -11,7 +10,7 @@
     "@codemirror/state": "^6.3.1",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.22.0",
-    "@jspuzzles/common-browser": "*",
+    "@jspuzzles/common": "*",
     "@lezer/highlight": "^1.2.0",
     "autoprefixer": "^10.4.16",
     "codemirror": "^6.0.1",

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { LOG_PREFIX } from "@jspuzzles/common-node";
+import { LOG_PREFIX } from "@jspuzzles/common";
 
 export const lambdaHandler =
   <Body>(
@@ -10,9 +10,10 @@ export const lambdaHandler =
   async (evt: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     let body: Body;
     try {
-      body = bodyShape.parse(
-        JSON.parse(Buffer.from(evt.body!, "base64").toString()),
-      );
+      const bodyText = evt.isBase64Encoded
+        ? Buffer.from(evt.body!, "base64").toString()
+        : evt.body!;
+      body = bodyShape.parse(JSON.parse(bodyText));
     } catch (err) {
       return {
         statusCode: 400,

@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url";
 import * as pulumi from "@pulumi/pulumi";
-import { INFRASTRUCTURE_DIR } from "../packages/common-node/src/index.js";
+import { INFRASTRUCTURE_DIR, PROJECT_NAME } from "@jspuzzles/infrastructure";
 
-const PROTECTED_STACK_NAME = "JS-Puzzles/prod";
+const PROTECTED_STACK_NAME = `${PROJECT_NAME}/prod`;
 
 const run = async () => {
   const workspace = await pulumi.automation.LocalWorkspace.create({

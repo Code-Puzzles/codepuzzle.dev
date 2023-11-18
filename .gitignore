@@ -18,6 +18,8 @@ config.gypi
 dist/
 dist-*/
 .env
+.pulumi*
+.localstack/
 
 # https://github.com/vitejs/vite/issues/13267
 vite.config.ts.timestamp*

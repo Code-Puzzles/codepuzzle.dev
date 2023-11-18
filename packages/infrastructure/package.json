@@ -2,11 +2,9 @@
   "name": "@jspuzzles/infrastructure",
   "type": "module",
   "private": true,
-  "main": "dist/index.js",
-  "types": "src/index.ts",
+  "main": "src/index.ts",
   "dependencies": {
-    "@jspuzzles/common-node": "*",
-    "@jspuzzles/judge": "*"
+    "@jspuzzles/backend": "*"
   },
   "devDependencies": {
     "@aws-sdk/client-ecr": "^3.441.0",

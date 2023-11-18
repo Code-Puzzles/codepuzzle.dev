@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { GITHUB_OAUTH_CLIENT_ID, LOG_PREFIX } from "@jspuzzles/common-node";
+import { GITHUB_OAUTH_CLIENT_ID, LOG_PREFIX } from "@jspuzzles/common";
 import { Octokit } from "octokit";
 import { lambdaHandler } from "../../lambda-utils.js";
 

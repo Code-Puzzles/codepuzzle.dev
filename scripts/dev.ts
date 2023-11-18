@@ -3,12 +3,12 @@ import concurrently from "concurrently";
 concurrently(
   [
     {
-      name: "lambda",
+      name: "be",
       command: "npm run dev:backend",
       prefixColor: "magenta",
     },
     {
-      name: "svelte",
+      name: "fe",
       command: "npm run dev:frontend",
       prefixColor: "yellow",
     },
