@@ -27,13 +27,39 @@
     LightbulbSolid,
   } from "flowbite-svelte-icons";
   import CodeMirror from "./lib/CodeMirror.svelte";
+  import CodeMirrorBar from "./lib/CodeMirrorBar.svelte";
   import NavContainer from "flowbite-svelte/NavContainer.svelte";
   import Results from "./lib/Results.svelte";
+  import { evalInBrowser, submitToBackend } from "./lib/submit";
 
-  let puzzle: Puzzle | undefined = puzzles["season1"]?.[0];
+  let puzzle: Puzzle | undefined = (() => {
+    const hash = window.location.hash.substring(1);
+    const chosen = Object.values(puzzles)
+      .flat()
+      .find((p) => p.name === hash);
+    return chosen ?? puzzles["season1"]?.[0];
+  })();
+
   let localResult: JudgeResultWithCount | undefined = undefined;
   let verifiedResult: JudgeResultWithCount | undefined = undefined;
   let submitting = false;
+  let solution = "";
+  let setEditorValue: (value: string) => void;
+
+  function onChange(value: string) {
+    if (!puzzle) return;
+    solution = value;
+    localResult = evalInBrowser(puzzle, value);
+  }
+
+  function onSubmit() {
+    if (!puzzle) return;
+    verifiedResult = undefined;
+    submitting = true;
+    submitToBackend(puzzle, solution)
+      .then((r) => (verifiedResult = r))
+      .finally(() => (submitting = false));
+  }
 
   function selectPuzzle(namespace: keyof typeof puzzles, puzzleId: string) {
     puzzle = puzzles[namespace]?.find((p) => p.name === puzzleId);
@@ -126,58 +152,67 @@
   </header>
 
   <div class="flex grow min-h-0">
+    <!-- NOTE: the `direction` styles are to position the scrollbar on the left -->
     <div
       class="border-r-2 dark:border-gray-950 overflow-y-auto bg-gray-50 dark:bg-gray-800"
+      style="direction: rtl;"
     >
-      <Sidebar>
-        <SidebarWrapper class="rounded-none">
-          <SidebarGroup>
-            {#each Object.entries(puzzles) as [name, items]}
-              <SidebarDropdownWrapper
-                isOpen={puzzle && items.includes(puzzle)}
-                class="capitalize"
-                label={name}
-              >
-                <svelte:fragment slot="icon">
-                  <LightbulbSolid />
-                </svelte:fragment>
+      <div style="direction: ltr;">
+        <Sidebar>
+          <SidebarWrapper class="rounded-none">
+            <SidebarGroup>
+              {#each Object.entries(puzzles) as [name, items]}
+                <SidebarDropdownWrapper
+                  isOpen={puzzle && items.includes(puzzle)}
+                  class="capitalize"
+                  label={name}
+                >
+                  <svelte:fragment slot="icon">
+                    <LightbulbSolid />
+                  </svelte:fragment>
 
-                {#each items as p}
-                  <SidebarItem
-                    href={`#${p.name}`}
-                    label={p.name}
-                    spanClass={`ml-1 grow ${p === puzzle ? "font-bold" : ""}`}
-                    class={`ml-2 ${
-                      p === puzzle ? "bg-gray-100 dark:bg-gray-700" : ""
-                    }`}
-                    on:click={() => selectPuzzle(name, p.name)}
-                  >
-                    <svelte:fragment slot="icon">
-                      <span class="mr-2 opacity-25">•</span>
-                    </svelte:fragment>
-                    <svelte:fragment slot="subtext">
-                      {#if p.index < 3}
-                        <Badge color="green">{p.index} chars</Badge>
-                      {:else if p.index < 5}
-                        <Badge color="yellow">draft</Badge>
-                      {/if}
-                    </svelte:fragment>
-                  </SidebarItem>
-                {/each}
-              </SidebarDropdownWrapper>
-            {/each}
-          </SidebarGroup>
-        </SidebarWrapper>
-      </Sidebar>
+                  {#each items as p}
+                    <SidebarItem
+                      href={`#${p.name}`}
+                      label={p.name}
+                      spanClass={`ml-1 grow ${p === puzzle ? "font-bold" : ""}`}
+                      class={`ml-2 ${
+                        p === puzzle ? "bg-gray-100 dark:bg-gray-700" : ""
+                      }`}
+                      on:click={() => selectPuzzle(name, p.name)}
+                    >
+                      <svelte:fragment slot="icon">
+                        <span class="mr-2 opacity-25">•</span>
+                      </svelte:fragment>
+                      <svelte:fragment slot="subtext">
+                        {#if p.index < 3}
+                          <Badge color="green">{p.index} chars</Badge>
+                        {:else if p.index < 5}
+                          <Badge color="yellow">draft</Badge>
+                        {/if}
+                      </svelte:fragment>
+                    </SidebarItem>
+                  {/each}
+                </SidebarDropdownWrapper>
+              {/each}
+            </SidebarGroup>
+          </SidebarWrapper>
+        </Sidebar>
+      </div>
     </div>
 
     <main class="flex flex-col grow">
       <div class="grow">
+        <CodeMirrorBar
+          showSolutionClicked={() =>
+            setEditorValue("TODO: render solution text into editor")}
+          showSolutionDisabled={puzzle ? puzzle.index > 3 : false}
+        />
         <CodeMirror
           bind:puzzle
-          bind:submitting
-          bind:localResult
-          bind:verifiedResult
+          bind:setValue={setEditorValue}
+          {onChange}
+          {onSubmit}
         />
       </div>
       <div class="results flex flex-row justify-evenly">

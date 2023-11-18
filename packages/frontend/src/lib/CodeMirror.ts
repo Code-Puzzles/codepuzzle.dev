@@ -55,10 +55,11 @@ export function getEditorState(
   puzzle: Puzzle,
   onChange: (solution: string) => void,
   onSubmit: () => void,
+  initialValue?: string,
 ): EditorState {
-  const puzzleState = createPuzzleFacet(puzzle);
+  const facet = createPuzzleFacet(puzzle);
   return EditorState.create({
-    doc: puzzleState.prefix + puzzleState.suffix,
+    doc: [facet.prefix, initialValue, facet.suffix].filter((s) => s).join(""),
     // NOTE: order is important here, since it affects precedence of extensions
     // higher precedence extensions come first
     extensions: [
@@ -73,7 +74,7 @@ export function getEditorState(
         },
       ]),
       // contains logic for updating the current puzzle (used by the `puzzleReadOnlyExtension`)
-      puzzleCompartment.of(puzzleFacet.of(puzzleState)),
+      puzzleCompartment.of(puzzleFacet.of(facet)),
       // makes portions of the editor readonly
       puzzleReadOnlyExtension,
       // fires the following callback whenever something is changed

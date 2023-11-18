@@ -1,54 +1,38 @@
 <script lang="ts">
   import { EditorView } from "@codemirror/view";
   import { twMerge } from "tailwind-merge";
-  import {
-    type Puzzle,
-    type JudgeResultWithCount,
-  } from "@jspuzzles/common-browser";
+  import { type Puzzle } from "@jspuzzles/common-browser";
   import { onMount } from "svelte";
   import { emptyEditorState, getEditorState } from "./CodeMirror";
-  import { evalInBrowser, submitToBackend } from "./submit";
 
   export let puzzle: Puzzle | undefined = undefined;
+  export let onChange = (_: string) => {};
+  export let onSubmit = () => {};
+  export const setValue = (value: string) => {
+    if (view) {
+      putPuzzleIntoEditor(puzzle, value);
+    }
+  };
 
-  // TODO: this submitting stuff probably shouldn't be in this component
-  export let localResult: JudgeResultWithCount | undefined = undefined;
-  export let verifiedResult: JudgeResultWithCount | undefined = undefined;
-  export let submitting = false;
-
-  let root: HTMLElement;
+  let editorRoot: HTMLElement;
   let view: EditorView;
-  let solution: string = "";
 
   $: view && putPuzzleIntoEditor(puzzle);
 
-  function onChange(value: string) {
-    if (!puzzle) return;
-    solution = value;
-    localResult = evalInBrowser(puzzle, value);
-  }
-
-  function onSubmit() {
-    if (!puzzle) return;
-    verifiedResult = undefined;
-    submitting = true;
-    submitToBackend(puzzle, solution)
-      .then((r) => (verifiedResult = r))
-      .finally(() => (submitting = false));
-  }
-
-  function putPuzzleIntoEditor(puzzle?: Puzzle) {
+  function putPuzzleIntoEditor(puzzle?: Puzzle, value?: string) {
     view.setState(
-      puzzle ? getEditorState(puzzle, onChange, onSubmit) : emptyEditorState(),
+      puzzle
+        ? getEditorState(puzzle, onChange, onSubmit, value)
+        : emptyEditorState(),
     );
     view.focus();
   }
 
   onMount(() => {
     // stop all other events from happening when editor is focused
-    root.addEventListener("keydown", (event) => event.stopPropagation());
+    editorRoot.addEventListener("keydown", (event) => event.stopPropagation());
     // setup editor
-    view = new EditorView({ parent: root });
+    view = new EditorView({ parent: editorRoot });
   });
 </script>
 
@@ -57,5 +41,5 @@
     "text-base h-full border-b-2 dark:border-gray-950",
     $$props["class"],
   )}
-  bind:this={root}
+  bind:this={editorRoot}
 />
