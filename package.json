@@ -22,7 +22,8 @@
     "dev": "tsx ./scripts/dev.ts",
     "format:fix": "npm run format -- --write",
     "format": "prettier --check '**/*.{js,ts,svelte,json,md}'",
-    "deploy": "tsx ./scripts/deploy.ts"
+    "deploy": "tsx ./scripts/deploy.ts",
+    "pulumi": "cd ./packages/infrastructure && pulumi"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.2",

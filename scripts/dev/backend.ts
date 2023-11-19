@@ -1,4 +1,5 @@
 import readline from "node:readline";
+import { Writable } from "node:stream";
 import path from "node:path";
 import pulumi from "@pulumi/pulumi";
 import { $ } from "execa";
@@ -6,20 +7,19 @@ import chalk from "chalk";
 import { INFRASTRUCTURE_DIR, buildProgram } from "@jspuzzles/infrastructure";
 import { bundle } from "../bundle.js";
 import { judgeDevLoop } from "./judge.js";
+import { createPrefixedOutputStream, prefixProcessOutput } from "../utils.js";
 
 // TODO: Better log prefixes
 // TODO: Tail cloudwatch logs from localstack to see lambda logs
 // TODO: Reload backend lambdas on change
+// TODO: Store prod pulumi state in private repo or s3
 
 await bundle(judgeDevLoop);
 
 process.env["PULUMI_CONFIG_PASSPHRASE"] = "";
-const $$ = $({
-  cwd: INFRASTRUCTURE_DIR,
-  stdio: "inherit",
-});
-
-await $$`pulumi login file://.`;
+const pulumiLogin = $({ cwd: INFRASTRUCTURE_DIR })`pulumi login file://.`;
+prefixProcessOutput(pulumiLogin, "[pul] ", "blue");
+await pulumiLogin;
 
 const stack = await pulumi.automation.LocalWorkspace.createOrSelectStack(
   {
@@ -31,6 +31,7 @@ const stack = await pulumi.automation.LocalWorkspace.createOrSelectStack(
 );
 
 // Clear stack state
+await stack.cancel();
 await stack.importStack({
   version: 3,
   deployment: {
@@ -38,13 +39,35 @@ await stack.importStack({
   },
 });
 
-const localstackMount = `${path.join(
-  INFRASTRUCTURE_DIR,
-  ".localstack",
-)}:/var/lib/localstack`;
-const localstack = $$({
-  stdio: ["ignore", "pipe", "inherit"],
-})`docker run --rm --name js-puzzles-localstack -p 127.0.0.1:4566:4566 -p 127.0.0.1:4510-4559:4510-4559 -e DOCKER_HOST=unix:///var/run/docker.sock -v ${localstackMount} -v /var/run/docker.sock:/var/run/docker.sock localstack/localstack`;
+const localstack = $({
+  cwd: INFRASTRUCTURE_DIR,
+  stdio: ["ignore", "pipe", "pipe"],
+})`docker run ${[
+  "--rm",
+  "--name",
+  "js-puzzles-localstack",
+  "-p",
+  "127.0.0.1:4566:4566",
+  "-p",
+  "127.0.0.1:4510-4559:4510-4559",
+  "-e",
+  "DOCKER_HOST=unix:///var/run/docker.sock",
+  "-v",
+  `${path.join(INFRASTRUCTURE_DIR, ".localstack")}:/var/lib/localstack`,
+  "-v",
+  "/var/run/docker.sock:/var/run/docker.sock",
+  "localstack/localstack",
+]}`;
+prefixProcessOutput(localstack, "[ls] ", "green");
+
+localstack.then((result) => {
+  console.error("Localstack has unexpectedly exited");
+  process.exit(result.exitCode || 1);
+});
+localstack.catch((err) => {
+  console.error(String(err));
+  process.exit(err.exitCode || 1);
+});
 
 const rl = readline.createInterface(localstack.stdout!, process.stdout);
 await new Promise<void>((resolve) => {
@@ -53,8 +76,10 @@ await new Promise<void>((resolve) => {
   });
 });
 
+const stackUpStream = createPrefixedOutputStream(chalk.blue("[pul] "));
 const result = await stack.up({
-  onOutput: (chunk) => process.stdout.write(chunk),
+  color: "auto",
+  onOutput: (chunk) => stackUpStream.write(chunk),
 });
 
 console.log(chalk.green("Backend is now set up and running!"));

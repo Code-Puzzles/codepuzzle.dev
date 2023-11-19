@@ -10,7 +10,4 @@ const stack = await pulumi.automation.LocalWorkspace.selectStack({
   program: async () => buildProgram(false),
 });
 
-const user = await stack.workspace.whoAmI();
-console.log("=== user", user);
-
-// await stack.up();
+await stack.up();

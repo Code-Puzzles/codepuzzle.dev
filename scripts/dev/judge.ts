@@ -1,4 +1,4 @@
-import { Readable } from "node:stream";
+import { Readable, Transform, TransformCallback, Writable } from "node:stream";
 import { LOG_PREFIX } from "@jspuzzles/common";
 import { $, ExecaChildProcess } from "execa";
 import chalk from "chalk";
@@ -7,6 +7,7 @@ import {
   REPO_ROOT,
   BROWSER_CONFIGS,
 } from "@jspuzzles/infrastructure";
+import { createPrefixedOutputStream, prefixProcessOutput } from "../utils";
 
 // NOTE: set this to true to have an interactive shell in the built image
 const interactive = process.argv.includes("--interactive");
@@ -46,34 +47,48 @@ const runContainer = () => {
   })`docker run --rm --name ${imageName} -v ${mount} --platform linux/amd64 --publish 9000:8080 ${finalArgs}`;
 
   if (!interactive) {
-    logStream(chalk.yellow("[stdout]"), proc.stdout!);
-    logStream(chalk.red("[stderr]"), proc.stderr!);
+    const stdoutStream = new JudgeOutputFormatter();
+    proc.stdout?.pipe(stdoutStream);
+    const stderrStream = new JudgeOutputFormatter();
+    proc.stderr?.pipe(stderrStream);
+    prefixProcessOutput(
+      { stdout: stdoutStream, stderr: stderrStream },
+      "[judge] ",
+      "yellow",
+    );
   }
 
   return proc;
 };
 
-const logStream = (prefix: string, stream: Readable) => {
-  stream.setEncoding("utf-8");
-  stream.on("data", (chunk: string) =>
-    chunk.split(/\r?\n/).forEach((line) => {
-      line = line.trim();
-      if (line.length) {
-        process.stderr.write(
-          `${prefix}: ${line
-            // sometimes geckodriver emits ascii control characters which messes up the output
-            .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
-            // also collapse all whitespace down into a single space - easier to read
-            .replace(/\s\s+/g, " ")}\n`
-            // and finally highlight output from our lambda so it's easier to find
-            .replace(new RegExp(`\s*${LOG_PREFIX}\s*(.+)`), (_, $1) =>
-              chalk.bold.cyan(`${$1}`),
-            ),
-        );
-      }
-    }),
-  );
-};
+export class JudgeOutputFormatter extends Transform {
+  override _transform(
+    chunk: Buffer,
+    encoding: BufferEncoding,
+    callback: TransformCallback,
+  ): void {
+    chunk
+      .toString()
+      .split(/\r?\n/)
+      .forEach((line) => {
+        line = line.trim();
+        if (line.length) {
+          this.push(
+            `${line
+              // sometimes geckodriver emits ascii control characters which messes up the output
+              .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
+              // also collapse all whitespace down into a single space - easier to read
+              .replace(/\s\s+/g, " ")}\n`
+              // and finally highlight output from our lambda so it's easier to find
+              .replace(new RegExp(`\s*${LOG_PREFIX}\s*(.+)`), (_, $1) =>
+                chalk.bold.cyan(`${$1}`),
+              ),
+          );
+        }
+      });
+    callback();
+  }
+}
 
 let proc: ExecaChildProcess | null = null;
 export const judgeDevLoop = async () => {
