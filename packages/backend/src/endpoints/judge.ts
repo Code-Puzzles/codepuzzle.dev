@@ -18,6 +18,7 @@ const judgeOptsShape = z.object({
 export type JudgeOpts = z.TypeOf<typeof judgeOptsShape>;
 
 export const handler = lambdaHandler(judgeOptsShape, async (opts) => {
+  // TODO: monkey patch process.stdout/stderr, rather than having to manually use LOG_PREFIX here
   console.log(`${LOG_PREFIX} opts`, opts);
 
   const browserName = process.env["BROWSER_NAME"] as BrowserName | undefined;

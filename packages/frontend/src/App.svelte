@@ -202,6 +202,7 @@
     </div>
 
     <main class="flex flex-col grow">
+      <!-- TODO: stop this growing past the end of the window when editor has many lines -->
       <div class="grow">
         <CodeMirrorBar
           showSolutionClicked={() =>

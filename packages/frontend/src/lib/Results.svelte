@@ -46,6 +46,7 @@
       {/if}
     </div>
   {/if}
+  <!-- TODO: truncate long responses in this table, have tooltip and on:click to open modal with full result -->
   <Table>
     <TableBody>
       <TableBodyRow>
