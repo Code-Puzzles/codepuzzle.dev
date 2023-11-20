@@ -1,4 +1,4 @@
-import type { JudgeResultWithCount, Puzzle } from "@jspuzzles/common-browser";
+import type { JudgeResultWithCount, Puzzle } from "@jspuzzles/common";
 
 // TODO: can we make this not block the browser?
 export function evalInBrowser(
@@ -31,17 +31,16 @@ export async function submitToBackend(
 
   async function inner() {
     const url = "/api/2015-03-31/functions/function/invocations";
+
+    const inner = JSON.stringify({
+      puzzleNamespace: "season1",
+      puzzleName: puzzle.name,
+      solution,
+    });
+    console.log("Sending solution", inner);
     const resp = await fetch(url, {
       method: "POST",
-      body: JSON.stringify({
-        body: btoa(
-          JSON.stringify({
-            puzzleNamespace: "season1",
-            puzzleName: puzzle.name,
-            solution,
-          }),
-        ),
-      }),
+      body: JSON.stringify({ body: btoa(inner), isBase64Encoded: true }),
     });
 
     if (!resp.ok) {

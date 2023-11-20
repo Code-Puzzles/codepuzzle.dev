@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { JudgeResultWithCount } from "@jspuzzles/common-browser";
+  import type { JudgeResultWithCount } from "@jspuzzles/common";
   import {
     Table,
     TableHeadCell,
