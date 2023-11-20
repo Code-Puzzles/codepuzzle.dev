@@ -16,6 +16,8 @@
     QuestionCircleSolid,
   } from "flowbite-svelte-icons";
   import { twMerge } from "tailwind-merge";
+  import ResultCell from "./ResultCell.svelte";
+  import { uniqueId } from "./util";
 
   export let result: JudgeResultWithCount | undefined = undefined;
   export let title = "";
@@ -26,13 +28,13 @@
   const thProps = { width: "30%" };
   const tdProps = { class: "flex justify-end font-mono" };
   const redClass = "text-red-700 dark:text-red-500";
-  const uniqueId = `id-${Math.floor(Math.random() * 1337)}`;
+  const id = uniqueId();
 </script>
 
 <div class="wrapper relative dark:border-gray-950">
-  <P id={uniqueId} weight="semibold" class="w-full text-center">{title}</P>
+  <P {id} weight="semibold" class="w-full text-center">{title}</P>
   {#if description}
-    <Tooltip triggeredBy={`#${uniqueId}`}>{description}</Tooltip>
+    <Tooltip triggeredBy={`#${id}`}>{description}</Tooltip>
   {/if}
   {#if disabled || loading}
     <div
@@ -46,7 +48,6 @@
       {/if}
     </div>
   {/if}
-  <!-- TODO: truncate long responses in this table, have tooltip and on:click to open modal with full result -->
   <Table>
     <TableBody>
       <TableBodyRow>
@@ -72,19 +73,16 @@
       </TableBodyRow>
       <TableBodyRow>
         <TableHeadCell {...thProps}>Value</TableHeadCell>
-        <TableBodyCell {...tdProps}>
-          {result && "value" in result ? result.value : "-"}
-        </TableBodyCell>
+        <ResultCell {...tdProps} name="Value" content={result?.value} />
       </TableBodyRow>
       <TableBodyRow>
         <TableHeadCell {...thProps}>Error</TableHeadCell>
-        {#if result?.error}
-          <TableBodyCell {...tdProps} class={twMerge(redClass, tdProps.class)}
-            >{result.error}</TableBodyCell
-          >
-        {:else}
-          <TableBodyCell {...tdProps}>-</TableBodyCell>
-        {/if}
+        <ResultCell
+          {...tdProps}
+          class={twMerge(redClass, tdProps.class)}
+          name="Error"
+          content={result?.error}
+        />
       </TableBodyRow>
       <TableBodyRow>
         <TableHeadCell {...thProps}>Characters</TableHeadCell>

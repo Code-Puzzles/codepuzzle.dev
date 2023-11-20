@@ -9,7 +9,7 @@ export function evalInBrowser(
   try {
     const value = eval(`${puzzle.source}\n${puzzle.name}(${solution});`);
     const passed = value === true;
-    return { passed, value, numChars };
+    return { passed, value: String(value), numChars };
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
     return { passed: false, error, numChars };

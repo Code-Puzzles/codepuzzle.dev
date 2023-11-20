@@ -44,12 +44,12 @@
   let verifiedResult: JudgeResultWithCount | undefined = undefined;
   let submitting = false;
   let solution = "";
-  let setEditorValue: (value: string) => void;
+  let setEditorValue: ((value: string) => void) | undefined = undefined;
 
   function onChange(value: string) {
     if (!puzzle) return;
-    solution = value;
-    localResult = evalInBrowser(puzzle, value);
+    solution = value.trim();
+    localResult = solution ? evalInBrowser(puzzle, solution) : undefined;
   }
 
   function onSubmit() {
@@ -202,11 +202,10 @@
     </div>
 
     <main class="flex flex-col grow">
-      <!-- TODO: stop this growing past the end of the window when editor has many lines -->
-      <div class="grow">
+      <div class="grow min-h-0">
         <CodeMirrorBar
           showSolutionClicked={() =>
-            setEditorValue("TODO: render solution text into editor")}
+            setEditorValue?.("TODO: render solution text into editor")}
           showSolutionDisabled={puzzle ? puzzle.index > 3 : false}
         />
         <CodeMirror
