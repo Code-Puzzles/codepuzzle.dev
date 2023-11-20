@@ -12,7 +12,7 @@ import {
 import { EditorView, keymap } from "@codemirror/view";
 import { autocompletion } from "@codemirror/autocomplete";
 import { basicSetup } from "codemirror";
-import { type Puzzle } from "@jspuzzles/common-browser";
+import { type Puzzle } from "@jspuzzles/common";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags, type Highlighter } from "@lezer/highlight";
 

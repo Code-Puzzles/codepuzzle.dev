@@ -1,7 +1,7 @@
 <script lang="ts">
   import { EditorView } from "@codemirror/view";
   import { twMerge } from "tailwind-merge";
-  import { type Puzzle } from "@jspuzzles/common-browser";
+  import { type Puzzle } from "@jspuzzles/common";
   import { onMount } from "svelte";
   import { emptyEditorState, getEditorState } from "./CodeMirror";
 

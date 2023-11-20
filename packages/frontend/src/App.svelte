@@ -4,7 +4,7 @@
     puzzles,
     type Puzzle,
     type JudgeResultWithCount,
-  } from "@jspuzzles/common-browser";
+  } from "@jspuzzles/common";
   import { onMount } from "svelte";
   import {
     Sidebar,
