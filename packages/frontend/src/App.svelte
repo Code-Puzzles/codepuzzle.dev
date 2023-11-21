@@ -201,8 +201,8 @@
       </div>
     </div>
 
-    <main class="flex flex-col grow">
-      <div class="grow min-h-0">
+    <main class="flex flex-col grow min-w-0">
+      <div class="grow min-h-0 flex flex-col">
         <CodeMirrorBar
           showSolutionClicked={() =>
             setEditorValue?.("TODO: render solution text into editor")}
