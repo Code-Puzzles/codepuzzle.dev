@@ -19,7 +19,6 @@ import { tags, type Highlighter } from "@lezer/highlight";
 const displayExtension = [
   // fixed height editor, which scrolls vertically
   EditorView.theme({
-    // FIXME: the editor expands infinitely and pushed away the results
     "&": { height: "100%" },
     "&.cm-focused": { outline: "none" },
     ".cm-scroller": { overflow: "auto" },

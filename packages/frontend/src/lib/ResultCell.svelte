@@ -2,7 +2,6 @@
   import { Button, Modal, TableBodyCell } from "flowbite-svelte";
 
   export let name: string;
-  // TODO: can I prevent this from getting put as an attribute in the dom? (would slow it down and make this cmp useless)
   export let content: string | undefined = undefined;
 
   const maxLength = 60;
@@ -22,7 +21,7 @@
   let modal = false;
 </script>
 
-<TableBodyCell {...$$props}>
+<TableBodyCell {...$$restProps}>
   <!-- TODO -->
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
