@@ -12,7 +12,6 @@ import {
   prefixProcessOutput,
 } from "../utils.js";
 
-// TODO: Reload backend lambdas on change
 // TODO: Store prod pulumi state in private repo or s3
 
 await bundle(judgeDevLoop);

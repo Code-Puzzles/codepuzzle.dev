@@ -29,6 +29,7 @@ export const bundle = async (
         setup(build) {
           if (!watchCallback) return;
           build.onEnd(async (result) => {
+            console.log("Rebuild finished");
             const shouldContinue = await watchCallback(result);
             if (!shouldContinue) await ctx.dispose();
           });
