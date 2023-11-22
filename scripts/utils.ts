@@ -35,6 +35,45 @@ export class LinePrefixer extends Transform {
   }
 }
 
+export class LineMapper extends Transform {
+  line = "";
+
+  constructor(
+    public mapper: (line: string) => string | null | undefined,
+    options?: TransformOptions,
+  ) {
+    super(options);
+  }
+
+  override _transform(
+    chunk: Buffer,
+    encoding: BufferEncoding,
+    callback: TransformCallback,
+  ): void {
+    const lineParts = chunk.toString().split("\n");
+    this.line += lineParts[0];
+    for (let i = 1; i < lineParts.length; i++) {
+      const result = this.mapper(this.line);
+      if (result) this.push(result + "\n");
+      this.line = lineParts[i];
+    }
+    callback();
+  }
+}
+
+export const localstackLogCleaner = () =>
+  new LineMapper((line) => {
+    const trimmed = line.replace(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}\s+(\w+)\s+[^:]+: /,
+      "[$1] ",
+    );
+    const trimmedWithoutNonLambdaDebugLogs = trimmed.replace(
+      /^\[DEBUG\]\s+(?:>\s+(?:\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\s+)?(.*)|.*)$/,
+      "$1",
+    );
+    return trimmedWithoutNonLambdaDebugLogs;
+  });
+
 export const createPrefixedOutputStream = (
   prefix: string,
   out: Writable = process.stdout,

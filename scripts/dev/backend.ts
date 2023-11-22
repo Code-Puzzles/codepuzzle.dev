@@ -1,5 +1,4 @@
 import readline from "node:readline";
-import { Writable } from "node:stream";
 import path from "node:path";
 import pulumi from "@pulumi/pulumi";
 import { $ } from "execa";
@@ -7,10 +6,12 @@ import chalk from "chalk";
 import { INFRASTRUCTURE_DIR, buildProgram } from "@jspuzzles/infrastructure";
 import { bundle } from "../bundle.js";
 import { judgeDevLoop } from "./judge.js";
-import { createPrefixedOutputStream, prefixProcessOutput } from "../utils.js";
+import {
+  createPrefixedOutputStream,
+  localstackLogCleaner,
+  prefixProcessOutput,
+} from "../utils.js";
 
-// TODO: Better log prefixes
-// TODO: Tail cloudwatch logs from localstack to see lambda logs
 // TODO: Reload backend lambdas on change
 // TODO: Store prod pulumi state in private repo or s3
 
@@ -52,13 +53,22 @@ const localstack = $({
   "127.0.0.1:4510-4559:4510-4559",
   "-e",
   "DOCKER_HOST=unix:///var/run/docker.sock",
+  "-e",
+  "DEBUG=1",
   "-v",
   `${path.join(INFRASTRUCTURE_DIR, ".localstack")}:/var/lib/localstack`,
   "-v",
   "/var/run/docker.sock:/var/run/docker.sock",
   "localstack/localstack",
 ]}`;
-prefixProcessOutput(localstack, "[ls] ", "green");
+prefixProcessOutput(
+  {
+    stdout: localstack.stdout?.pipe(localstackLogCleaner()),
+    stderr: localstack.stderr?.pipe(localstackLogCleaner()),
+  },
+  "[ls] ",
+  "green",
+);
 
 localstack.then((result) => {
   console.error("Localstack has unexpectedly exited");
