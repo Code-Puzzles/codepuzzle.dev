@@ -45,12 +45,19 @@ export const buildProgram = (isLocalDev: boolean) => {
           role: lambdaRole.arn,
           timeout: 5,
           runtime: `nodejs${NODE_VERSION}.x`,
-          code: new pulumi.asset.AssetArchive({
-            ".": new pulumi.asset.FileArchive(
-              path.join(DIST_BUNDLES_DIR, pathNoLeadingSlash),
-            ),
-          }),
           handler: "index.handler",
+          ...(isLocalDev
+            ? {
+                s3Bucket: "hot-reload",
+                s3Key: path.join(DIST_BUNDLES_DIR, pathNoLeadingSlash),
+              }
+            : {
+                code: new pulumi.asset.AssetArchive({
+                  ".": new pulumi.asset.FileArchive(
+                    path.join(DIST_BUNDLES_DIR, pathNoLeadingSlash),
+                  ),
+                }),
+              }),
         },
       ),
     };
