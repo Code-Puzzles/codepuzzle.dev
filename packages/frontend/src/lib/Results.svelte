@@ -16,7 +16,8 @@
   export let disabled: string | boolean = false;
   export let loading = false;
 
-  const redClass = "text-red-700 dark:text-red-500";
+  let errorClasses: string;
+  $: errorClasses = result?.error ? "text-red-700 dark:text-red-500" : "";
   const id = uniqueId();
 </script>
 
@@ -38,31 +39,31 @@
     </div>
   {/if}
   <div
-    class="text-gray-500 dark:text-gray-400 text-sm max-w-full mx-auto grid grid-cols-[auto_1fr]"
+    class="text-gray-400 dark:text-gray-500 text-sm max-w-full mx-auto grid grid-cols-[auto_1fr]"
   >
     <GridTableRow title="State">
       {#if !result}
-        <P class="text-gray-400 dark:text-gray-500 text-right">
+        <span>
           Waiting for solution...
           <QuestionCircleSolid class="inline-block" />
-        </P>
+        </span>
       {:else if result.passed}
-        <P class="text-green-400 dark:text-green-500 text-right">
+        <span class="text-green-400 dark:text-green-500 text-right">
           Passed
           <CheckCircleSolid class="inline-block" />
-        </P>
+        </span>
       {:else}
-        <P class="{redClass} text-right">
+        <span class="{errorClasses} text-right">
           Failed
           <CloseCircleSolid class="inline-block" />
-        </P>
+        </span>
       {/if}
     </GridTableRow>
     <GridTableRow title="Value">
       <ResultCell name="Value" content={result?.value} />
     </GridTableRow>
     <GridTableRow title="Error">
-      <ResultCell class={redClass} name="Error" content={result?.error} />
+      <ResultCell class={errorClasses} name="Error" content={result?.error} />
     </GridTableRow>
     <GridTableRow title="Characters">{result?.numChars ?? 0}</GridTableRow>
   </div>

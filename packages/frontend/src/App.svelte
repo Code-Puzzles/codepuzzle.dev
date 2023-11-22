@@ -151,7 +151,7 @@
     </Navbar>
   </header>
 
-  <div class="flex grow min-h-0">
+  <div class="flex flex-1 min-h-0">
     <!-- NOTE: the `direction` styles are to position the scrollbar on the left -->
     <div
       class="border-r-2 dark:border-gray-950 overflow-y-auto bg-gray-50 dark:bg-gray-800"
@@ -175,7 +175,9 @@
                     <SidebarItem
                       href={`#${p.name}`}
                       label={p.name}
-                      spanClass={`ml-1 grow ${p === puzzle ? "font-bold" : ""}`}
+                      spanClass={`ml-1 flex-1 ${
+                        p === puzzle ? "font-bold" : ""
+                      }`}
                       class={`ml-2 ${
                         p === puzzle ? "bg-gray-100 dark:bg-gray-700" : ""
                       }`}
@@ -201,21 +203,22 @@
       </div>
     </div>
 
-    <main class="flex flex-col grow min-w-0">
-      <div class="grow min-h-0 flex flex-col">
+    <main class="flex flex-col flex-1 min-w-0">
+      <div class="flex flex-col flex-1 min-h-0">
         <CodeMirrorBar
           showSolutionClicked={() =>
             setEditorValue?.("TODO: render solution text into editor")}
           showSolutionDisabled={puzzle ? puzzle.index > 3 : false}
         />
         <CodeMirror
+          class="flex-1 min-h-0"
           bind:puzzle
           bind:setValue={setEditorValue}
           {onChange}
           {onSubmit}
         />
       </div>
-      <div class="results flex flex-row justify-evenly">
+      <div class="flex flex-row justify-evenly">
         <Results
           title="local"
           description="run in your browser"
@@ -232,9 +235,3 @@
     </main>
   </div>
 </div>
-
-<style>
-  .results {
-    min-height: 30%;
-  }
-</style>

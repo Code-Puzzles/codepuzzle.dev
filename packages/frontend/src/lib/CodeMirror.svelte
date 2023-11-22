@@ -38,7 +38,7 @@
 
 <div
   class={twMerge(
-    "text-base h-full border-b-2 dark:border-gray-950",
+    "relative text-base border-b-2 dark:border-gray-950",
     $$props["class"],
   )}
   bind:this={editorRoot}
