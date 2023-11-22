@@ -9,6 +9,9 @@
   import Sidebar from "./lib/Sidebar.svelte";
   import Workspace from "./lib/Workspace.svelte";
   import Header from "./lib/Header.svelte";
+  import { responsiveBreakpointPixels } from "./lib/util";
+  import { fade } from "svelte/transition";
+  import SidebarWrapper from "./lib/SidebarWrapper.svelte";
 
   let puzzle: Puzzle | undefined = (() => {
     const hash = window.location.hash.substring(1);
@@ -40,6 +43,13 @@
 
   function selectPuzzle(namespace: keyof typeof puzzles, puzzleId: string) {
     puzzle = puzzles[namespace]?.find((p) => p.name === puzzleId);
+    sidebarOpen = false;
+  }
+
+  let width: number;
+  let sidebarOpen = false;
+  $: if (width >= responsiveBreakpointPixels) {
+    sidebarOpen = false;
   }
 
   onMount(async () => {
@@ -59,18 +69,39 @@
   });
 </script>
 
+<svelte:window bind:innerWidth={width} />
 <div class="flex flex-col h-full">
   <Header />
 
-  <div class="flex flex-1 min-h-0">
-    <Sidebar bind:puzzle {selectPuzzle} />
+  <div class="relative flex flex-1 min-h-0">
+    <SidebarWrapper
+      shouldTransition={sidebarOpen && width < responsiveBreakpointPixels}
+    >
+      <Sidebar
+        class={sidebarOpen ? "z-10" : ""}
+        bind:puzzle
+        isOpen={width >= responsiveBreakpointPixels || sidebarOpen}
+        {selectPuzzle}
+      />
+    </SidebarWrapper>
+
     <Workspace
       bind:puzzle
+      showSidebarClicked={() => (sidebarOpen = !sidebarOpen)}
       {submitting}
       {onChange}
       {onSubmit}
       {localResult}
       {verifiedResult}
     />
+
+    {#if sidebarOpen}
+      <div
+        role="presentation"
+        class="absolute top-0 left-0 right-0 bottom-0 backdrop-blur-md"
+        transition:fade={{ duration: 300 }}
+        on:click={() => (sidebarOpen = false)}
+      />
+    {/if}
   </div>
 </div>

@@ -1,3 +1,5 @@
+import flowbite from "flowbite/plugin";
+
 /** @type {import('tailwindcss').Config}*/
 const config = {
   content: [
@@ -5,7 +7,7 @@ const config = {
     "node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}",
   ],
 
-  plugins: [require("flowbite/plugin")],
+  plugins: [flowbite],
 
   // FIXME: for some reason tailwind doesn't correctly infer all classes from flowbite-svelte
   // as a workaround this list manually includes them
@@ -68,4 +70,4 @@ const config = {
   },
 };
 
-module.exports = config;
+export default config;

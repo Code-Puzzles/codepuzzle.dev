@@ -1,6 +1,6 @@
 {
   "extends": ["@tsconfig/svelte/tsconfig.json", "../../tsconfig.browser.json"],
-  "include": ["src/**/*.ts", "src/**/*.svelte"],
+  "include": ["src/**/*", "src/**/*.svelte"],
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",

@@ -11,12 +11,15 @@
   export let onSubmit: () => void;
   export let submitting = false;
 
+  export let showSidebarClicked: () => void;
+
   let setEditorValue: ((value: string) => void) | undefined = undefined;
 </script>
 
-<main class="flex flex-col flex-1 min-w-0">
+<main class="flex flex-col flex-1 min-w-0 border-l-2 dark:border-gray-950">
   <div class="flex flex-col flex-1 min-h-0">
     <CodeMirrorBar
+      bind:showSidebarClicked
       showSolutionClicked={() =>
         setEditorValue?.("TODO: render solution text into editor")}
       showSolutionDisabled={puzzle ? puzzle.index > 3 : false}

@@ -9,7 +9,7 @@ import {
   Transaction,
   type TransactionSpec,
 } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
+import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
 import { autocompletion } from "@codemirror/autocomplete";
 import { basicSetup } from "codemirror";
 import { type Puzzle } from "@jspuzzles/common";
@@ -25,6 +25,7 @@ const displayExtension = [
   }),
   // wrap long horizontal lines
   EditorView.lineWrapping,
+  scrollPastEnd(),
   // theme
   syntaxHighlighting(
     <Highlighter>HighlightStyle.define([

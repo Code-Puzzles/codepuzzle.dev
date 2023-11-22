@@ -26,18 +26,6 @@
   {#if description}
     <Tooltip triggeredBy={`#${id}`}>{description}</Tooltip>
   {/if}
-  {#if disabled || loading}
-    <div
-      class="absolute top-0 left-0 right-0 bottom-0 z-10 flex flex-col justify-center items-center backdrop-brightness-75 backdrop-blur-sm"
-    >
-      {#if disabled}
-        <P>{disabled}</P>
-      {:else if loading}
-        <Spinner class="inline-block" color="purple" />
-        <P>waiting...</P>
-      {/if}
-    </div>
-  {/if}
   <div
     class="text-gray-400 dark:text-gray-500 text-sm max-w-full mx-auto grid grid-cols-[auto_1fr]"
   >
@@ -67,6 +55,19 @@
     </GridTableRow>
     <GridTableRow title="Characters">{result?.numChars ?? 0}</GridTableRow>
   </div>
+
+  {#if disabled || loading}
+    <div
+      class="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-center items-center backdrop-brightness-75 backdrop-blur-sm"
+    >
+      {#if disabled}
+        <P>{disabled}</P>
+      {:else if loading}
+        <Spinner class="inline-block" color="purple" />
+        <P>waiting...</P>
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style>
