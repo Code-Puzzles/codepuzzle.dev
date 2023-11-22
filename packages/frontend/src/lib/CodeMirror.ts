@@ -25,6 +25,10 @@ const displayExtension = [
   }),
   // wrap long horizontal lines
   EditorView.lineWrapping,
+  // seems to the best approximation of CM5's `cursorScrollMargin`
+  // https://discuss.codemirror.net/t/cursorscrollmargin-for-v6/7448
+  EditorView.scrollMargins.of(() => ({ bottom: 50 })),
+  // allow scrolling past the end of the last line in the editor
   scrollPastEnd(),
   // theme
   syntaxHighlighting(
