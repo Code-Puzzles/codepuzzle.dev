@@ -7,7 +7,7 @@ export function evalInBrowser(
 ): JudgeResultWithCount {
   const numChars = solution.length;
   try {
-    const value = eval(`${puzzle.source}\n${puzzle.name}(${solution});`);
+    const value = window.eval(`${puzzle.source}\n${puzzle.name}(${solution});`);
     const passed = value === true;
     return { passed, value: String(value), numChars };
   } catch (err) {

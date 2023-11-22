@@ -59,7 +59,7 @@ export function getEditorState(
   puzzle: Puzzle,
   onChange: (solution: string) => void,
   onSubmit: () => void,
-  initialValue: string = "'asdf qwer zxcv nbvc hgdf ytre jhgf kiuyt hgdf fgdsa vcxz fgdsa fg sfdg rseg are'",
+  initialValue?: string,
 ): EditorState {
   const facet = createPuzzleFacet(puzzle);
   return EditorState.create({
