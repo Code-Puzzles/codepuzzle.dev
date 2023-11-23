@@ -1,134 +1,37 @@
-import "./CodeMirror.postcss";
-import { javascript } from "@codemirror/lang-javascript";
 import {
-  Compartment,
-  EditorSelection,
-  EditorState,
   Facet,
-  Text,
+  EditorState,
   Transaction,
   type TransactionSpec,
+  EditorSelection,
+  Text,
 } from "@codemirror/state";
-import { EditorView, keymap, scrollPastEnd } from "@codemirror/view";
-import { autocompletion } from "@codemirror/autocomplete";
-import { basicSetup } from "codemirror";
-import { type Puzzle } from "@jspuzzles/common";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
-import { tags, type Highlighter } from "@lezer/highlight";
+import type { Puzzle } from "@jspuzzles/common";
 
-const displayExtension = [
-  // fixed height editor, which scrolls vertically
-  EditorView.theme({
-    "&": { height: "100%" },
-    "&.cm-focused": { outline: "none" },
-    ".cm-scroller": { overflow: "auto" },
-  }),
-  // wrap long horizontal lines
-  EditorView.lineWrapping,
-  // seems to the best approximation of CM5's `cursorScrollMargin`
-  // https://discuss.codemirror.net/t/cursorscrollmargin-for-v6/7448
-  EditorView.scrollMargins.of(() => ({ bottom: 50 })),
-  // allow scrolling past the end of the last line in the editor
-  scrollPastEnd(),
-  // theme
-  syntaxHighlighting(
-    <Highlighter>HighlightStyle.define([
-      { tag: tags.atom, class: "cmt-atom" },
-      { tag: tags.comment, class: "cmt-comment" },
-      { tag: tags.keyword, class: "cmt-keyword" },
-      { tag: tags.literal, class: "cmt-literal" },
-      { tag: tags.number, class: "cmt-number" },
-      { tag: tags.operator, class: "cmt-operator" },
-      { tag: tags.separator, class: "cmt-separator" },
-      { tag: tags.string, class: "cmt-string" },
-    ]),
-  ),
-  // syntax highlighting
-  javascript(),
-];
-
-export function emptyEditorState(): EditorState {
-  const readOnly = EditorState.transactionFilter.of(() => []);
-  return EditorState.create({
-    doc: "//\n// Please choose a puzzle!\n//",
-    extensions: [readOnly, displayExtension],
-  });
-}
-
-export function getEditorState(
-  puzzle: Puzzle,
-  onChange: (solution: string) => void,
-  onSubmit: () => void,
-  initialValue?: string,
-): EditorState {
-  const facet = createPuzzleFacet(puzzle);
-  return EditorState.create({
-    doc: [facet.prefix, initialValue, facet.suffix].filter((s) => s).join(""),
-    // NOTE: order is important here, since it affects precedence of extensions
-    // higher precedence extensions come first
-    extensions: [
-      // our custom keybindings, ensure these override anything else so put them first
-      keymap.of([
-        {
-          key: "Mod-Enter",
-          run: () => {
-            onSubmit();
-            return true;
-          },
-        },
-      ]),
-      // contains logic for updating the current puzzle (used by the `puzzleReadOnlyExtension`)
-      puzzleCompartment.of(puzzleFacet.of(facet)),
-      // makes portions of the editor readonly
-      puzzleReadOnlyExtension,
-      // fires the following callback whenever something is changed
-      onChangeHandler(onChange),
-      displayExtension,
-      // make sure popup doesn't obscure results view (which is below the editor)
-      autocompletion({ aboveCursor: true }),
-      // basic editor setup - we might want to remove this and roll out own at some point
-      basicSetup,
-    ],
-  });
-}
-
-const onChangeHandler = (onChange: (solution: string) => void) =>
-  EditorView.updateListener.of((update) => {
-    if (!update.docChanged) return;
-
-    const { from: fromBound, to: toBound } = getBounds(
-      update.state.facet(puzzleFacet),
-      update.state.doc.length,
-    );
-
-    const solution = update.state.doc.sliceString(fromBound, toBound);
-    onChange(solution);
-  });
-
-interface PuzzleFacet {
+export interface PuzzleFacet {
   prefix: string;
   suffix: string;
 }
 
-const puzzleCompartment = new Compartment();
-const puzzleFacet = Facet.define<PuzzleFacet, PuzzleFacet>({
+export const puzzleFacet = Facet.define<PuzzleFacet, PuzzleFacet>({
   combine: (input) => input[0] ?? { prefix: "-->", suffix: "<--" },
 });
 
-function createPuzzleFacet(puzzle: Puzzle): PuzzleFacet {
+export function createPuzzleFacet(puzzle: Puzzle): PuzzleFacet {
   const prefix = `// This is your function...\n${puzzle.source}\n\n// ... now make it return \`true\`!\n${puzzle.name}(`;
   const suffix = `);\n`;
   return { prefix, suffix };
 }
 
-interface Bounds {
+export interface Bounds {
   from: number;
   to: number;
 }
 
 const makeClipper = (bounds: Bounds) => (n: number) =>
   Math.min(Math.max(n, bounds.from), bounds.to);
-const getBounds = (
+
+export const getBounds = (
   { prefix, suffix }: PuzzleFacet,
   docLength: number,
 ): Bounds => ({
@@ -138,7 +41,7 @@ const getBounds = (
 
 // extension to only allow edits between certain ranges
 // https://discuss.codemirror.net/t/migrating-readonly-textmarkers-from-codemirror-5-to-6/7337/5
-const puzzleReadOnlyExtension = EditorState.transactionFilter.of(
+export const puzzleReadOnlyExtension = EditorState.transactionFilter.of(
   (tr: Transaction): TransactionSpec | readonly TransactionSpec[] => {
     // Get the previous value for the puzzle and the current one, to check for changes
     // I don't like that this check must happen on every transaction, surely there's a

@@ -3,7 +3,7 @@
   import { twMerge } from "tailwind-merge";
   import { type Puzzle } from "@jspuzzles/common";
   import { onMount } from "svelte";
-  import { emptyEditorState, getEditorState } from "./CodeMirror";
+  import { emptyEditorState, getEditorState } from "./CodeMirror/index.js";
 
   export let puzzle: Puzzle | undefined = undefined;
   export let onChange = (_: string) => {};
@@ -22,8 +22,8 @@
   function putPuzzleIntoEditor(puzzle?: Puzzle, value?: string) {
     view.setState(
       puzzle
-        ? getEditorState(puzzle, onChange, onSubmit, value)
-        : emptyEditorState(),
+        ? getEditorState(view, puzzle, onChange, onSubmit, value)
+        : emptyEditorState(view),
     );
     view.focus();
   }
