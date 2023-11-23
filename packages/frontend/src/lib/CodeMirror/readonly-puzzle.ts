@@ -1,3 +1,4 @@
+import { indentUnit } from "@codemirror/language";
 import {
   EditorSelection,
   EditorState,
@@ -27,24 +28,16 @@ export interface PuzzleState {
 
 /**
  * Given a puzzle, returns the required state for this CodeMirror extension.
- * @param {Puzzle} puzzle
- * @returns {PuzzleState}
  */
-function puzzleState(puzzle: Puzzle): PuzzleState {
-  const indent = (str: string, indent: string) =>
-    str
-      .split("\n")
-      .map((line) => indent + line)
-      .join("\n");
-
-  // TODO: ensure indentation that's used here matches what CM uses for tabSize
-  // and also for indenting (they seem to be configured differently)
-  const i = " ".repeat(2);
-
+function puzzleState(puzzle: Puzzle, indentSize: number): PuzzleState {
+  const indent = " ".repeat(indentSize);
   const intro = `// This is your function...\n\n`;
   const iifePrefix = `var ${puzzle.name} = (function () {\n`;
-  const iifeSuffix = `\n${i}return ${puzzle.name};\n})();\n`;
-  const fn = indent(puzzle.source, i);
+  const iifeSuffix = `\n${indent}return ${puzzle.name};\n})();\n`;
+  const fn = puzzle.source
+    .split("\n")
+    .map((line) => indent + line)
+    .join("\n");
   const fnCall = `\n// ... now make it return \`true\`!\n${puzzle.name}(`;
   const prefix = [intro, iifePrefix, fn, iifeSuffix, fnCall].join("");
 
@@ -130,9 +123,10 @@ export interface PuzzleReadOnlyExtension {
  */
 export const puzzleReadOnlyExtension = (
   puzzle: Puzzle,
+  indentSize: number,
   initialValue?: string,
 ): PuzzleReadOnlyExtension => {
-  const p = puzzleState(puzzle);
+  const p = puzzleState(puzzle, indentSize);
   return {
     // initial value for the puzzle
     doc: [p.prefix, initialValue, p.suffix].filter((s) => s).join(""),
@@ -140,6 +134,9 @@ export const puzzleReadOnlyExtension = (
     selection: EditorSelection.single(p.prefix.length),
     // list of extensions that make up the readonly extension
     extension: [
+      // configure indent and tab size for the editor
+      indentUnit.of(" ".repeat(indentSize)),
+      EditorState.tabSize.of(indentSize),
       // this state field manages the iife decorations
       iifeField,
       // this facet let's other parts of CodeMirror access the puzzle state
@@ -208,7 +205,7 @@ export const puzzleReadOnlyExtension = (
   };
 };
 
-export const getBounds = (
+const getBounds = (
   { prefix, suffix }: PuzzleState,
   docLength: number,
 ): SimpleRange => ({
@@ -218,3 +215,12 @@ export const getBounds = (
 
 const makeClipper = (bounds: SimpleRange) => (n: number) =>
   Math.min(Math.max(n, bounds.from), bounds.to);
+
+export const getSolution = (state: EditorState): string => {
+  const { from: fromBound, to: toBound } = getBounds(
+    state.facet(puzzleFacet).getState(),
+    state.doc.length,
+  );
+
+  return state.doc.sliceString(fromBound, toBound);
+};

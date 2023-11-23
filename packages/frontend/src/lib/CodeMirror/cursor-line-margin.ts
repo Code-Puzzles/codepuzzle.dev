@@ -14,7 +14,7 @@ export const cursorLineMarginFacet = Facet.define<
   combine: (input) => input[0] ?? { lines: 0 },
 });
 
-export const cursorScrollMargin = (view: EditorView): Extension => [
+export const cursorLineMargin = (view: EditorView): Extension => [
   // seems to the best approximation of CM5's `cursorScrollMargin`
   // https://discuss.codemirror.net/t/cursorscrollmargin-for-v6/7448
   EditorState.transactionExtender.of((tr) => {

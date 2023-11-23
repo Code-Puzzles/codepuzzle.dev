@@ -4,11 +4,10 @@ import type { Extension } from "@codemirror/state";
 import { scrollPastEnd } from "@codemirror/view";
 import { type Highlighter, tags } from "@lezer/highlight";
 import { EditorView } from "codemirror";
-import { cursorScrollMargin } from "./cursor-scroll-margin";
 
 import "./display.postcss";
 import { autocompletion } from "@codemirror/autocomplete";
-export const displayExtension = (view: EditorView): Extension => [
+export const displayExtension: Extension = [
   // fixed height editor, which scrolls vertically
   EditorView.theme({
     "&": { height: "100%" },
@@ -17,7 +16,6 @@ export const displayExtension = (view: EditorView): Extension => [
   }),
   // wrap long horizontal lines
   EditorView.lineWrapping,
-  cursorScrollMargin(view),
   // allow scrolling past the end of the last line in the editor
   scrollPastEnd(),
   // make sure popup doesn't obscure results view (which is below the editor)
