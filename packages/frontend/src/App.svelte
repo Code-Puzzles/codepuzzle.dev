@@ -79,15 +79,15 @@
     >
       <Sidebar
         class={sidebarOpen ? "z-10" : ""}
-        bind:puzzle
         isOpen={width >= responsiveBreakpointPixels || sidebarOpen}
         {selectPuzzle}
+        {puzzle}
       />
     </SidebarWrapper>
 
     <Workspace
-      bind:puzzle
       showSidebarClicked={() => (sidebarOpen = !sidebarOpen)}
+      {puzzle}
       {submitting}
       {onChange}
       {onSubmit}

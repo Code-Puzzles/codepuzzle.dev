@@ -1,38 +1,27 @@
 <script lang="ts">
-  import { EditorView } from "@codemirror/view";
   import { twMerge } from "tailwind-merge";
   import { type Puzzle } from "@jspuzzles/common";
   import { onMount } from "svelte";
-  import { emptyEditorState, getEditorState } from "./CodeMirror/index.js";
+  import { CodeMirror } from "./CodeMirror/index.js";
 
   export let puzzle: Puzzle | undefined = undefined;
   export let onChange = (_: string) => {};
   export let onSubmit = () => {};
+
   export const setValue = (value: string) => {
-    if (view) {
-      putPuzzleIntoEditor(puzzle, value);
+    if (cm && puzzle) {
+      cm.setPuzzle(puzzle, onChange, onSubmit, value);
     }
   };
 
   let editorRoot: HTMLElement;
-  let view: EditorView;
+  let cm: CodeMirror;
 
-  $: view && putPuzzleIntoEditor(puzzle);
-
-  function putPuzzleIntoEditor(puzzle?: Puzzle, value?: string) {
-    view.setState(
-      puzzle
-        ? getEditorState(view, puzzle, onChange, onSubmit, value)
-        : emptyEditorState(view),
-    );
-    view.focus();
-  }
+  $: cm && (puzzle ? cm.setPuzzle(puzzle, onChange, onSubmit) : cm.setEmpty());
 
   onMount(() => {
-    // stop all other events from happening when editor is focused
-    editorRoot.addEventListener("keydown", (event) => event.stopPropagation());
-    // setup editor
-    view = new EditorView({ parent: editorRoot });
+    cm = new CodeMirror(editorRoot);
+    (window as any).cm = cm;
   });
 </script>
 

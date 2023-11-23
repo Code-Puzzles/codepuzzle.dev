@@ -13,7 +13,7 @@ export interface PuzzleFacet {
   suffix: string;
 }
 
-export const puzzleFacet = Facet.define<PuzzleFacet, PuzzleFacet>({
+export const puzzleFacet = Facet.define<PuzzleFacet | null, PuzzleFacet>({
   combine: (input) => input[0] ?? { prefix: "-->", suffix: "<--" },
 });
 
@@ -43,39 +43,7 @@ export const getBounds = (
 // https://discuss.codemirror.net/t/migrating-readonly-textmarkers-from-codemirror-5-to-6/7337/5
 export const puzzleReadOnlyExtension = EditorState.transactionFilter.of(
   (tr: Transaction): TransactionSpec | readonly TransactionSpec[] => {
-    // Get the previous value for the puzzle and the current one, to check for changes
-    // I don't like that this check must happen on every transaction, surely there's a
-    // better way to detect when a facet's value changes and apply doc transformations
-    // there?
-    const startPuzzle = tr.startState.facet(puzzleFacet);
     const currentPuzzle = tr.state.facet(puzzleFacet);
-    const puzzleChanged =
-      startPuzzle.prefix != currentPuzzle.prefix ||
-      startPuzzle.suffix != currentPuzzle.suffix;
-
-    // if the puzzle changed, update the doc
-    if (puzzleChanged) {
-      const len = tr.startState.doc.length;
-      return [
-        {
-          // keep the effect, since the updated puzzle is in here
-          effects: tr.effects,
-          // add new changes to replace the prefix and suffix
-          changes: [
-            {
-              from: 0,
-              to: Math.min(startPuzzle.prefix.length, len),
-              insert: currentPuzzle.prefix,
-            },
-            {
-              from: Math.max(len - startPuzzle.suffix.length, 0),
-              to: len,
-              insert: currentPuzzle.suffix,
-            },
-          ],
-        },
-      ];
-    }
 
     // allow all undo/redo transactions, since the transactions that created them
     // should already have been processed by us

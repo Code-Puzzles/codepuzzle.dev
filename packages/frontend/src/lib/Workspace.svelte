@@ -19,15 +19,15 @@
 <main class="flex flex-col flex-1 min-w-0 border-l-2 dark:border-gray-950">
   <div class="flex flex-col flex-1 min-h-0">
     <CodeMirrorBar
-      bind:showSidebarClicked
+      {showSidebarClicked}
       showSolutionClicked={() =>
         setEditorValue?.("TODO: render solution text into editor")}
       showSolutionDisabled={puzzle ? puzzle.index > 3 : false}
     />
     <CodeMirror
       class="flex-1 min-h-0"
-      bind:puzzle
       bind:setValue={setEditorValue}
+      {puzzle}
       {onChange}
       {onSubmit}
     />
@@ -36,14 +36,14 @@
     <Results
       title="local"
       description="run in your browser"
-      bind:result={localResult}
+      result={localResult}
     />
     <Results
       title="verified"
       description="verified at puzzles.js.org"
       loading={submitting}
       disabled={!localResult?.passed ? "solve it locally first" : false}
-      bind:result={verifiedResult}
+      result={verifiedResult}
     />
   </div>
 </main>
