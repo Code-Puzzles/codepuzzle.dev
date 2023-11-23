@@ -217,10 +217,18 @@ const makeClipper = (bounds: SimpleRange) => (n: number) =>
   Math.min(Math.max(n, bounds.from), bounds.to);
 
 export const getSolution = (state: EditorState): string => {
-  const { from: fromBound, to: toBound } = getBounds(
+  const { from, to } = getBounds(
     state.facet(puzzleFacet).getState(),
     state.doc.length,
   );
 
-  return state.doc.sliceString(fromBound, toBound);
+  return state.doc.sliceString(from, to);
+};
+
+export const setSolution = (view: EditorView, value: string) => {
+  const { from, to } = getBounds(
+    view.state.facet(puzzleFacet).getState(),
+    view.state.doc.length,
+  );
+  view.dispatch({ changes: [{ from, to, insert: value }] });
 };

@@ -5,6 +5,8 @@
   export let showSolutionDisabled = false;
   export let showSolutionClicked: () => void;
 
+  export let configureEditorClicked: () => void;
+
   export let showSidebarClicked: () => void;
 </script>
 
@@ -12,15 +14,23 @@
   class="border-b-2 dark:border-gray-950 bg-gray-50 dark:bg-gray-800 flex flex-row justify-between py-2 px-3"
 >
   <div>
-    <Button on:click={showSidebarClicked} class="md:hidden">
+    <Button size="sm" on:click={showSidebarClicked} class="md:hidden">
       <ChartBars3FromLeftSolid />
     </Button>
   </div>
-  <Button
-    disabled={showSolutionDisabled}
-    on:click={showSolutionClicked}
-    color="purple"
-  >
-    Show solution
-  </Button>
+
+  <div>
+    <Button
+      size="sm"
+      disabled={showSolutionDisabled}
+      on:click={showSolutionClicked}
+      color="purple"
+      outline
+    >
+      Show my solution
+    </Button>
+    <Button size="sm" on:click={configureEditorClicked} color="dark" outline>
+      Editor Settings
+    </Button>
+  </div>
 </div>

@@ -10,7 +10,11 @@ import { EditorView, keymap } from "@codemirror/view";
 import { indentUnit } from "@codemirror/language";
 import { basicSetup } from "codemirror";
 import { type Puzzle } from "@jspuzzles/common";
-import { getSolution, puzzleReadOnlyExtension } from "./readonly-puzzle";
+import {
+  getSolution,
+  puzzleReadOnlyExtension,
+  setSolution,
+} from "./readonly-puzzle";
 import { onChangeHandler, type OnChangeCb } from "./on-change-listener";
 import { displayExtension } from "./display";
 import {
@@ -69,7 +73,7 @@ export class CodeMirror {
   readonly #tabSize = new ReconfigurableFacet(EditorState.tabSize, 2);
   readonly #indentUnit = new ReconfigurableFacet(
     indentUnit,
-    " ".repeat(this.#tabSize.value()),
+    " ".repeat(Math.max(1, this.#tabSize.value())),
   );
   #reconfigurableFacets(): Extension {
     return [
@@ -105,8 +109,23 @@ export class CodeMirror {
     );
   }
 
+  /**
+   * Set a solution into the editable area of the editor
+   */
+  public setSolution(value: string) {
+    setSolution(this.#view, value);
+    this.#view.focus();
+  }
+
+  /**
+   * Focus the editor
+   */
+  public focus() {
+    this.#view.focus();
+  }
+
   // This helps us reset the puzzle state internally if required.
-  #setPuzzle?: (initialValue?: string) => void;
+  #resetPuzzle?: (initialValue?: string) => void;
 
   /**
    * Sets up the editor for a puzzle
@@ -117,7 +136,7 @@ export class CodeMirror {
     onSubmit: () => void,
     initialValue?: string,
   ) {
-    this.#setPuzzle = (initialValue?: string) => {
+    this.#resetPuzzle = (initialValue?: string) => {
       const {
         doc,
         selection,
@@ -154,26 +173,32 @@ export class CodeMirror {
       this.#view.focus();
     };
 
-    this.#setPuzzle(initialValue);
+    this.#resetPuzzle(initialValue);
   }
 
   /*
    * Exposed configuration
    */
 
-  public setTabSize(value: number) {
+  public get tabSize(): number {
+    return this.#tabSize.value();
+  }
+  public set tabSize(value: number) {
     this.#view.dispatch({
       effects: [
         this.#tabSize.effect(value),
-        this.#indentUnit.effect(" ".repeat(value)),
+        this.#indentUnit.effect(" ".repeat(Math.max(1, value))),
       ],
     });
 
     // reset the puzzle, since the indentation has changed now
-    this.#setPuzzle?.(getSolution(this.#view.state));
+    this.#resetPuzzle?.(getSolution(this.#view.state));
   }
 
-  public setCursorLineMargin(value: CursorLineMarginFacet) {
-    this.#view.dispatch({ effects: this.#cursorLineMargin.effect(value) });
+  public get cursorLineMargin(): number {
+    return this.#cursorLineMargin.value().lines;
+  }
+  public set cursorLineMargin(lines: number) {
+    this.#view.dispatch({ effects: this.#cursorLineMargin.effect({ lines }) });
   }
 }

@@ -12,6 +12,16 @@ const config = {
   // FIXME: for some reason tailwind doesn't correctly infer all classes from flowbite-svelte
   // as a workaround this list manually includes them
   safelist: [
+    "text-white",
+    "bg-gray-800",
+    "hover:bg-gray-900",
+    "dark:bg-gray-800",
+    "dark:hover:bg-gray-700",
+    "text-white",
+    "bg-primary-700",
+    "hover:bg-primary-800",
+    "dark:bg-primary-600",
+    "dark:hover:bg-primary-700",
     "bg-gray-900",
     "bg-opacity-50",
     "bg-white",

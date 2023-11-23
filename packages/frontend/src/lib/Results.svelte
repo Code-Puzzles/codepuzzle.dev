@@ -11,8 +11,9 @@
   import GridTableRow from "./GridTableRow.svelte";
 
   export let result: JudgeResultWithCount | undefined = undefined;
-  export let title = "";
-  export let description = "";
+  export let title: string;
+  export let description: string;
+  export let waitingMessage: string;
   export let disabled: string | boolean = false;
   export let loading = false;
 
@@ -32,7 +33,7 @@
     <GridTableRow title="State">
       {#if !result}
         <span>
-          Waiting for solution...
+          {waitingMessage}
           <QuestionCircleSolid class="inline-block" />
         </span>
       {:else if result.passed}
