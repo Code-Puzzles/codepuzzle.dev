@@ -26,6 +26,12 @@
   .cmt-string {
     color: #ff5500;
   }
+
+  .cm-iife,
+  .cm-iife * {
+    /* NOTE: !important so it overrides any child styles for syntax highlighting */
+    color: #aa5500 !important;
+  }
 }
 
 .dark {
@@ -83,6 +89,12 @@
     }
     .cmt-string {
       color: #f07178;
+    }
+
+    .cm-iife,
+    .cm-iife * {
+      /* NOTE: !important so it overrides any child styles for syntax highlighting */
+      color: #545454 !important;
     }
   }
 }

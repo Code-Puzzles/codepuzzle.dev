@@ -6,14 +6,9 @@ import {
   StateEffect,
 } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import { autocompletion } from "@codemirror/autocomplete";
 import { basicSetup } from "codemirror";
 import { type Puzzle } from "@jspuzzles/common";
-import {
-  puzzleFacet,
-  puzzleReadOnlyExtension,
-  createPuzzleFacet,
-} from "./readonly-puzzle";
+import { puzzleReadOnlyExtension } from "./readonly-puzzle";
 import { onChangeHandler } from "./on-change-listener";
 import { displayExtension } from "./display";
 import {
@@ -84,21 +79,22 @@ export class CodeMirror {
   /**
    * Sets up the editor for a puzzle
    */
-  // TODO wrap puzzle in greyed out iife
   public setPuzzle(
     puzzle: Puzzle,
     onChange: (solution: string) => void,
     onSubmit: () => void,
     initialValue?: string,
   ) {
-    const puzzleCfg = createPuzzleFacet(puzzle);
+    const {
+      doc,
+      selection,
+      extension: puzzleExtension,
+    } = puzzleReadOnlyExtension(puzzle, initialValue);
 
     this.#view.setState(
       EditorState.create({
-        selection: { anchor: puzzleCfg.prefix.length },
-        doc: [puzzleCfg.prefix, initialValue, puzzleCfg.suffix]
-          .filter((s) => s)
-          .join(""),
+        selection,
+        doc,
 
         // NOTE: order is important here, since it affects precedence of extensions
         // higher precedence extensions come first
@@ -113,17 +109,14 @@ export class CodeMirror {
               },
             },
           ]),
-          // the puzzle
-          puzzleFacet.of(puzzleCfg),
           // our updatable config
           this.#clmCfg.extension(),
           // makes portions of the editor readonly
-          puzzleReadOnlyExtension,
+          puzzleExtension,
           // fires the following callback whenever something is changed
           onChangeHandler(onChange),
+          // display
           this.#displayExtension,
-          // make sure popup doesn't obscure results view (which is below the editor)
-          autocompletion({ aboveCursor: true }),
           // basic editor setup - we might want to remove this and roll out own at some point
           basicSetup,
         ],

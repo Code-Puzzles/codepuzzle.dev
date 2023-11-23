@@ -7,6 +7,7 @@ import { EditorView } from "codemirror";
 import { cursorScrollMargin } from "./cursor-scroll-margin";
 
 import "./display.postcss";
+import { autocompletion } from "@codemirror/autocomplete";
 export const displayExtension = (view: EditorView): Extension => [
   // fixed height editor, which scrolls vertically
   EditorView.theme({
@@ -19,6 +20,8 @@ export const displayExtension = (view: EditorView): Extension => [
   cursorScrollMargin(view),
   // allow scrolling past the end of the last line in the editor
   scrollPastEnd(),
+  // make sure popup doesn't obscure results view (which is below the editor)
+  autocompletion({ aboveCursor: true }),
   // theme
   syntaxHighlighting(
     <Highlighter>HighlightStyle.define([

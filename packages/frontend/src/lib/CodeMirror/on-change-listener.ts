@@ -5,14 +5,14 @@ import type { Extension } from "@codemirror/state";
 export const onChangeHandler = (
   onChange: (solution: string) => void,
 ): Extension =>
-  EditorView.updateListener.of((update) => {
-    if (!update.docChanged) return;
+  EditorView.updateListener.of(({ docChanged, state }) => {
+    if (!docChanged) return;
 
     const { from: fromBound, to: toBound } = getBounds(
-      update.state.facet(puzzleFacet),
-      update.state.doc.length,
+      state.facet(puzzleFacet).getState(),
+      state.doc.length,
     );
 
-    const solution = update.state.doc.sliceString(fromBound, toBound);
+    const solution = state.doc.sliceString(fromBound, toBound);
     onChange(solution);
   });
