@@ -5,9 +5,12 @@ export function evalInBrowser(
   puzzle: Puzzle,
   solution: string,
 ): JudgeResultWithCount {
-  const numChars = solution.length;
+  const numChars = solution.replace(/\s*/g, "").length;
   try {
-    const value = window.eval(`${puzzle.source}\n${puzzle.name}(${solution});`);
+    const { name, source } = puzzle;
+    const value = window.eval(
+      `var ${name} = (function () { ${source}; return ${name}; })(); ${name}(${solution});`,
+    );
     const passed = value === true;
     return { passed, value: String(value), numChars };
   } catch (err) {
