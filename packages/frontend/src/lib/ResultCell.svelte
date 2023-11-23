@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { Button, Modal } from "flowbite-svelte";
+  import { Button, Modal, Tooltip } from "flowbite-svelte";
+  import { uniqueId } from "./util";
+  import { twMerge } from "tailwind-merge";
 
   export let name: string;
   export let content: string | undefined = undefined;
@@ -17,36 +19,34 @@
     return input;
   }
 
-  let hover = false;
   let modal = false;
+  const id = uniqueId();
 </script>
 
-<!-- TODO -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-<!-- FIXME: this truncates properly, but it makes its parent's width expand and overflows the table, make it not do that -->
-<div
-  class="w-full text-right truncate {$$props['class']}"
-  class:cursor-pointer={textPreview !== undefined}
-  role="button"
+<button
+  class={twMerge(
+    "w-full text-right truncate",
+    textPreview !== undefined ? "cursor-pointer" : "cursor-text",
+    $$props["class"],
+  )}
   tabindex="0"
-  on:mouseenter={() => (hover = true)}
-  on:mouseleave={() => (hover = false)}
   on:click={() => (modal = content ? true : false)}
 >
-  {#if textPreview !== undefined && hover}
-    <span class="italic font-bold text-gray-400">click to expand</span>
-  {:else if textPreview !== undefined}
-    {textPreview}
+  {#if textPreview !== undefined}
+    <Tooltip triggeredBy={`#${id}`} class="z-10"
+      >click to see entire value</Tooltip
+    >
+    <span {id} class="hover:text-purple-500">{textPreview}</span>
   {:else}
     <span class="italic text-gray-500">&lt;empty&gt;</span>
   {/if}
-</div>
+</button>
 {#if content && modal}
   <Modal title={name} bind:open={modal} size="lg" autoclose outsideclose>
-    <pre>{content}</pre>
+    <pre
+      class="p-2 font-mono rounded border-2 dark:border-gray-950 text-left backdrop-brightness-75">{content}</pre>
     <svelte:fragment slot="footer">
-      <Button color="alternative">Close</Button>
+      <Button class="dark:hover:bg-gray-900" color="alternative">Close</Button>
     </svelte:fragment>
   </Modal>
 {/if}
