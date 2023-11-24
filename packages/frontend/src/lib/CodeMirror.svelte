@@ -16,15 +16,23 @@
   let editorRoot: HTMLElement;
   let cm: CodeMirror;
   $: cm && (puzzle ? cm.setPuzzle(puzzle, onChange, onSubmit) : cm.setEmpty());
+  $: showSettings && fetchEditorSettings();
 
   const settings = {
     tabSize: "",
     cursorLineMargin: "",
   } satisfies Record<string, string>;
 
+  const fetchEditorSettings = () => {
+    if (cm) {
+      settings.tabSize = `${cm.tabSize}`;
+      settings.cursorLineMargin = `${cm.cursorLineMargin}`;
+    }
+  };
+
   const applyEditorSettings = () => {
-    const tabSize = +settings.tabSize,
-      cursorLineMargin = +settings.cursorLineMargin;
+    const tabSize = +settings.tabSize;
+    const cursorLineMargin = +settings.cursorLineMargin;
 
     if (cm.tabSize !== tabSize) {
       cm.tabSize = tabSize;
@@ -37,9 +45,8 @@
   };
 
   onMount(() => {
-    cm = new CodeMirror(editorRoot);
-    settings.tabSize = `${cm.tabSize}`;
-    settings.cursorLineMargin = `${cm.cursorLineMargin}`;
+    (window as any).cm = cm = new CodeMirror(editorRoot);
+    fetchEditorSettings();
   });
 </script>
 
@@ -66,7 +73,8 @@
             <Label class="mb-2">Tab Size</Label>
             <Input
               type="number"
-              min="1"
+              min="2"
+              max="16"
               placeholder={cm?.tabSize}
               bind:value={settings.tabSize}
             />

@@ -18,14 +18,17 @@
   export let loading = false;
 
   let errorClasses: string;
-  $: errorClasses = result?.error ? "text-red-700 dark:text-red-500" : "";
+  $: errorClasses =
+    result?.error || result?.passed === false
+      ? "text-red-700 dark:text-red-500"
+      : "";
   const id = uniqueId();
 </script>
 
 <div class="wrapper relative dark:border-gray-950">
   <P {id} weight="semibold" class="w-full text-center">{title}</P>
   {#if description}
-    <Tooltip triggeredBy={`#${id}`}>{description}</Tooltip>
+    <Tooltip triggeredBy="#{id}">{description}</Tooltip>
   {/if}
   <div
     class="text-gray-400 dark:text-gray-500 text-sm max-w-full mx-auto grid grid-cols-[auto_1fr]"
