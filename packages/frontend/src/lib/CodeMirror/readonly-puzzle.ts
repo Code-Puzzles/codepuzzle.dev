@@ -150,52 +150,47 @@ export const puzzleReadOnlyExtension = (
           return tr;
         }
 
-        // get the bounds after this transaction would be applied
-        const bounds = getBounds(p, tr.newDoc.length);
+        // get the bounds before this transaction would be applied
+        const bounds = getBounds(p, tr.startState.doc.length);
 
-        // iterate over the changes this transaction applies to check if any of the
-        // changes are out of bounds
+        // iterate over the changes this transaction applies to check if any of
+        // the changes are out of bounds
         let oob = false;
         const trChanges: (SimpleRange & { inserted: Text })[] = [];
-        tr.changes.iterChanges((startFrom, startTo, from, to, inserted) => {
+        tr.changes.iterChanges((from, to, _, __, inserted) => {
           // check changes would be out of bounds in new document
           oob = oob || from < bounds.from || to >= bounds.to + inserted.length;
           // save initial positions of all changes
-          trChanges.push({ from: startFrom, to: startTo, inserted });
+          trChanges.push({ from, to, inserted });
         });
 
-        // if there were changes that were out of bounds
-        if (oob) {
-          // get the bounds before this transaction
-          const startBounds = getBounds(p, tr.startState.doc.length);
+        // no changes were out of bounds, so allow this change
+        if (!oob) return tr;
 
-          // clip these changes to within bounds before the transaction, so when
-          // it's applied they are still within bounds
-          const clip = makeClipper(startBounds);
-          const changes = tr.startState.changes(
-            trChanges.map((change) => ({
-              from: clip(change.from),
-              to: clip(change.to),
-              inserted: change.inserted,
-            })),
+        // otheweise, clip the changes to within bounds before the transaction
+        // so when it's applied they are still within bounds
+        const clip = makeClipper(bounds);
+        const changes = tr.startState.changes(
+          trChanges.map((change) => ({
+            from: clip(change.from),
+            to: clip(change.to),
+            inserted: change.inserted,
+          })),
+        );
+
+        // update selection to be within bounds
+        let selection = tr.newSelection;
+        // NOTE: iterate in reverse order so we don't mutate a range before
+        // we clip it
+        const ranges = Array.from(selection.ranges.entries()).reverse();
+        for (const [i, range] of ranges) {
+          selection = selection.replaceRange(
+            EditorSelection.range(clip(range.anchor), clip(range.head)),
+            i,
           );
-
-          // update selection
-          let selection = tr.newSelection;
-          // NOTE: iterate in reverse order so we don't mutate a range before
-          // we clip it
-          const ranges = Array.from(selection.ranges.entries()).reverse();
-          for (const [i, range] of ranges) {
-            selection = selection.replaceRange(
-              EditorSelection.range(clip(range.anchor), clip(range.head)),
-              i,
-            );
-          }
-
-          return { changes, selection };
         }
 
-        return tr;
+        return { changes, selection };
       }),
     ],
   };
