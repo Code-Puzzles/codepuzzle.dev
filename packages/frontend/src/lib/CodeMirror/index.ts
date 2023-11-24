@@ -192,6 +192,8 @@ export class CodeMirror {
     });
 
     // reset the puzzle, since the indentation has changed now
+    // FIXME: use the `indentRange` effect here to re-indent everything
+    //    ^^ will need to update readonly extension to properly handle it though
     this.#resetPuzzle?.(getSolution(this.#view.state));
   }
 

@@ -142,65 +142,61 @@ export const puzzleReadOnlyExtension = (
       // this facet let's other parts of CodeMirror access the puzzle state
       puzzleFacet.of(p),
       // this extension makes everything readonly
-      EditorState.transactionFilter.of(
-        (tr: Transaction): TransactionSpec | readonly TransactionSpec[] => {
-          // allow all undo/redo transactions, since the transactions that created them
-          // should already have been processed by us
-          // https://discuss.codemirror.net/t/detect-if-transaction-is-an-undo-redo-event/7421
-          if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
-            return <TransactionSpec>tr;
-          }
+      EditorState.transactionFilter.of((tr: Transaction): TransactionSpec => {
+        // allow all undo/redo transactions, since the transactions that created them
+        // should already have been processed by us
+        // https://discuss.codemirror.net/t/detect-if-transaction-is-an-undo-redo-event/7421
+        if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
+          return tr;
+        }
 
-          // get the bounds after this transaction would be applied
-          const bounds = getBounds(p, tr.newDoc.length);
+        // get the bounds after this transaction would be applied
+        const bounds = getBounds(p, tr.newDoc.length);
 
-          // iterate over the changes this transaction applies to check if any of the
-          // changes are out of bounds
-          let oob = false;
-          const trChanges: (SimpleRange & { inserted: Text })[] = [];
-          tr.changes.iterChanges((startFrom, startTo, from, to, inserted) => {
-            // check changes would be out of bounds in new document
-            oob = oob || from < bounds.from || to > bounds.to + inserted.length;
-            // save initial positions of all changes
-            trChanges.push({ from: startFrom, to: startTo, inserted });
-          });
+        // iterate over the changes this transaction applies to check if any of the
+        // changes are out of bounds
+        let oob = false;
+        const trChanges: (SimpleRange & { inserted: Text })[] = [];
+        tr.changes.iterChanges((startFrom, startTo, from, to, inserted) => {
+          // check changes would be out of bounds in new document
+          oob = oob || from < bounds.from || to >= bounds.to + inserted.length;
+          // save initial positions of all changes
+          trChanges.push({ from: startFrom, to: startTo, inserted });
+        });
 
-          // if there were changes that were out of bounds
-          if (oob) {
-            // get the bounds before this transaction
-            const startBounds = getBounds(p, tr.startState.doc.length);
+        // if there were changes that were out of bounds
+        if (oob) {
+          // get the bounds before this transaction
+          const startBounds = getBounds(p, tr.startState.doc.length);
 
-            // clip these changes to within bounds before the transaction, so when
-            // it's applied they are still within bounds
-            const clip = makeClipper(startBounds);
-            const changes = trChanges.map((change) => ({
+          // clip these changes to within bounds before the transaction, so when
+          // it's applied they are still within bounds
+          const clip = makeClipper(startBounds);
+          const changes = tr.startState.changes(
+            trChanges.map((change) => ({
               from: clip(change.from),
               to: clip(change.to),
               inserted: change.inserted,
-            }));
-            return [{ changes }];
+            })),
+          );
+
+          // update selection
+          let selection = tr.newSelection;
+          // NOTE: iterate in reverse order so we don't mutate a range before
+          // we clip it
+          const ranges = Array.from(selection.ranges.entries()).reverse();
+          for (const [i, range] of ranges) {
+            selection = selection.replaceRange(
+              EditorSelection.range(clip(range.anchor), clip(range.head)),
+              i,
+            );
           }
 
-          // check any selections are out of bounds
-          const selectionOob = tr.newSelection.ranges.some(
-            (r) => r.from < bounds.from || r.to > bounds.to,
-          );
-          if (!selectionOob) {
-            // allow this transaction, since its changes and selections are within bounds
-            return <TransactionSpec>tr;
-          }
+          return { changes, selection };
+        }
 
-          // clip the selection within bounds
-          const clip = makeClipper(bounds);
-          const selection = EditorSelection.create(
-            tr.newSelection.ranges.map((r) =>
-              EditorSelection.range(clip(r.anchor), clip(r.head)),
-            ),
-            tr.newSelection.mainIndex,
-          );
-          return [{ selection }];
-        },
-      ),
+        return tr;
+      }),
     ],
   };
 };
