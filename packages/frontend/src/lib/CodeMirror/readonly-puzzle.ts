@@ -1,4 +1,3 @@
-import { indentUnit } from "@codemirror/language";
 import {
   EditorSelection,
   EditorState,
@@ -8,6 +7,8 @@ import {
   Transaction,
   type Extension,
   type TransactionSpec,
+  RangeSet,
+  RangeValue,
 } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
 import type { Puzzle } from "@jspuzzles/common";
@@ -90,10 +91,6 @@ const iifeMark = Decoration.mark({ class: "cm-iife" });
 /**
  * This StateField marks the iife when it's created, and then continually keeps
  * those ranges up to date, even if the editor content is changed.
- *
- * Since this extension marks these parts of the editor as readonly, this will
- * technically never need to update the decorations. But, this is what we must
- * do to properly integrate decorations with CodeMirror 6.
  */
 const iifeField = StateField.define<DecorationSet>({
   create: (state) =>
@@ -107,13 +104,60 @@ const iifeField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 });
 
-/*
- * Extension
+/**
+ * Internal state for the `roField`.
  */
+interface ReadOnlyField {
+  decorations: DecorationSet;
+  editableBounds: () => SimpleRange;
+}
+
+/**
+ * This mark defines keeps track of the ranges of the readonly parts of the
+ * editor, as well as the CSS class applied to said ranges.
+ */
+const roMark = Decoration.mark({ class: "cm-ro", inclusive: false });
+
+/**
+ * This StateField keeps track of the readonly sections of the editor, and also
+ * provides a way to get the editable bounds of the current editor (via the
+ * `ReadOnlyField`'s `editableBounds()` method).
+ */
+const roField = StateField.define<ReadOnlyField>({
+  create: (state) => {
+    const { prefix, suffix } = state.facet(puzzleFacet).getState();
+    const len = state.doc.length;
+    return {
+      decorations: Decoration.set([
+        roMark.range(0, prefix.length),
+        roMark.range(len - suffix.length, len),
+      ]),
+      editableBounds: function () {
+        const [before, after] = collectRangeSet(this.decorations);
+        if (!before || !after) throw new Error("invariant");
+        return { from: before.to, to: after.from };
+      },
+    };
+  },
+  update: (ro, tr) => {
+    // NOTE: the transaction here is the one that's run after our transaction
+    // filter, so it always contains "safe" changes (i.e., it doesn't contain
+    // changes to readonly ranges of the editor).
+    ro.decorations = ro.decorations.map(tr.changes);
+    return ro;
+  },
+  provide: (field) =>
+    EditorView.decorations.of((view) => view.state.field(field).decorations),
+});
+
+// TODO: see how much of `puzzleReadOnlyExtension` I can merge into the `roField`, rather
+// than having them separated.
+// TODO: investigate abstracting this into "read only ranges" not just a pair of ranges
+// specific to a puzzle
 
 export interface PuzzleReadOnlyExtension {
-  selection: EditorSelection;
   doc: string;
+  selection: EditorSelection;
   extension: Extension;
 }
 
@@ -134,11 +178,10 @@ export const puzzleReadOnlyExtension = (
     selection: EditorSelection.single(p.prefix.length),
     // list of extensions that make up the readonly extension
     extension: [
-      // configure indent and tab size for the editor
-      indentUnit.of(" ".repeat(indentSize)),
-      EditorState.tabSize.of(indentSize),
       // this state field manages the iife decorations
       iifeField,
+      // this state fields manages the read only ranges
+      roField,
       // this facet let's other parts of CodeMirror access the puzzle state
       puzzleFacet.of(p),
       // this extension makes everything readonly
@@ -150,8 +193,11 @@ export const puzzleReadOnlyExtension = (
           return tr;
         }
 
+        // TODO: should ctrl+A select only puzzle, or everything?
+
         // get the bounds before this transaction would be applied
-        const bounds = getBounds(p, tr.startState.doc.length);
+        // const bounds = getBounds(p, tr.startState.doc.length);
+        const bounds = tr.startState.field(roField).editableBounds();
 
         // iterate over the changes this transaction applies to check if any of
         // the changes are out of bounds
@@ -167,7 +213,7 @@ export const puzzleReadOnlyExtension = (
         // no changes were out of bounds, so allow this change
         if (!oob) return tr;
 
-        // otheweise, clip the changes to within bounds before the transaction
+        // othewise, clip the changes to within bounds before the transaction
         // so when it's applied they are still within bounds
         const clip = makeClipper(bounds);
         const changes = tr.startState.changes(
@@ -196,30 +242,28 @@ export const puzzleReadOnlyExtension = (
   };
 };
 
-const getBounds = (
-  { prefix, suffix }: PuzzleState,
-  docLength: number,
-): SimpleRange => ({
-  from: Math.min(docLength, prefix.length),
-  to: Math.max(0, docLength - suffix.length),
-});
+/*
+ * Utils
+ */
+
+const collectRangeSet = (set: RangeSet<RangeValue>): SimpleRange[] => {
+  const ranges: SimpleRange[] = [];
+  for (let r = set.iter(); r.value; r.next()) {
+    ranges.push({ from: r.from, to: r.to });
+  }
+
+  return ranges;
+};
 
 const makeClipper = (bounds: SimpleRange) => (n: number) =>
   Math.min(Math.max(n, bounds.from), bounds.to);
 
 export const getSolution = (state: EditorState): string => {
-  const { from, to } = getBounds(
-    state.facet(puzzleFacet).getState(),
-    state.doc.length,
-  );
-
+  const { from, to } = state.field(roField).editableBounds();
   return state.doc.sliceString(from, to);
 };
 
 export const setSolution = (view: EditorView, value: string) => {
-  const { from, to } = getBounds(
-    view.state.facet(puzzleFacet).getState(),
-    view.state.doc.length,
-  );
+  const { from, to } = view.state.field(roField).editableBounds();
   view.dispatch({ changes: [{ from, to, insert: value }] });
 };

@@ -19,23 +19,23 @@
   $: showSettings && fetchEditorSettings();
 
   const settings = {
-    tabSize: "",
+    indentSize: "",
     cursorLineMargin: "",
   } satisfies Record<string, string>;
 
   const fetchEditorSettings = () => {
     if (cm) {
-      settings.tabSize = `${cm.tabSize}`;
+      settings.indentSize = `${cm.indentSize}`;
       settings.cursorLineMargin = `${cm.cursorLineMargin}`;
     }
   };
 
   const applyEditorSettings = () => {
-    const tabSize = +settings.tabSize;
+    const indentSize = +settings.indentSize;
     const cursorLineMargin = +settings.cursorLineMargin;
 
-    if (cm.tabSize !== tabSize) {
-      cm.tabSize = tabSize;
+    if (cm.indentSize !== indentSize) {
+      cm.indentSize = indentSize;
     }
     if (cm.cursorLineMargin !== cursorLineMargin) {
       cm.cursorLineMargin = cursorLineMargin;
@@ -70,17 +70,18 @@
       <form>
         <div class="grid gap-6 mb-6 md:grid-cols-2">
           <div>
-            <Label class="mb-2">Tab Size</Label>
+            <Label class="mb-2">Indent Size</Label>
             <Input
               type="number"
               min="2"
               max="16"
-              placeholder={cm?.tabSize}
-              bind:value={settings.tabSize}
+              placeholder={cm?.indentSize}
+              bind:value={settings.indentSize}
             />
-            <P class="text-gray-500 dark:text-gray-500"
-              >The width of a tab character.</P
-            >
+            <P class="text-gray-500 dark:text-gray-500">
+              The width of a tab character (or how many spaces make up an
+              indent).
+            </P>
           </div>
           <div>
             <Label class="mb-2">Cursor Line Margin</Label>

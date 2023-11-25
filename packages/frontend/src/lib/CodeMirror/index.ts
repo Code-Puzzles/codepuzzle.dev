@@ -7,14 +7,10 @@ import {
   type EditorStateConfig,
 } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import { indentUnit } from "@codemirror/language";
+import { indentRange, indentUnit } from "@codemirror/language";
 import { basicSetup } from "codemirror";
 import { type Puzzle } from "@jspuzzles/common";
-import {
-  getSolution,
-  puzzleReadOnlyExtension,
-  setSolution,
-} from "./readonly-puzzle";
+import { puzzleReadOnlyExtension, setSolution } from "./readonly-puzzle";
 import { onChangeHandler, type OnChangeCb } from "./on-change-listener";
 import { displayExtension } from "./display";
 import {
@@ -124,9 +120,6 @@ export class CodeMirror {
     this.#view.focus();
   }
 
-  // This helps us reset the puzzle state internally if required.
-  #resetPuzzle?: (initialValue?: string) => void;
-
   /**
    * Sets up the editor for a puzzle
    */
@@ -136,54 +129,50 @@ export class CodeMirror {
     onSubmit: () => void,
     initialValue?: string,
   ) {
-    this.#resetPuzzle = (initialValue?: string) => {
-      const {
-        doc,
-        selection,
-        extension: puzzleExtension,
-      } = puzzleReadOnlyExtension(puzzle, this.#tabSize.value(), initialValue);
+    const {
+      doc,
+      selection,
+      extension: puzzleExtension,
+    } = puzzleReadOnlyExtension(puzzle, this.#tabSize.value(), initialValue);
 
-      const editorConfig: EditorStateConfig = {
-        doc,
-        selection,
-        // NOTE: order is important here, since it affects precedence of extensions
-        // higher precedence extensions come first
-        extensions: [
-          // our custom keybindings, ensure these override anything else so put them first
-          keymap.of([
-            {
-              key: "Mod-Enter",
-              run: () => (onSubmit(), true),
-            },
-          ]),
-          // our updatable config
-          this.#reconfigurableFacets(),
-          // makes portions of the editor readonly
-          puzzleExtension,
-          // fires the following callback whenever something is changed
-          onChangeHandler(onChange),
-          // display
-          displayExtension,
-          // basic editor setup - we might want to remove this and roll out own at some point
-          basicSetup,
-        ],
-      };
-
-      this.#view.setState(EditorState.create(editorConfig));
-      this.#view.focus();
+    const editorConfig: EditorStateConfig = {
+      doc,
+      selection,
+      // NOTE: order is important here, since it affects precedence of extensions
+      // higher precedence extensions come first
+      extensions: [
+        // our custom keybindings, ensure these override anything else so put them first
+        keymap.of([
+          {
+            key: "Mod-Enter",
+            run: () => (onSubmit(), true),
+          },
+        ]),
+        // our updatable config
+        this.#reconfigurableFacets(),
+        // makes portions of the editor readonly
+        puzzleExtension,
+        // fires the following callback whenever something is changed
+        onChangeHandler(onChange),
+        // display
+        displayExtension,
+        // basic editor setup - we might want to remove this and roll out own at some point
+        basicSetup,
+      ],
     };
 
-    this.#resetPuzzle(initialValue);
+    this.#view.setState(EditorState.create(editorConfig));
+    this.#view.focus();
   }
 
   /*
    * Exposed configuration
    */
 
-  public get tabSize(): number {
+  public get indentSize(): number {
     return this.#tabSize.value();
   }
-  public set tabSize(value: number) {
+  public set indentSize(value: number) {
     this.#view.dispatch({
       effects: [
         this.#tabSize.effect(value),
@@ -191,10 +180,11 @@ export class CodeMirror {
       ],
     });
 
-    // reset the puzzle, since the indentation has changed now
-    // FIXME: use the `indentRange` effect here to re-indent everything
-    //    ^^ will need to update readonly extension to properly handle it though
-    this.#resetPuzzle?.(getSolution(this.#view.state));
+    // reindent the puzzle
+    this.#view.dispatch({
+      changes: indentRange(this.#view.state, 0, this.#view.state.doc.length),
+      filter: false,
+    });
   }
 
   public get cursorLineMargin(): number {

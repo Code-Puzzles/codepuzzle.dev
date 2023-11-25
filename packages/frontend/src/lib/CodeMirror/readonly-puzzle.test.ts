@@ -1,17 +1,32 @@
-import { EditorSelection, EditorState, Transaction } from "@codemirror/state";
+import {
+  Compartment,
+  EditorSelection,
+  EditorState,
+  Transaction,
+} from "@codemirror/state";
 import { test, expect, describe } from "vitest";
 import { puzzleReadOnlyExtension } from "./readonly-puzzle";
+import { indentRange, indentUnit } from "@codemirror/language";
+import { javascript } from "@codemirror/lang-javascript";
 
-const getState = (initialValue?: string): EditorState => {
+const tabSizeC = new Compartment();
+const indentUnitC = new Compartment();
+const getState = (initialValue = "", indentSize = 2): EditorState => {
   const { doc, selection, extension } = puzzleReadOnlyExtension(
     { index: -1, name: "test", source: "source" },
-    2,
+    indentSize,
     initialValue,
   );
   return EditorState.create({
     doc,
     selection,
-    extensions: [extension],
+    extensions: [
+      extension,
+      tabSizeC.of(EditorState.tabSize.of(indentSize)),
+      indentUnitC.of(indentUnit.of(" ".repeat(indentSize))),
+      // this is required since it provides indentation information
+      javascript(),
+    ],
   });
 };
 
@@ -39,11 +54,14 @@ var test = (function () {
 
 // ... now make it return \`true\`!
 test(`;
-const suffix = `);\n`;
+const suffix = `); // asdf\n`;
 const doc = (solution = "") => prefix + solution + suffix;
 
 const pLen = prefix.length;
 const sLen = suffix.length;
+
+const indenter = (from: number, to: number) => (s: string) =>
+  s.replace(new RegExp(" ".repeat(from), "g"), " ".repeat(to));
 
 test("sanity", () => {
   const s = getState();
@@ -66,6 +84,36 @@ describe("selection", () => {
     expect(tr.newSelection.ranges).toEqual([
       expect.objectContaining({ anchor: pLen, head: pLen }),
     ]);
+  });
+});
+
+describe("unfiltered changes", () => {
+  test("change bounds map properly after reindenting document", () => {
+    const startSize = 2;
+    const newSize = 4;
+    const indent = indenter(startSize, newSize);
+
+    const s = getState("", startSize);
+
+    // change indentation size
+    let tr = s.update({
+      effects: [
+        tabSizeC.reconfigure(EditorState.tabSize.of(newSize)),
+        indentUnitC.reconfigure(indentUnit.of(" ".repeat(newSize))),
+      ],
+    });
+
+    // reindent document
+    tr = tr.state.update({
+      changes: indentRange(tr.state, 0, tr.state.doc.length),
+      filter: false,
+      annotations: Transaction.userEvent.of("foo"),
+    });
+
+    // check indentation worked
+    expect(tr.newDoc.toString()).toEqual(indent(doc()));
+    // apply a change to the entire document and make sure it worked
+    expect(getDoc(tr.state, 0, tr.newDoc.length, "foo")).toEqual(indent(doc()));
   });
 });
 
