@@ -34,14 +34,18 @@
     const indentSize = +settings.indentSize;
     const cursorLineMargin = +settings.cursorLineMargin;
 
-    if (cm.indentSize !== indentSize) {
-      cm.indentSize = indentSize;
+    // FIXME: if we use the `cm` binding here, then svelte's compiled code does
+    // something weird and it breaks things, need to look into this more
+    let ref = cm;
+
+    if (ref.indentSize !== indentSize) {
+      ref.indentSize = indentSize;
     }
-    if (cm.cursorLineMargin !== cursorLineMargin) {
-      cm.cursorLineMargin = cursorLineMargin;
+    if (ref.cursorLineMargin !== cursorLineMargin) {
+      ref.cursorLineMargin = cursorLineMargin;
     }
 
-    cm.focus();
+    ref.focus();
   };
 
   onMount(() => {
