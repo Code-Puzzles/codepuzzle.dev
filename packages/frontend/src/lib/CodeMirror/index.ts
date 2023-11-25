@@ -19,20 +19,23 @@ import {
   type CursorLineMarginFacet,
 } from "./cursor-line-margin";
 
+const tabSizeToIndentUnit = (tabSize: number): string =>
+  " ".repeat(Math.max(1, tabSize));
+
 /**
  * A wrapper around CodeMirror 6's dynamic configuration system which makes it
  * easier to use and consume.
  */
-class ReconfigurableFacet<In, Out = In> {
+class ReconfigurableFacet<FacetIn, FacetOut = FacetIn> {
   readonly #compartment = new Compartment();
-  readonly #facet: Facet<In, Out>;
-  readonly #defaultValue: In;
+  readonly #facet: Facet<FacetIn, FacetOut>;
+  readonly #defaultValue: FacetIn;
   readonly #extension: Extension;
-  #lastSetValue: In;
+  #lastSetValue: FacetIn;
 
   public constructor(
-    facet: Facet<In, Out>,
-    defaultValue: In,
+    facet: Facet<FacetIn, FacetOut>,
+    defaultValue: FacetIn,
     extension?: Extension,
   ) {
     this.#facet = facet;
@@ -40,7 +43,7 @@ class ReconfigurableFacet<In, Out = In> {
     this.#defaultValue = this.#lastSetValue = defaultValue;
   }
 
-  public value(): In {
+  public value(): FacetIn {
     return this.#lastSetValue;
   }
 
@@ -53,7 +56,7 @@ class ReconfigurableFacet<In, Out = In> {
     ];
   }
 
-  public effect(value: In): StateEffect<unknown> {
+  public effect(value: FacetIn): StateEffect<unknown> {
     return this.#compartment.reconfigure(
       this.#facet.of((this.#lastSetValue = value)),
     );
@@ -69,7 +72,7 @@ export class CodeMirror {
   readonly #tabSize = new ReconfigurableFacet(EditorState.tabSize, 2);
   readonly #indentUnit = new ReconfigurableFacet(
     indentUnit,
-    " ".repeat(Math.max(1, this.#tabSize.value())),
+    tabSizeToIndentUnit(this.#tabSize.value()),
   );
   #reconfigurableFacets(): Extension {
     return [
@@ -176,7 +179,7 @@ export class CodeMirror {
     this.#view.dispatch({
       effects: [
         this.#tabSize.effect(value),
-        this.#indentUnit.effect(" ".repeat(Math.max(1, value))),
+        this.#indentUnit.effect(tabSizeToIndentUnit(value)),
       ],
     });
 

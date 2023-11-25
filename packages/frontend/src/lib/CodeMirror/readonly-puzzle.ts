@@ -10,7 +10,12 @@ import {
   RangeSet,
   RangeValue,
 } from "@codemirror/state";
-import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
+import {
+  Decoration,
+  type DecorationSet,
+  EditorView,
+  keymap,
+} from "@codemirror/view";
 import type { Puzzle } from "@jspuzzles/common";
 
 export interface SimpleRange {
@@ -146,8 +151,32 @@ const roField = StateField.define<ReadOnlyField>({
     ro.decorations = ro.decorations.map(tr.changes);
     return ro;
   },
-  provide: (field) =>
+  provide: (field) => [
+    // override the "select all" command to switch between selecting the editable
+    // region and the entire document
+    keymap.of([
+      {
+        key: "Mod-a",
+        run: (view) => {
+          const { from, to } = view.state.field(field).editableBounds();
+          const { selection } = view.state;
+          if (
+            selection.ranges.length === 1 &&
+            selection.main.from === from &&
+            selection.main.to === to
+          ) {
+            return false;
+          }
+
+          view.dispatch({ selection: EditorSelection.single(from, to) });
+          return true;
+        },
+      },
+    ]),
+    // tell the editor view to mark our ranges as decorations (and thus create
+    // the dom classes)
     EditorView.decorations.of((view) => view.state.field(field).decorations),
+  ],
 });
 
 // TODO: see how much of `puzzleReadOnlyExtension` I can merge into the `roField`, rather
@@ -192,8 +221,6 @@ export const puzzleReadOnlyExtension = (
         if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
           return tr;
         }
-
-        // TODO: should ctrl+A select only puzzle, or everything?
 
         // get the bounds before this transaction would be applied
         // const bounds = getBounds(p, tr.startState.doc.length);
