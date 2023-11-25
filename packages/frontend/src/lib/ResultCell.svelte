@@ -25,24 +25,27 @@
   }
 </script>
 
-<button
-  class={twMerge(
-    "w-full text-right truncate",
-    textPreview !== undefined ? "cursor-pointer" : "cursor-text",
-    $$props["class"],
-  )}
-  tabindex="0"
-  on:click={() => (modal = content ? true : false)}
->
-  {#if textPreview !== undefined}
-    <Tooltip triggeredBy={`#${id}`} class="z-10"
-      >click to see entire value</Tooltip
-    >
-    <span {id} class="hover:text-purple-500">{textPreview}</span>
-  {:else}
-    <span class="italic text-gray-500">&lt;empty&gt;</span>
-  {/if}
-</button>
+<div id="{id}-ref">
+  <Tooltip reference="#{id}-ref" triggeredBy="#{id}" class="z-10">
+    click to see entire value
+  </Tooltip>
+  <button
+    class={twMerge(
+      "w-full text-right truncate",
+      textPreview !== undefined ? "cursor-pointer" : "cursor-text",
+      $$props["class"],
+    )}
+    tabindex="0"
+    on:click={() => (modal = content ? true : false)}
+  >
+    {#if textPreview !== undefined}
+      <span {id} class="hover:text-purple-500">{textPreview}</span>
+    {:else}
+      <span class="italic text-gray-500">&lt;empty&gt;</span>
+    {/if}
+  </button>
+</div>
+
 {#if content && modal}
   <div transition:fade={{ duration: 300 }} class="z-20">
     <Modal title={name} bind:open={modal} size="lg" autoclose outsideclose>
@@ -56,3 +59,9 @@
     </Modal>
   </div>
 {/if}
+
+<style>
+  pre {
+    white-space: pre-wrap;
+  }
+</style>
