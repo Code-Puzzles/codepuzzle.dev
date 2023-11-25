@@ -54,7 +54,7 @@ var test = (function () {
 
 // ... now make it return \`true\`!
 test(`;
-const suffix = `); // asdf\n`;
+const suffix = `);\n`;
 const doc = (solution = "") => prefix + solution + suffix;
 
 const pLen = prefix.length;

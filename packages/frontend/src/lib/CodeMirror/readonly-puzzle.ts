@@ -2,19 +2,19 @@ import {
   EditorSelection,
   EditorState,
   Facet,
+  RangeSet,
+  RangeValue,
   StateField,
   Text,
   Transaction,
   type Extension,
   type TransactionSpec,
-  RangeSet,
-  RangeValue,
 } from "@codemirror/state";
 import {
   Decoration,
-  type DecorationSet,
   EditorView,
   keymap,
+  type DecorationSet,
 } from "@codemirror/view";
 import type { Puzzle } from "@jspuzzles/common";
 
@@ -29,7 +29,7 @@ export interface SimpleRange {
 export interface PuzzleState {
   prefix: string;
   suffix: string;
-  iifeRanges: SimpleRange[];
+  initialIifeRanges: SimpleRange[];
 }
 
 /**
@@ -59,7 +59,7 @@ function puzzleState(puzzle: Puzzle, indentSize: number): PuzzleState {
   return {
     prefix,
     suffix: `);\n`,
-    iifeRanges: [start, iifeEnd],
+    initialIifeRanges: [start, iifeEnd],
   };
 }
 
@@ -103,7 +103,7 @@ const iifeField = StateField.define<DecorationSet>({
       state
         .facet(puzzleFacet)
         .getState()
-        .iifeRanges.map(({ from, to }) => iifeMark.range(from, to)),
+        .initialIifeRanges.map(({ from, to }) => iifeMark.range(from, to)),
     ),
   update: (decorations, tr) => decorations.map(tr.changes),
   provide: (f) => EditorView.decorations.from(f),
@@ -133,6 +133,8 @@ const roField = StateField.define<ReadOnlyField>({
     const { prefix, suffix } = state.facet(puzzleFacet).getState();
     const len = state.doc.length;
     return {
+      // TODO: investigate abstracting this into "read only ranges" not just a
+      // pair of ranges specific to a puzzle
       decorations: Decoration.set([
         roMark.range(0, prefix.length),
         roMark.range(len - suffix.length, len),
@@ -152,6 +154,61 @@ const roField = StateField.define<ReadOnlyField>({
     return ro;
   },
   provide: (field) => [
+    // this state field manages the iife decorations
+    iifeField,
+
+    // this filter makes everything readonly
+    EditorState.transactionFilter.of((tr: Transaction): TransactionSpec => {
+      // allow all undo/redo transactions, since the transactions that created them
+      // should already have been processed by us
+      // https://discuss.codemirror.net/t/detect-if-transaction-is-an-undo-redo-event/7421
+      if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
+        return tr;
+      }
+
+      // get the bounds before this transaction would be applied
+      // const bounds = getBounds(p, tr.startState.doc.length);
+      const bounds = tr.startState.field(field).editableBounds();
+
+      // iterate over the changes this transaction applies to check if any of
+      // the changes are out of bounds
+      let oob = false;
+      const trChanges: (SimpleRange & { inserted: Text })[] = [];
+      tr.changes.iterChanges((from, to, _, __, inserted) => {
+        // check changes would be out of bounds in new document
+        oob = oob || from < bounds.from || to >= bounds.to + inserted.length;
+        // save initial positions of all changes
+        trChanges.push({ from, to, inserted });
+      });
+
+      // no changes were out of bounds, so allow this change
+      if (!oob) return tr;
+
+      // othewise, clip the changes to within bounds before the transaction
+      // so when it's applied they are still within bounds
+      const clip = makeClipper(bounds);
+      const changes = tr.startState.changes(
+        trChanges.map((change) => ({
+          from: clip(change.from),
+          to: clip(change.to),
+          inserted: change.inserted,
+        })),
+      );
+
+      // update selection to be within bounds
+      let selection = tr.newSelection;
+      // NOTE: iterate in reverse order so we don't mutate a range before
+      // we clip it
+      const ranges = Array.from(selection.ranges.entries()).reverse();
+      for (const [i, range] of ranges) {
+        selection = selection.replaceRange(
+          EditorSelection.range(clip(range.anchor), clip(range.head)),
+          i,
+        );
+      }
+
+      return { changes, selection };
+    }),
     // override the "select all" command to switch between selecting the editable
     // region and the entire document
     keymap.of([
@@ -179,11 +236,6 @@ const roField = StateField.define<ReadOnlyField>({
   ],
 });
 
-// TODO: see how much of `puzzleReadOnlyExtension` I can merge into the `roField`, rather
-// than having them separated.
-// TODO: investigate abstracting this into "read only ranges" not just a pair of ranges
-// specific to a puzzle
-
 export interface PuzzleReadOnlyExtension {
   doc: string;
   selection: EditorSelection;
@@ -200,71 +252,16 @@ export const puzzleReadOnlyExtension = (
   initialValue?: string,
 ): PuzzleReadOnlyExtension => {
   const p = puzzleState(puzzle, indentSize);
+  const doc = [p.prefix, initialValue, p.suffix].filter((s) => s).join("");
+  const selection = EditorSelection.single(p.prefix.length);
   return {
-    // initial value for the puzzle
-    doc: [p.prefix, initialValue, p.suffix].filter((s) => s).join(""),
-    // initial position for the cursor
-    selection: EditorSelection.single(p.prefix.length),
-    // list of extensions that make up the readonly extension
+    doc,
+    selection,
     extension: [
-      // this state field manages the iife decorations
-      iifeField,
-      // this state fields manages the read only ranges
-      roField,
       // this facet let's other parts of CodeMirror access the puzzle state
       puzzleFacet.of(p),
-      // this extension makes everything readonly
-      EditorState.transactionFilter.of((tr: Transaction): TransactionSpec => {
-        // allow all undo/redo transactions, since the transactions that created them
-        // should already have been processed by us
-        // https://discuss.codemirror.net/t/detect-if-transaction-is-an-undo-redo-event/7421
-        if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
-          return tr;
-        }
-
-        // get the bounds before this transaction would be applied
-        // const bounds = getBounds(p, tr.startState.doc.length);
-        const bounds = tr.startState.field(roField).editableBounds();
-
-        // iterate over the changes this transaction applies to check if any of
-        // the changes are out of bounds
-        let oob = false;
-        const trChanges: (SimpleRange & { inserted: Text })[] = [];
-        tr.changes.iterChanges((from, to, _, __, inserted) => {
-          // check changes would be out of bounds in new document
-          oob = oob || from < bounds.from || to >= bounds.to + inserted.length;
-          // save initial positions of all changes
-          trChanges.push({ from, to, inserted });
-        });
-
-        // no changes were out of bounds, so allow this change
-        if (!oob) return tr;
-
-        // othewise, clip the changes to within bounds before the transaction
-        // so when it's applied they are still within bounds
-        const clip = makeClipper(bounds);
-        const changes = tr.startState.changes(
-          trChanges.map((change) => ({
-            from: clip(change.from),
-            to: clip(change.to),
-            inserted: change.inserted,
-          })),
-        );
-
-        // update selection to be within bounds
-        let selection = tr.newSelection;
-        // NOTE: iterate in reverse order so we don't mutate a range before
-        // we clip it
-        const ranges = Array.from(selection.ranges.entries()).reverse();
-        for (const [i, range] of ranges) {
-          selection = selection.replaceRange(
-            EditorSelection.range(clip(range.anchor), clip(range.head)),
-            i,
-          );
-        }
-
-        return { changes, selection };
-      }),
+      // our extension
+      roField,
     ],
   };
 };
