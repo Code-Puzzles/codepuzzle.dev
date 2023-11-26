@@ -53,6 +53,25 @@ const getDoc = (
   insert: string,
 ): string => update(state, from, to, insert).newDoc.toString();
 
+const cmIndent = (state: EditorState, indentSize: number) => {
+  // change indentation size
+  let tr = state.update({
+    effects: [
+      tabSizeC.reconfigure(EditorState.tabSize.of(indentSize)),
+      indentUnitC.reconfigure(indentUnit.of(" ".repeat(indentSize))),
+    ],
+  });
+
+  // reindent document
+  tr = tr.state.update({
+    changes: indentRange(tr.state, 0, tr.state.doc.length),
+    filter: false,
+    annotations: Transaction.userEvent.of("foo"),
+  });
+
+  return tr.state;
+};
+
 const prefix = `// This is your function...
 
 var test = (function () {
@@ -107,32 +126,26 @@ describe("indenting", () => {
     expect(getState("foo", 8).doc.toString()).toEqual(indent(doc("foo")));
   });
 
+  test("reindenting and starting with indent have same result", () => {
+    const value = "\n      foo\n";
+    const indentSize = 6;
+    const startIndented = getState(value, indentSize);
+    const reindented = cmIndent(getState(value, 2), indentSize);
+    expect(startIndented.doc.toString()).toEqual(reindented.doc.toString());
+  });
+
   test("change bounds map properly after reindenting document", () => {
     const startSize = 2;
     const newSize = 4;
     const indent = indenter(startSize, newSize);
 
-    const s = getState("", startSize);
-
-    // change indentation size
-    let tr = s.update({
-      effects: [
-        tabSizeC.reconfigure(EditorState.tabSize.of(newSize)),
-        indentUnitC.reconfigure(indentUnit.of(" ".repeat(newSize))),
-      ],
-    });
-
-    // reindent document
-    tr = tr.state.update({
-      changes: indentRange(tr.state, 0, tr.state.doc.length),
-      filter: false,
-      annotations: Transaction.userEvent.of("foo"),
-    });
+    // indent with codemirror
+    const s = cmIndent(getState("", startSize), newSize);
 
     // check indentation worked
-    expect(tr.newDoc.toString()).toEqual(indent(doc()));
+    expect(s.doc.toString()).toEqual(indent(doc()));
     // apply a change to the entire document and make sure it worked
-    expect(getDoc(tr.state, 0, tr.newDoc.length, "foo")).toEqual(indent(doc()));
+    expect(getDoc(s, 0, s.doc.length, "foo")).toEqual(indent(doc()));
   });
 });
 
