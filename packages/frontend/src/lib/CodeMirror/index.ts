@@ -159,7 +159,7 @@ export class CodeMirror {
         onChangeHandler(onChange),
         // display
         displayExtension,
-        // basic editor setup - we might want to remove this and roll out own at some point
+        // basic editor setup - we might want to remove this and roll our own at some point
         basicSetup,
       ],
     };

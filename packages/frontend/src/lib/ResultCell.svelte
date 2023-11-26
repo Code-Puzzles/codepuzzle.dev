@@ -26,9 +26,6 @@
 </script>
 
 <div id="{id}-ref">
-  <Tooltip reference="#{id}-ref" triggeredBy="#{id}" class="z-10">
-    click to see entire value
-  </Tooltip>
   <button
     class={twMerge(
       "w-full text-right truncate",
@@ -39,6 +36,9 @@
     on:click={() => (modal = content ? true : false)}
   >
     {#if textPreview !== undefined}
+      <Tooltip reference="#{id}-ref" triggeredBy="#{id}" class="z-10">
+        click to see entire value
+      </Tooltip>
       <span {id} class="hover:text-purple-500">{textPreview}</span>
     {:else}
       <span class="italic text-gray-500">&lt;empty&gt;</span>
