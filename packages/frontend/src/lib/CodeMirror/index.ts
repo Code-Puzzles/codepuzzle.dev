@@ -63,17 +63,19 @@ class ReconfigurableFacet<FacetIn, FacetOut = FacetIn> {
   }
 }
 
+export interface CodeMirrorOptions {
+  indentSize: number;
+  cursorLineMargin: number;
+}
+
 export class CodeMirror {
   /*
    * Reconfigurable options
    * TODO: include common editor options, like keymaps, etc
    */
   readonly #cursorLineMargin: ReconfigurableFacet<CursorLineMarginFacet>;
-  readonly #tabSize = new ReconfigurableFacet(EditorState.tabSize, 2);
-  readonly #indentUnit = new ReconfigurableFacet(
-    indentUnit,
-    tabSizeToIndentUnit(this.#tabSize.value()),
-  );
+  readonly #indentUnit: ReconfigurableFacet<string>;
+  readonly #tabSize: ReconfigurableFacet<number>;
   #reconfigurableFacets(): Extension {
     return [
       this.#cursorLineMargin.extension(),
@@ -84,13 +86,23 @@ export class CodeMirror {
 
   readonly #view: EditorView;
 
-  public constructor(dom: HTMLElement) {
+  public constructor(dom: HTMLElement, options?: CodeMirrorOptions) {
     // stop other key events from happening when editor is focused
     dom.addEventListener("keydown", (event) => event.stopPropagation());
     this.#view = new EditorView({ parent: dom });
+
+    // restore options
+    this.#tabSize = new ReconfigurableFacet(
+      EditorState.tabSize,
+      options?.indentSize ?? 2,
+    );
+    this.#indentUnit = new ReconfigurableFacet(
+      indentUnit,
+      tabSizeToIndentUnit(this.#tabSize.value()),
+    );
     this.#cursorLineMargin = new ReconfigurableFacet(
       cursorLineMarginFacet,
-      { lines: 2 },
+      { lines: options?.cursorLineMargin ?? 2 },
       cursorLineMargin(this.#view),
     );
   }
