@@ -10,13 +10,18 @@
   export let onChange = (_: string) => {};
   export let onSubmit = () => {};
   export let showSettings = false;
+  $: showSettings && fetchEditorSettings();
 
   export const setValue = (value: string) => cm?.setSolution(value);
 
   let editorRoot: HTMLElement;
   let cm: CodeMirror;
-  $: cm && (puzzle ? cm.setPuzzle(puzzle, onChange, onSubmit) : cm.setEmpty());
-  $: showSettings && fetchEditorSettings();
+
+  // NOTE: we only want to update the puzzle when `puzzle` changes, so make sure
+  // we don't unintentionally reference `cm` in a reactive statement.
+  $: puzzle, setPuzzle();
+  const setPuzzle = () =>
+    puzzle ? cm?.setPuzzle(puzzle, onChange, onSubmit) : cm?.setEmpty();
 
   const settings = {
     indentSize: "",
@@ -24,32 +29,29 @@
   } satisfies Record<string, string>;
 
   const fetchEditorSettings = () => {
-    if (cm) {
-      settings.indentSize = `${cm.indentSize}`;
-      settings.cursorLineMargin = `${cm.cursorLineMargin}`;
-    }
+    if (!cm) return;
+    settings.indentSize = `${cm.indentSize}`;
+    settings.cursorLineMargin = `${cm.cursorLineMargin}`;
   };
 
   const applyEditorSettings = () => {
+    if (!cm) return;
     const indentSize = +settings.indentSize;
     const cursorLineMargin = +settings.cursorLineMargin;
 
-    // FIXME: if we use the `cm` binding here, then svelte's compiled code does
-    // something weird and it breaks things, need to look into this more
-    let ref = cm;
-
-    if (ref.indentSize !== indentSize) {
-      ref.indentSize = indentSize;
+    if (cm.indentSize !== indentSize) {
+      cm.indentSize = indentSize;
     }
-    if (ref.cursorLineMargin !== cursorLineMargin) {
-      ref.cursorLineMargin = cursorLineMargin;
+    if (cm.cursorLineMargin !== cursorLineMargin) {
+      cm.cursorLineMargin = cursorLineMargin;
     }
 
-    ref.focus();
+    cm.focus();
   };
 
   onMount(() => {
     (window as any).cm = cm = new CodeMirror(editorRoot);
+    setPuzzle();
     fetchEditorSettings();
   });
 </script>

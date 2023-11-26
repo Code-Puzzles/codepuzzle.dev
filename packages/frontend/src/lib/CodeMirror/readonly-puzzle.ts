@@ -40,9 +40,16 @@ function puzzleState(puzzle: Puzzle, indentSize: number): PuzzleState {
   const intro = `// This is your function...\n\n`;
   const iifePrefix = `var ${puzzle.name} = (function () {\n`;
   const iifeSuffix = `\n${indent}return ${puzzle.name};\n})();\n`;
+  // re-indent puzzle source properly
   const fn = puzzle.source
     .split("\n")
-    .map((line) => indent + line)
+    .map((line) => {
+      // NOTE: puzzles by default use an indent size of 2, so we update them
+      // to the desired indent size when creating them here
+      let [, ws, rest] = /^(\s*)(.+$)/.exec(line)!;
+      // NOTE: `+ 1` because this puzzle will be wrapped in an iife
+      return indent.repeat(ws!.length / 2 + 1) + rest;
+    })
     .join("\n");
   const fnCall = `\n// ... now make it return \`true\`!\n${puzzle.name}(`;
   const prefix = [intro, iifePrefix, fn, iifeSuffix, fnCall].join("");

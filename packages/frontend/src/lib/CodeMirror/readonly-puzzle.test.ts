@@ -9,11 +9,19 @@ import { puzzleReadOnlyExtension } from "./readonly-puzzle";
 import { indentRange, indentUnit } from "@codemirror/language";
 import { javascript } from "@codemirror/lang-javascript";
 
+const puzzleSource = `a;
+{
+  b;
+  {
+    c;
+  }
+}`;
+
 const tabSizeC = new Compartment();
 const indentUnitC = new Compartment();
 const getState = (initialValue = "", indentSize = 2): EditorState => {
   const { doc, selection, extension } = puzzleReadOnlyExtension(
-    { index: -1, name: "test", source: "source" },
+    { index: -1, name: "test", source: puzzleSource },
     indentSize,
     initialValue,
   );
@@ -48,7 +56,13 @@ const getDoc = (
 const prefix = `// This is your function...
 
 var test = (function () {
-  source
+  a;
+  {
+    b;
+    {
+      c;
+    }
+  }
   return test;
 })();
 
@@ -87,7 +101,12 @@ describe("selection", () => {
   });
 });
 
-describe("unfiltered changes", () => {
+describe("indenting", () => {
+  test("indentation of puzzles is comptuted properly", () => {
+    const indent = indenter(2, 8);
+    expect(getState("foo", 8).doc.toString()).toEqual(indent(doc("foo")));
+  });
+
   test("change bounds map properly after reindenting document", () => {
     const startSize = 2;
     const newSize = 4;
