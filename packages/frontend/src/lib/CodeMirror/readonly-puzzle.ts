@@ -187,7 +187,7 @@ const roField = StateField.define<ReadOnlyField>({
       const trChanges: (SimpleRange & { inserted: Text })[] = [];
       tr.changes.iterChanges((from, to, _, __, inserted) => {
         // check changes would be out of bounds in new document
-        oob = oob || from < bounds.from || to >= bounds.to + inserted.length;
+        oob = oob || from < bounds.from || to > bounds.to;
         // save initial positions of all changes
         trChanges.push({ from, to, inserted });
       });

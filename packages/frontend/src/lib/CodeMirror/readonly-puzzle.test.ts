@@ -263,4 +263,17 @@ describe("replace", () => {
       }),
     ]);
   });
+
+  test("paste in suffix", () => {
+    const s = getState();
+    const { length: len } = s.doc;
+    const pos = len - sLen + 1;
+    expect(getDoc(s, pos, pos, "pasted")).toEqual(doc());
+  });
+
+  test("paste end end of document", () => {
+    const s = getState();
+    const { length: len } = s.doc;
+    expect(getDoc(s, len, len, "pasted")).toEqual(doc());
+  });
 });

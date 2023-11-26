@@ -89,6 +89,7 @@
             <Input
               type="number"
               min="1"
+              max="8"
               value={$editorSettings.cursorLineMargin}
               on:change={setNumberValue(
                 (n) => ($editorSettings.cursorLineMargin = n),
@@ -117,7 +118,7 @@
         <Button
           color="red"
           outline
-          on:click={() => ($editorSettings = defaultEditorSettings)}
+          on:click={() => ($editorSettings = defaultEditorSettings())}
         >
           Reset to defaults
         </Button>
