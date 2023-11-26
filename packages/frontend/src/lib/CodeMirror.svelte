@@ -5,12 +5,12 @@
   import { CodeMirror } from "./CodeMirror/index.js";
   import { Button, Input, Label, Modal, P } from "flowbite-svelte";
   import { fade } from "svelte/transition";
+  import { defaultEditorSettings, editorSettings } from "./stores.js";
 
   export let puzzle: Puzzle | undefined = undefined;
   export let onChange = (_: string) => {};
   export let onSubmit = () => {};
   export let showSettings = false;
-  $: showSettings && fetchEditorSettings();
 
   export const setValue = (value: string) => cm?.setSolution(value);
 
@@ -23,36 +23,23 @@
   const setPuzzle = () =>
     puzzle ? cm?.setPuzzle(puzzle, onChange, onSubmit) : cm?.setEmpty();
 
-  const settings = {
-    indentSize: "",
-    cursorLineMargin: "",
-  } satisfies Record<string, string>;
-
-  const fetchEditorSettings = () => {
-    if (!cm) return;
-    settings.indentSize = `${cm.indentSize}`;
-    settings.cursorLineMargin = `${cm.cursorLineMargin}`;
-  };
-
   const applyEditorSettings = () => {
     if (!cm) return;
-    const indentSize = +settings.indentSize;
-    const cursorLineMargin = +settings.cursorLineMargin;
 
-    if (cm.indentSize !== indentSize) {
-      cm.indentSize = indentSize;
+    if (cm.indentSize !== $editorSettings.indentSize) {
+      cm.indentSize = $editorSettings.indentSize;
     }
-    if (cm.cursorLineMargin !== cursorLineMargin) {
-      cm.cursorLineMargin = cursorLineMargin;
+
+    if (cm.cursorLineMargin !== $editorSettings.cursorLineMargin) {
+      cm.cursorLineMargin = $editorSettings.cursorLineMargin;
     }
 
     cm.focus();
   };
 
   onMount(() => {
-    (window as any).cm = cm = new CodeMirror(editorRoot);
+    (window as any).cm = cm = new CodeMirror(editorRoot, $editorSettings);
     setPuzzle();
-    fetchEditorSettings();
   });
 </script>
 
@@ -69,6 +56,7 @@
     <Modal
       title="Editor Settings"
       bind:open={showSettings}
+      on:close={applyEditorSettings}
       size="lg"
       autoclose
       outsideclose
@@ -81,8 +69,7 @@
               type="number"
               min="2"
               max="16"
-              placeholder={cm?.indentSize}
-              bind:value={settings.indentSize}
+              bind:value={$editorSettings.indentSize}
             />
             <P class="text-gray-500 dark:text-gray-500">
               The width of a tab character (or how many spaces make up an
@@ -94,8 +81,7 @@
             <Input
               type="number"
               min="1"
-              placeholder={cm?.cursorLineMargin}
-              bind:value={settings.cursorLineMargin}
+              bind:value={$editorSettings.cursorLineMargin}
             />
             <P class="text-gray-500 dark:text-gray-500">
               How many extra lines to always keep above and below the cursor
@@ -106,12 +92,23 @@
         </div>
       </form>
 
+      <P class="text-center text-gray-500 dark:text-gray-500">
+        Settings are saved as you make them
+      </P>
       <svelte:fragment slot="footer">
-        <Button type="submit" color="purple" on:click={applyEditorSettings}>
-          Save
+        <Button
+          type="submit"
+          class="dark:hover:bg-gray-900"
+          color="alternative"
+        >
+          Done
         </Button>
-        <Button class="dark:hover:bg-gray-900" color="alternative">
-          Close
+        <Button
+          color="red"
+          outline
+          on:click={() => ($editorSettings = defaultEditorSettings)}
+        >
+          Reset to defaults
         </Button>
       </svelte:fragment>
     </Modal>

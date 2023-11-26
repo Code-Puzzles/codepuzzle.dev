@@ -8,7 +8,7 @@ export function evalInBrowser(
   const numChars = solution.replace(/\s*/g, "").length;
   try {
     const { name, source } = puzzle;
-    const value = window.eval(
+    const value = (void 0, eval)(
       `var ${name} = (function () { ${source}; return ${name}; })(); ${name}(${solution});`,
     );
     const passed = value === true;
