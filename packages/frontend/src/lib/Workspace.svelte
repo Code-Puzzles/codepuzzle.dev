@@ -31,7 +31,7 @@
       showSolutionClicked={() =>
         setEditorValue?.("TODO: render solution text into editor")}
       showSolutionDisabled={puzzle &&
-        Number.isInteger(userState[puzzle.id]?.charCount)}
+        !Number.isInteger(userState[puzzle.id]?.charCount)}
     />
     <CodeMirror
       class="flex-1 min-h-0"

@@ -240,6 +240,8 @@ const roField = StateField.define<ReadOnlyField>({
           return true;
         },
       },
+      // TODO: also override "go to start/end of line" commands to go to the
+      // start/end of the editable bounds if the cursor is on the same line
     ]),
     // tell the editor view to mark our ranges as decorations (and thus create
     // the dom classes)

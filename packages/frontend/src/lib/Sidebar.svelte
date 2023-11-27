@@ -1,5 +1,4 @@
 <script lang="ts">
-  // import { quintOut } from 'svelte/easing';
   import {
     type Puzzle,
     PuzzleGroup,
@@ -38,43 +37,49 @@
         <SidebarWrapper class="rounded-none">
           <SidebarGroup>
             {#each Object.values(PuzzleGroup) as group}
-              <!-- isOpen={puzzle && items.includes(puzzle)} -->
-              <SidebarDropdownWrapper
-                class="capitalize"
-                label={group.toString()}
-                isOpen={!!puzzlesInGroups[group].find(
-                  (other) => puzzle?.id === other.id,
-                )}
-              >
-                <svelte:fragment slot="icon">
-                  <LightbulbSolid />
-                </svelte:fragment>
+              {@const puzzles = puzzlesInGroups[group]}
+              {#if puzzles.length}
+                <SidebarDropdownWrapper
+                  class="capitalize"
+                  label="{group} ({puzzles.filter(
+                    (p) => userState[p.id]?.charCount,
+                  ).length} / {puzzles.length})"
+                  isOpen={!!puzzlesInGroups[group].find(
+                    (other) => puzzle?.id === other.id,
+                  )}
+                >
+                  <svelte:fragment slot="icon">
+                    <LightbulbSolid />
+                  </svelte:fragment>
 
-                {#each puzzlesInGroups[group] as p}
-                  <SidebarItem
-                    href={`#${p.id}`}
-                    label={p.name}
-                    spanClass={`ml-1 flex-1 ${p === puzzle ? "font-bold" : ""}`}
-                    class={`ml-2 ${
-                      p === puzzle ? "bg-gray-100 dark:bg-gray-700" : ""
-                    }`}
-                    on:click={() => selectPuzzle(p.id)}
-                  >
-                    <svelte:fragment slot="icon">
-                      <span class="mr-2 opacity-25">•</span>
-                    </svelte:fragment>
-                    <svelte:fragment slot="subtext">
-                      {@const state = userState[p.id]}
-                      {@const draft = $drafts[p.id]}
-                      {#if state && state.charCount}
-                        <Badge color="green">{state.charCount} chars</Badge>
-                      {:else if draft?.solution}
-                        <Badge color="yellow">draft</Badge>
-                      {/if}
-                    </svelte:fragment>
-                  </SidebarItem>
-                {/each}
-              </SidebarDropdownWrapper>
+                  {#each puzzles as p}
+                    <SidebarItem
+                      href={`#${p.id}`}
+                      label={p.name}
+                      spanClass={`ml-1 flex-1 ${
+                        p === puzzle ? "font-bold" : ""
+                      }`}
+                      class={`ml-2 ${
+                        p === puzzle ? "bg-gray-100 dark:bg-gray-700" : ""
+                      }`}
+                      on:click={() => selectPuzzle(p.id)}
+                    >
+                      <svelte:fragment slot="icon">
+                        <span class="mr-2 opacity-25">•</span>
+                      </svelte:fragment>
+                      <svelte:fragment slot="subtext">
+                        {@const state = userState[p.id]}
+                        {@const draft = $drafts[p.id]}
+                        {#if state && state.charCount}
+                          <Badge color="green">{state.charCount} chars</Badge>
+                        {:else if draft?.solution}
+                          <Badge color="yellow">draft</Badge>
+                        {/if}
+                      </svelte:fragment>
+                    </SidebarItem>
+                  {/each}
+                </SidebarDropdownWrapper>
+              {/if}
             {/each}
           </SidebarGroup>
         </SidebarWrapper>
