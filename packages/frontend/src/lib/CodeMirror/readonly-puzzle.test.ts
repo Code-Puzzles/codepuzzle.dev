@@ -145,7 +145,7 @@ describe("indenting", () => {
     // check indentation worked
     expect(s.doc.toString()).toEqual(indent(doc()));
     // apply a change to the entire document and make sure it worked
-    expect(getDoc(s, 0, s.doc.length, "foo")).toEqual(indent(doc()));
+    expect(getDoc(s, 0, s.doc.length, "foo")).toEqual(indent(doc("foo")));
   });
 });
 
@@ -186,19 +186,19 @@ describe("insert", () => {
     const s = getState();
     const { length: len } = s.doc;
 
-    expect(getDoc(s, 0, 0, "a")).toEqual(doc());
-    expect(getDoc(s, pLen - 1, pLen - 1, "a")).toEqual(doc());
-    expect(getDoc(s, pLen + 2, pLen + 2, "a")).toEqual(doc());
-    expect(getDoc(s, len, len, "a")).toEqual(doc());
-    expect(getDoc(s, len - 1, len - 1, "a")).toEqual(doc());
+    expect(getDoc(s, 0, 0, "a")).toEqual(doc("a"));
+    expect(getDoc(s, pLen - 1, pLen - 1, "a")).toEqual(doc("a"));
+    expect(getDoc(s, pLen + 2, pLen + 2, "a")).toEqual(doc("a"));
+    expect(getDoc(s, len, len, "a")).toEqual(doc("a"));
+    expect(getDoc(s, len - 1, len - 1, "a")).toEqual(doc("a"));
   });
 
   test("prefix.to boundary", () => {
-    expect(getDoc(getState(), pLen - 1, pLen - 1, "a")).toEqual(doc());
+    expect(getDoc(getState(), pLen - 1, pLen - 1, "a")).toEqual(doc("a"));
   });
 
   test("suffix.from boundary", () => {
-    expect(getDoc(getState(), pLen + 1, pLen + 1, "a")).toEqual(doc());
+    expect(getDoc(getState(), pLen + 1, pLen + 1, "a")).toEqual(doc("a"));
   });
 
   test("at prefix.to", () => {
@@ -225,23 +225,23 @@ describe("replace", () => {
   test("within readonly ranges", () => {
     const s = getState();
     const { length: len } = s.doc;
-    expect(getDoc(s, 0, pLen, "foo")).toEqual(doc());
-    expect(getDoc(s, pLen + 1, len, "foo")).toEqual(doc());
+    expect(getDoc(s, 0, pLen, "foo")).toEqual(doc("foo"));
+    expect(getDoc(s, pLen + 1, len, "foo")).toEqual(doc("foo"));
   });
 
   test("entire document", () => {
     const s = getState();
     const { length: len } = s.doc;
-    expect(getDoc(s, 0, len, "foo")).toEqual(doc());
+    expect(getDoc(s, 0, len, "foo")).toEqual(doc("foo"));
   });
 
   test("over prefix.to boundary", () => {
-    expect(getDoc(getState(), pLen - 1, pLen, "foo")).toEqual(doc());
+    expect(getDoc(getState(), pLen - 1, pLen, "foo")).toEqual(doc("foo"));
   });
 
   test("over prefix.to boundary, with content", () => {
     const tr = update(getState("foo"), pLen - 1, pLen + 1, "xxx");
-    expect(tr.newDoc.toString()).toEqual(doc("oo"));
+    expect(tr.newDoc.toString()).toEqual(doc("xxxoo"));
     expect(tr.newSelection.ranges).toEqual([
       expect.objectContaining({
         anchor: pLen,
@@ -255,7 +255,7 @@ describe("replace", () => {
     const s = getState(v);
     const { length: len } = s.doc;
     const tr = update(s, pLen + 1, len, "xxx");
-    expect(tr.newDoc.toString()).toEqual(doc("f"));
+    expect(tr.newDoc.toString()).toEqual(doc("fxxx"));
     expect(tr.newSelection.ranges).toEqual([
       expect.objectContaining({
         anchor: pLen,
@@ -268,12 +268,12 @@ describe("replace", () => {
     const s = getState();
     const { length: len } = s.doc;
     const pos = len - sLen + 1;
-    expect(getDoc(s, pos, pos, "pasted")).toEqual(doc());
+    expect(getDoc(s, pos, pos, "pasted")).toEqual(doc("pasted"));
   });
 
   test("paste end end of document", () => {
     const s = getState();
     const { length: len } = s.doc;
-    expect(getDoc(s, len, len, "pasted")).toEqual(doc());
+    expect(getDoc(s, len, len, "pasted")).toEqual(doc("pasted"));
   });
 });

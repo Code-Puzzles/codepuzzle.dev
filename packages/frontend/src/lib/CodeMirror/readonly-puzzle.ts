@@ -202,7 +202,7 @@ const roField = StateField.define<ReadOnlyField>({
         trChanges.map((change) => ({
           from: clip(change.from),
           to: clip(change.to),
-          inserted: change.inserted,
+          insert: change.inserted,
         })),
       );
 
