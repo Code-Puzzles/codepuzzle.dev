@@ -1,11 +1,11 @@
 import {
   Compartment,
+  EditorSelection,
   EditorState,
   Facet,
-  type Extension,
   StateEffect,
   type EditorStateConfig,
-  EditorSelection,
+  type Extension,
 } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import { indentRange, indentUnit } from "@codemirror/language";
@@ -100,7 +100,7 @@ export class CodeMirror {
     this.#cursorLineMargin = new ReconfigurableFacet(
       cursorLineMarginFacet,
       options?.cursorLineMargin ?? 2,
-      cursorLineMargin(this.#view),
+      cursorLineMargin,
     );
   }
 
@@ -142,17 +142,23 @@ export class CodeMirror {
     initialValue?: string,
     initialSelection?: EditorSelection,
   ) {
-    const {
+    let {
       doc,
       selection,
       extension: puzzleExtension,
     } = puzzleReadOnlyExtension(puzzle, this.#tabSize.value(), initialValue);
 
+    if (initialSelection) {
+      const restored = EditorSelection.fromJSON(initialSelection);
+      const bw = (value: number) => value >= 0 && value <= doc.length;
+      if (restored.ranges.every(({ from, to }) => bw(from) && bw(to))) {
+        selection = restored;
+      }
+    }
+
     const editorConfig: EditorStateConfig = {
       doc,
-      selection: initialSelection
-        ? EditorSelection.fromJSON(initialSelection)
-        : selection,
+      selection,
       // NOTE: order is important here, since it affects precedence of extensions
       // higher precedence extensions come first
       extensions: [
