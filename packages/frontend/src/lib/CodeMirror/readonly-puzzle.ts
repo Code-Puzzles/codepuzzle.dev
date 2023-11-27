@@ -128,7 +128,7 @@ interface ReadOnlyField {
  * This mark defines keeps track of the ranges of the readonly parts of the
  * editor, as well as the CSS class applied to said ranges.
  */
-const roMark = Decoration.mark({ class: "cm-ro", inclusive: false });
+const roMark = Decoration.mark({ class: "cm-ro" });
 
 /**
  * This StateField keeps track of the readonly sections of the editor, and also
@@ -153,12 +153,16 @@ const roField = StateField.define<ReadOnlyField>({
       },
     };
   },
+  // NOTE: the transaction here is the one that's run after our transaction
+  // filter, so it always contains "safe" changes (i.e., it doesn't contain
+  // changes to readonly ranges of the editor).
   update: (ro, tr) => {
-    // NOTE: the transaction here is the one that's run after our transaction
-    // filter, so it always contains "safe" changes (i.e., it doesn't contain
-    // changes to readonly ranges of the editor).
-    ro.decorations = ro.decorations.map(tr.changes);
-    return ro;
+    // NOTE: it's important a new object is returned here, and not the old one
+    // https://discuss.codemirror.net/t/using-editorview-scrollintoview-in-transactionextender-breaks-statefield-updates/7476
+    return {
+      ...ro,
+      decorations: ro.decorations.map(tr.changes),
+    };
   },
   provide: (field) => [
     // this state field manages the iife decorations

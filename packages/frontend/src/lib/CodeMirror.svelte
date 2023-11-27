@@ -26,15 +26,20 @@
   const applyEditorSettings = () => {
     if (!cm) return;
 
-    if (cm.indentSize !== $editorSettings.indentSize) {
-      cm.indentSize = $editorSettings.indentSize;
+    if (cm.indentSize !== +$editorSettings.indentSize) {
+      cm.indentSize = +$editorSettings.indentSize;
     }
 
-    if (cm.cursorLineMargin !== $editorSettings.cursorLineMargin) {
-      cm.cursorLineMargin = $editorSettings.cursorLineMargin;
+    if (cm.cursorLineMargin !== +$editorSettings.cursorLineMargin) {
+      cm.cursorLineMargin = +$editorSettings.cursorLineMargin;
     }
 
     cm.focus();
+  };
+
+  const setNumberValue = (fn: (n: number) => void) => (e: Event) => {
+    const n = (e.target as HTMLInputElement).valueAsNumber;
+    if (!isNaN(n)) fn(n);
   };
 
   onMount(() => {
@@ -69,7 +74,10 @@
               type="number"
               min="2"
               max="16"
-              bind:value={$editorSettings.indentSize}
+              value={$editorSettings.indentSize}
+              on:change={setNumberValue(
+                (n) => ($editorSettings.indentSize = n),
+              )}
             />
             <P class="text-gray-500 dark:text-gray-500">
               The width of a tab character (or how many spaces make up an
@@ -81,7 +89,10 @@
             <Input
               type="number"
               min="1"
-              bind:value={$editorSettings.cursorLineMargin}
+              value={$editorSettings.cursorLineMargin}
+              on:change={setNumberValue(
+                (n) => ($editorSettings.cursorLineMargin = n),
+              )}
             />
             <P class="text-gray-500 dark:text-gray-500">
               How many extra lines to always keep above and below the cursor
