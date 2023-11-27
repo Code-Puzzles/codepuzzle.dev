@@ -130,9 +130,7 @@
         <Button type="submit" color="purple" on:click={applyEditorSettings}>
           Save
         </Button>
-        <Button class="dark:hover:bg-gray-900" color="alternative">
-          Close
-        </Button>
+        <Button color="alternative" outline>Close</Button>
         <Button
           color="red"
           outline
