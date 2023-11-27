@@ -16,6 +16,7 @@
   } from "flowbite-svelte";
   import { LightbulbSolid } from "flowbite-svelte-icons";
   import { twMerge } from "tailwind-merge";
+  import { drafts } from "./stores";
 
   export let puzzle: Puzzle | undefined = undefined;
   export let selectPuzzle: (puzzleName: string) => void;
@@ -64,9 +65,10 @@
                     </svelte:fragment>
                     <svelte:fragment slot="subtext">
                       {@const state = userState[p.id]}
+                      {@const draft = $drafts[p.id]}
                       {#if state && state.charCount}
                         <Badge color="green">{state.charCount} chars</Badge>
-                      {:else if userState[p.id]?.draft}
+                      {:else if draft?.solution}
                         <Badge color="yellow">draft</Badge>
                       {/if}
                     </svelte:fragment>

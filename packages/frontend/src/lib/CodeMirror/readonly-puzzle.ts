@@ -264,7 +264,7 @@ export const puzzleReadOnlyExtension = (
 ): PuzzleReadOnlyExtension => {
   const p = puzzleState(puzzle, indentSize);
   const doc = [p.prefix, initialValue, p.suffix].filter((s) => s).join("");
-  const selection = EditorSelection.single(p.prefix.length);
+  const selection = EditorSelection.single(doc.length - p.suffix.length);
   return {
     doc,
     selection,

@@ -19,6 +19,5 @@ export type UserState = Record<
      * Only set when a solution exists
      */
     charCount?: number;
-    draft?: boolean;
   }
 >;

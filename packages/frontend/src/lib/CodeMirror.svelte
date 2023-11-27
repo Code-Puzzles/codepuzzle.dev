@@ -5,10 +5,11 @@
   import { CodeMirror } from "./CodeMirror/index.js";
   import { Button, Input, Label, Modal, P } from "flowbite-svelte";
   import { fade } from "svelte/transition";
-  import { defaultEditorSettings, editorSettings } from "./stores.js";
+  import { defaultEditorSettings, drafts, editorSettings } from "./stores.js";
+  import type { OnChangeCb } from "./CodeMirror/on-change-listener.js";
 
   export let puzzle: Puzzle | undefined = undefined;
-  export let onChange = (_: string) => {};
+  export let onChange: OnChangeCb = () => {};
   export let onSubmit = () => {};
   export let showSettings = false;
 
@@ -20,8 +21,20 @@
   // NOTE: we only want to update the puzzle when `puzzle` changes, so make sure
   // we don't unintentionally reference `cm` in a reactive statement.
   $: puzzle, setPuzzle();
-  const setPuzzle = () =>
-    puzzle ? cm?.setPuzzle(puzzle, onChange, onSubmit) : cm?.setEmpty();
+  const setPuzzle = () => {
+    if (puzzle) {
+      const draft = $drafts[puzzle.id];
+      cm?.setPuzzle(
+        puzzle,
+        onChange,
+        onSubmit,
+        draft?.solution,
+        draft?.selection,
+      );
+    } else {
+      cm?.setEmpty();
+    }
+  };
 
   const applyEditorSettings = () => {
     if (!cm) return;

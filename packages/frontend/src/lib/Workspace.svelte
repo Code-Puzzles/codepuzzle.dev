@@ -7,11 +7,12 @@
   import CodeMirror from "./CodeMirror.svelte";
   import CodeMirrorBar from "./CodeMirrorBar.svelte";
   import Results from "./Results.svelte";
+  import type { OnChangeCb } from "./CodeMirror/on-change-listener";
 
   export let localResult: JudgeResultWithCount | undefined = undefined;
   export let verifiedResult: JudgeResultWithCount | undefined = undefined;
   export let puzzle: Puzzle | undefined = undefined;
-  export let onChange: (value: string) => void;
+  export let onChange: OnChangeCb;
   export let onSubmit: () => void;
   export let submitting = false;
   export let userState: UserState;

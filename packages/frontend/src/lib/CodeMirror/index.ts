@@ -5,6 +5,7 @@ import {
   type Extension,
   StateEffect,
   type EditorStateConfig,
+  EditorSelection,
 } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import { indentRange, indentUnit } from "@codemirror/language";
@@ -139,6 +140,7 @@ export class CodeMirror {
     onChange: OnChangeCb,
     onSubmit: () => void,
     initialValue?: string,
+    initialSelection?: EditorSelection,
   ) {
     const {
       doc,
@@ -148,7 +150,9 @@ export class CodeMirror {
 
     const editorConfig: EditorStateConfig = {
       doc,
-      selection,
+      selection: initialSelection
+        ? EditorSelection.fromJSON(initialSelection)
+        : selection,
       // NOTE: order is important here, since it affects precedence of extensions
       // higher precedence extensions come first
       extensions: [

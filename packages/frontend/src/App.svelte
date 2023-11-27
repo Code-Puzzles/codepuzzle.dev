@@ -14,6 +14,8 @@
   import { responsiveBreakpointPixels } from "./lib/util";
   import { fade } from "svelte/transition";
   import SidebarWrapper from "./lib/SidebarWrapper.svelte";
+  import { drafts } from "./lib/stores";
+  import type { OnChangeCb } from "./lib/CodeMirror/on-change-listener";
 
   let puzzle: Puzzle | undefined =
     puzzlesAsMap[window.location.hash.substring(1)] ?? puzzles[0];
@@ -26,14 +28,18 @@
   // TODO: get from backend
   const userState: UserState = {
     [puzzles[0]!.id]: { charCount: 2 },
-    [puzzles[1]!.id]: { draft: true },
   };
 
-  function onChange(value: string) {
+  const onChange: OnChangeCb = (value, selection) => {
     if (!puzzle) return;
+
+    // eval locally
     solution = value.trim();
     localResult = solution ? evalInBrowser(puzzle, solution) : undefined;
-  }
+
+    // save to drafts
+    $drafts[puzzle.id] = { solution, selection: selection.toJSON() };
+  };
 
   function onSubmit() {
     if (!puzzle) return;
