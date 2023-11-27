@@ -1,54 +1,52 @@
 import { Facet, type Extension, EditorState } from "@codemirror/state";
 import { EditorView } from "codemirror";
 
-export interface CursorLineMarginFacet {
-  /**
-   * Number of lines above/below the cursor to keep visible in the viewport
-   */
-  lines: number;
-}
-export const cursorLineMarginFacet = Facet.define<
-  CursorLineMarginFacet,
-  CursorLineMarginFacet
->({
-  combine: (input) => input[0] ?? { lines: 0 },
+/**
+ * Number of lines above/below the cursor to keep visible in the viewport.
+ * Defaults to 1.
+ */
+export const cursorLineMarginFacet = Facet.define<number, number>({
+  combine: (input) => input[0] ?? 1,
 });
 
 export const cursorLineMargin = (view: EditorView): Extension => {
+  const lineAtPos = (s: EditorState, pos: number) => s.doc.lineAt(pos).number;
   return [
     // seems to the best approximation of CM5's `cursorScrollMargin`
     // https://discuss.codemirror.net/t/cursorscrollmargin-for-v6/7448
     EditorState.transactionExtender.of((tr) => {
       const s = tr.state;
       const { main } = s.selection;
+      const cursorLineMargin = s.facet(cursorLineMarginFacet);
 
-      const { lines: cursorLineMargin } = s.facet(cursorLineMarginFacet);
-
+      // editor rect
       const rect = view.dom.getBoundingClientRect();
+      // top and bottom pixel positions of the visible region of the editor
+      const viewportTop = rect.top - view.documentTop;
+      const viewportBottom = rect.bottom - view.documentTop;
 
-      const pxTop = rect.top - view.documentTop;
-      const pxBot = rect.bottom - view.documentTop;
+      // line with main selection
+      const mainLine = lineAtPos(s, main.head);
+      // top most visible line
+      const visTopLine = lineAtPos(s, view.lineBlockAtHeight(viewportTop).from);
 
-      const mainLine = s.doc.lineAt(main.head).number;
-      const visTopLine = s.doc.lineAt(
-        view.lineBlockAtHeight(pxTop).from,
-      ).number;
-
-      const botLineBlk = view.lineBlockAtHeight(pxBot);
-      const visBotLineDoc = s.doc.lineAt(
-        Math.min(botLineBlk.to, s.doc.length),
-      ).number;
+      // bottom most visible line
+      // NOTE: calculating this is slightly more complex - if the editor is
+      // larger than all the lines in it, and the `scrollPastEnd()` extension is
+      // enabled, then we need to calculate where the bottom most visible line
+      // should be if it extended all the way to the bottom of the editor
+      const botLineBlk = view.lineBlockAtHeight(viewportBottom);
+      const visBotLineDoc = lineAtPos(s, Math.min(botLineBlk.to, s.doc.length));
       const visBotLine =
-        botLineBlk.bottom >= pxBot
+        botLineBlk.bottom >= viewportBottom
           ? visBotLineDoc
           : visBotLineDoc +
-            Math.floor((pxBot - botLineBlk.bottom) / view.defaultLineHeight);
+            Math.floor(
+              (viewportBottom - botLineBlk.bottom) / view.defaultLineHeight,
+            );
 
-      const topBound = visTopLine + cursorLineMargin;
-      const botBound = visBotLine - cursorLineMargin;
-
-      const needsScrollTop = mainLine <= topBound;
-      const needsScrollBot = mainLine >= botBound;
+      const needsScrollTop = mainLine <= visTopLine + cursorLineMargin;
+      const needsScrollBot = mainLine >= visBotLine - cursorLineMargin;
 
       // the scroll margins are overlapping
       if (needsScrollTop && needsScrollBot) {
@@ -63,9 +61,8 @@ export const cursorLineMargin = (view: EditorView): Extension => {
 
       // if we're within the margin, but moving the other way, then don't scroll
       if (tr.selection) {
-        const oldMainLine = tr.startState.doc.lineAt(
-          tr.startState.selection.main.head,
-        ).number;
+        const s = tr.startState;
+        const oldMainLine = lineAtPos(s, s.selection.main.head);
         if (needsScrollTop && oldMainLine < mainLine) return null;
         if (needsScrollBot && oldMainLine > mainLine) return null;
       }

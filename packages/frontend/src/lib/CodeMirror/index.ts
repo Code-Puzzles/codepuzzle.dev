@@ -13,11 +13,7 @@ import { type Puzzle } from "@jspuzzles/common";
 import { puzzleReadOnlyExtension, setSolution } from "./readonly-puzzle";
 import { onChangeHandler, type OnChangeCb } from "./on-change-listener";
 import { displayExtension } from "./display";
-import {
-  cursorLineMarginFacet,
-  cursorLineMargin,
-  type CursorLineMarginFacet,
-} from "./cursor-line-margin";
+import { cursorLineMarginFacet, cursorLineMargin } from "./cursor-line-margin";
 
 const tabSizeToIndentUnit = (tabSize: number): string =>
   " ".repeat(Math.max(1, tabSize));
@@ -73,7 +69,7 @@ export class CodeMirror {
    * Reconfigurable options
    * TODO: include common editor options, like keymaps, etc
    */
-  readonly #cursorLineMargin: ReconfigurableFacet<CursorLineMarginFacet>;
+  readonly #cursorLineMargin: ReconfigurableFacet<number>;
   readonly #indentUnit: ReconfigurableFacet<string>;
   readonly #tabSize: ReconfigurableFacet<number>;
   #reconfigurableFacets(): Extension {
@@ -102,7 +98,7 @@ export class CodeMirror {
     );
     this.#cursorLineMargin = new ReconfigurableFacet(
       cursorLineMarginFacet,
-      { lines: options?.cursorLineMargin ?? 2 },
+      options?.cursorLineMargin ?? 2,
       cursorLineMargin(this.#view),
     );
   }
@@ -203,9 +199,9 @@ export class CodeMirror {
   }
 
   public get cursorLineMargin(): number {
-    return this.#cursorLineMargin.value().lines;
+    return this.#cursorLineMargin.value();
   }
   public set cursorLineMargin(lines: number) {
-    this.#view.dispatch({ effects: this.#cursorLineMargin.effect({ lines }) });
+    this.#view.dispatch({ effects: this.#cursorLineMargin.effect(lines) });
   }
 }
