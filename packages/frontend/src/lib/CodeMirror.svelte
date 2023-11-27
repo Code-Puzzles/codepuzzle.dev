@@ -7,6 +7,7 @@
   import { fade } from "svelte/transition";
   import { defaultEditorSettings, drafts, editorSettings } from "./stores.js";
   import type { OnChangeCb } from "./CodeMirror/on-change-listener.js";
+  import { jsonClone } from "./util.js";
 
   export let puzzle: Puzzle | undefined = undefined;
   export let onChange: OnChangeCb = () => {};
@@ -17,6 +18,7 @@
 
   let editorRoot: HTMLElement;
   let cm: CodeMirror;
+  let modalEditorSettings = jsonClone($editorSettings);
 
   // NOTE: we only want to update the puzzle when `puzzle` changes, so make sure
   // we don't unintentionally reference `cm` in a reactive statement.
@@ -37,14 +39,18 @@
   };
 
   const applyEditorSettings = () => {
+    // save to our store
+    editorSettings.set(jsonClone(modalEditorSettings));
+
+    // update the editor
     if (!cm) return;
 
-    if (cm.indentSize !== +$editorSettings.indentSize) {
-      cm.indentSize = +$editorSettings.indentSize;
+    if (cm.indentSize !== modalEditorSettings.indentSize) {
+      cm.indentSize = modalEditorSettings.indentSize;
     }
 
-    if (cm.cursorLineMargin !== +$editorSettings.cursorLineMargin) {
-      cm.cursorLineMargin = +$editorSettings.cursorLineMargin;
+    if (cm.cursorLineMargin !== modalEditorSettings.cursorLineMargin) {
+      cm.cursorLineMargin = modalEditorSettings.cursorLineMargin;
     }
 
     cm.focus();
@@ -70,11 +76,14 @@
 />
 <!-- TODO: wrap all modals in the same transition div (with same z-index, etc) -->
 {#if showSettings}
-  <div transition:fade={{ duration: 300 }} class="z-20">
+  <div
+    transition:fade={{ duration: 300 }}
+    on:outroend={() => (modalEditorSettings = jsonClone($editorSettings))}
+    class="z-20"
+  >
     <Modal
       title="Editor Settings"
       bind:open={showSettings}
-      on:close={applyEditorSettings}
       size="lg"
       autoclose
       outsideclose
@@ -87,9 +96,9 @@
               type="number"
               min="2"
               max="16"
-              value={$editorSettings.indentSize}
+              value={modalEditorSettings.indentSize}
               on:change={setNumberValue(
-                (n) => ($editorSettings.indentSize = n),
+                (n) => (modalEditorSettings.indentSize = n),
               )}
             />
             <P class="text-gray-500 dark:text-gray-500">
@@ -103,9 +112,9 @@
               type="number"
               min="1"
               max="8"
-              value={$editorSettings.cursorLineMargin}
+              value={modalEditorSettings.cursorLineMargin}
               on:change={setNumberValue(
-                (n) => ($editorSettings.cursorLineMargin = n),
+                (n) => (modalEditorSettings.cursorLineMargin = n),
               )}
             />
             <P class="text-gray-500 dark:text-gray-500">
@@ -117,21 +126,20 @@
         </div>
       </form>
 
-      <P class="text-center text-gray-500 dark:text-gray-500">
-        Settings are saved as you make them
-      </P>
       <svelte:fragment slot="footer">
-        <Button
-          type="submit"
-          class="dark:hover:bg-gray-900"
-          color="alternative"
-        >
-          Done
+        <Button type="submit" color="purple" on:click={applyEditorSettings}>
+          Save
+        </Button>
+        <Button class="dark:hover:bg-gray-900" color="alternative">
+          Close
         </Button>
         <Button
           color="red"
           outline
-          on:click={() => ($editorSettings = defaultEditorSettings())}
+          on:click={() => {
+            modalEditorSettings = defaultEditorSettings();
+            applyEditorSettings();
+          }}
         >
           Reset to defaults
         </Button>

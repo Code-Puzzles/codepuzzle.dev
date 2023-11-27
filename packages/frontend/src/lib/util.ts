@@ -15,3 +15,5 @@ export const responsiveBreakpoint = "md";
 export const responsiveBreakpointPixels = parseInt(
   (screens[responsiveBreakpoint] as string).replace(/[a-z]*/i, ""),
 );
+
+export const jsonClone = (x: any) => JSON.parse(JSON.stringify(x));
