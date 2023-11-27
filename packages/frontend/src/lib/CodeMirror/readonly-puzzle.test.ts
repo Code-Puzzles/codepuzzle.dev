@@ -8,6 +8,7 @@ import { test, expect, describe } from "vitest";
 import { puzzleReadOnlyExtension } from "./readonly-puzzle";
 import { indentRange, indentUnit } from "@codemirror/language";
 import { javascript } from "@codemirror/lang-javascript";
+import { PuzzleGroup } from "@jspuzzles/common";
 
 const puzzleSource = `a;
 {
@@ -21,7 +22,7 @@ const tabSizeC = new Compartment();
 const indentUnitC = new Compartment();
 const getState = (initialValue = "", indentSize = 2): EditorState => {
   const { doc, selection, extension } = puzzleReadOnlyExtension(
-    { index: -1, name: "test", source: puzzleSource },
+    { id: "", name: "test", source: puzzleSource, group: PuzzleGroup.Beginner },
     indentSize,
     initialValue,
   );

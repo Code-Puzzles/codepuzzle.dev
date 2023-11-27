@@ -11,3 +11,14 @@ export const JudgeResultWithCountSchema = JudgeResultSchema.extend({
   numChars: z.number(),
 });
 export type JudgeResultWithCount = z.infer<typeof JudgeResultWithCountSchema>;
+
+export type UserState = Record<
+  string,
+  {
+    /**
+     * Only set when a solution exists
+     */
+    charCount?: number;
+    draft?: boolean;
+  }
+>;

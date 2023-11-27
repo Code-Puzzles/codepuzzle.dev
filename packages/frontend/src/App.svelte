@@ -3,6 +3,8 @@
     puzzles,
     type Puzzle,
     type JudgeResultWithCount,
+    puzzlesAsMap,
+    type UserState,
   } from "@jspuzzles/common";
   import { onMount } from "svelte";
   import { evalInBrowser, submitToBackend } from "./lib/submit";
@@ -13,18 +15,19 @@
   import { fade } from "svelte/transition";
   import SidebarWrapper from "./lib/SidebarWrapper.svelte";
 
-  let puzzle: Puzzle | undefined = (() => {
-    const hash = window.location.hash.substring(1);
-    const chosen = Object.values(puzzles)
-      .flat()
-      .find((p) => p.name === hash);
-    return chosen ?? puzzles["season1"]?.[0];
-  })();
+  let puzzle: Puzzle | undefined =
+    puzzlesAsMap[window.location.hash.substring(1)] ?? puzzles[0];
 
   let localResult: JudgeResultWithCount | undefined = undefined;
   let verifiedResult: JudgeResultWithCount | undefined = undefined;
   let submitting = false;
   let solution = "";
+
+  // TODO: get from backend
+  const userState: UserState = {
+    [puzzles[0]!.id]: { charCount: 2 },
+    [puzzles[1]!.id]: { draft: true },
+  };
 
   function onChange(value: string) {
     if (!puzzle) return;
@@ -41,8 +44,8 @@
       .finally(() => (submitting = false));
   }
 
-  function selectPuzzle(namespace: keyof typeof puzzles, puzzleId: string) {
-    puzzle = puzzles[namespace]?.find((p) => p.name === puzzleId);
+  function selectPuzzle(puzzleId: string) {
+    puzzle = puzzlesAsMap[puzzleId];
     sidebarOpen = false;
   }
 
@@ -80,6 +83,7 @@
       <Sidebar
         class={sidebarOpen ? "z-10" : ""}
         isOpen={width >= responsiveBreakpointPixels || sidebarOpen}
+        {userState}
         {selectPuzzle}
         {puzzle}
       />
@@ -87,6 +91,7 @@
 
     <Workspace
       showSidebarClicked={() => (sidebarOpen = !sidebarOpen)}
+      {userState}
       {puzzle}
       {submitting}
       {onChange}

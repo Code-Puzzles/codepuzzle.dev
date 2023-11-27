@@ -7,6 +7,6 @@
     "outDir": "dist",
     "module": "Node16",
     "types": [],
-    "lib": ["ES2015"]
+    "lib": ["ES2017"]
   }
 }

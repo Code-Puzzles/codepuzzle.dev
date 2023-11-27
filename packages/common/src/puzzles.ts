@@ -1,46 +1,57 @@
-export interface Puzzle {
-  index: number;
-  name: string;
-  source: string;
+export enum PuzzleGroup {
+  Beginner = "Beginner",
+  Bases = "Bases",
+  Math = "Math",
+  Eval = "Eval",
+  Random = "Random",
+  Objects = "Objects",
+  // TODO: sort and remove any with this
+  Unknown = "Unknown",
 }
 
-/**
- * These puzzles belong to the original author of Return True To Win.
- * https://alf.nu/ReturnTrue
- */
+export interface Puzzle {
+  id: string;
+  name: string;
+  source: string;
+  group: PuzzleGroup;
+}
 
-const season1: Puzzle[] = [
+export const puzzles: Puzzle[] = [
   {
-    index: 0,
+    id: "aad5a036-f677-402b-b48f-13393a8cde9a",
+    group: PuzzleGroup.Beginner,
     name: "id",
     source: `function id(x) {
   return x;
 }`,
   },
   {
-    index: 1,
+    id: "531b0815-744a-4e27-b7a6-4fc89d3125bd",
+    group: PuzzleGroup.Beginner,
     name: "reflexive",
     source: `function reflexive(x) {
   return x != x;
 }`,
   },
   {
-    index: 2,
+    id: "582c046c-9937-412e-8742-28516cb08e76",
+    group: PuzzleGroup.Beginner,
     name: "infinity",
-    source: `// submitted by 'dat boi'
-function infinity(x, y) {
+    source: `function infinity(x, y) {
   return x === y && 1/x < 1/y
 }`,
   },
   {
-    index: 3,
+    id: "c1ee858e-6838-4161-bf62-89be0fca23d0",
+    group: PuzzleGroup.Beginner,
     name: "transitive",
     source: `function transitive(x,y,z) {
   return x && x == y && y == z && x != z;
 }`,
   },
   {
-    index: 4,
+    id: "333c52ae-d933-44e7-8cd8-95017ee736dd",
+    group: PuzzleGroup.Beginner,
     name: "counter",
     source: `function counter(f) {
   var a = f(), b = f();
@@ -49,14 +60,16 @@ function infinity(x, y) {
 }`,
   },
   {
-    index: 5,
+    id: "cb1de7f3-852b-4558-a691-43931d5caed9",
+    group: PuzzleGroup.Beginner,
     name: "peano",
     source: `function peano(x) {
   return (x++ !== x) && (x++ === x);
 }`,
   },
   {
-    index: 6,
+    id: "cea8c90b-a514-4e71-ab82-b4b8b37e08b9",
+    group: PuzzleGroup.Objects,
     name: "array",
     source: `function array(x,y) {
   return Array.isArray(x) && !(x instanceof Array) &&
@@ -64,14 +77,16 @@ function infinity(x, y) {
 }`,
   },
   {
-    index: 7,
+    id: "6ad14ec8-282e-4281-be36-bb3685805e03",
+    group: PuzzleGroup.Objects,
     name: "instance",
     source: `function instance(x,y) {
   return x instanceof y && y instanceof x && x !== y;
 }`,
   },
   {
-    index: 8,
+    id: "872874cc-ba73-45e1-89d8-90d0348c1760",
+    group: PuzzleGroup.Objects,
     name: "instance2",
     source: `function instance2(a,b,c) {
   return a !== b && b !== c && a !== c
@@ -81,49 +96,56 @@ function infinity(x, y) {
 }`,
   },
   {
-    index: 9,
+    id: "93320cc6-3235-4a5a-8f71-758d57122559",
+    group: PuzzleGroup.Objects,
     name: "proto1",
     source: `function proto1(x) {
   return x && !("__proto__" in x);
 }`,
   },
   {
-    index: 10,
+    id: "52c216a4-5b84-43fc-b193-88ee1caac6a3",
+    group: PuzzleGroup.Objects,
     name: "undef",
     source: `function undef(x) {
   return !{ undefined: { undefined: 1 } }[typeof x][x];
 }`,
   },
   {
-    index: 11,
+    id: "cabd83e4-34b3-4bea-99ad-90a9feed2f24",
+    group: PuzzleGroup.Unknown,
     name: "symmetric",
     source: `function symmetric(x,y) {
   return x == y && y != x;
 }`,
   },
   {
-    index: 12,
+    id: "85039e43-e140-4d4b-baa5-0621d1d1febd",
+    group: PuzzleGroup.Objects,
     name: "ouroborobj",
     source: `function ouroborobj(x) {
   return x in x;
 }`,
   },
   {
-    index: 13,
+    id: "6bea85ae-b82f-4ae6-8584-d38263838c4e",
+    group: PuzzleGroup.Unknown,
     name: "truth",
     source: `function truth(x) {
   return x.valueOf() && !x;
 }`,
   },
   {
-    index: 14,
+    id: "efde06e1-a758-4f48-9a5e-0edba522926b",
+    group: PuzzleGroup.Unknown,
     name: "wat",
     source: `function wat(x) {
   return x('hello') == 'world:)' && !x;
 }`,
   },
   {
-    index: 15,
+    id: "ab94fce0-80ef-4cd7-a342-de87e5907ab7",
+    group: PuzzleGroup.Eval,
     name: "evil1",
     source: `var eval = window.eval;
 function evil1(x) {
@@ -131,7 +153,8 @@ function evil1(x) {
 }`,
   },
   {
-    index: 16,
+    id: "ee2b3b41-997a-451b-95de-151af5d8888e",
+    group: PuzzleGroup.Eval,
     name: "evil2",
     source: `var eval = window.eval;
 function evil2(x) {
@@ -139,7 +162,8 @@ function evil2(x) {
 }`,
   },
   {
-    index: 17,
+    id: "b171cd6c-a81d-4948-ac58-d2e388a6af2f",
+    group: PuzzleGroup.Eval,
     name: "evil3",
     source: `var eval = window.eval;
 function evil3(parameter) {
@@ -148,14 +172,16 @@ function evil3(parameter) {
 }`,
   },
   {
-    index: 18,
+    id: "dbc8185d-00e8-463f-b06e-1055765e24f9",
+    group: PuzzleGroup.Random,
     name: "random1",
     source: `function random1(x) {
   return Math.random() in x;
 }`,
   },
   {
-    index: 19,
+    id: "ad2e7c7d-645b-41e7-aaab-5f5615526d2c",
+    group: PuzzleGroup.Random,
     name: "random2",
     source: `var rand = Math.random();
 function random2(x) {
@@ -163,7 +189,8 @@ function random2(x) {
 }`,
   },
   {
-    index: 20,
+    id: "28a44213-da7d-4693-8ea0-4e4a065883f6",
+    group: PuzzleGroup.Random,
     name: "random3",
     source: `var key = crypto.getRandomValues(new Uint32Array(4));
 function random3(x) {
@@ -175,7 +202,8 @@ function random3(x) {
 }`,
   },
   {
-    index: 21,
+    id: "5b7ba626-fe0c-4983-8ddc-6b52c4188150",
+    group: PuzzleGroup.Random,
     name: "random4",
     source: `var rand = Math.random();
 function random4(x) {
@@ -183,17 +211,18 @@ function random4(x) {
 }`,
   },
   {
-    index: 22,
+    id: "8d3af47f-def0-4577-8523-bcf57278d444",
+    group: PuzzleGroup.Unknown,
     name: "total",
     source: `function total(x) {
   return (x < x) && (x == x) && (x > x);
 }`,
   },
   {
-    index: 23,
+    id: "6debe835-ec34-46f8-8db8-f3d23f503d35",
+    group: PuzzleGroup.Unknown,
     name: "json",
-    source: `// submitted by azzola
-const secrets = new Uint32Array(2);
+    source: `const secrets = new Uint32Array(2);
 crypto.getRandomValues(secrets);
 const [key, value] = secrets;
 const vault = {
@@ -214,14 +243,11 @@ function json(x, y) {
   return void vault;
 }`,
   },
-];
-
-const season2: Puzzle[] = [
   {
-    index: 24,
+    id: "91d06fc0-43dc-4a14-87d9-0cf9a1db871a",
+    group: PuzzleGroup.Unknown,
     name: "countOnMe",
-    source: `// submitted by James
-function countOnMe(x) {
+    source: `function countOnMe(x) {
   if (!(x instanceof Array))
     throw 'x must be an array.';
 
@@ -235,10 +261,10 @@ function countOnMe(x) {
 }`,
   },
   {
-    index: 25,
+    id: "0d1a97ab-5a3c-4ef2-a7a7-a658d0645055",
+    group: PuzzleGroup.Unknown,
     name: "countOnMe2",
-    source: `// submitted by James
-function countOnMe2(x) {
+    source: `function countOnMe2(x) {
   if (!(x instanceof Array))
     throw 'x must be an array.';
 
@@ -252,10 +278,10 @@ function countOnMe2(x) {
 }`,
   },
   {
-    index: 26,
+    id: "1db2bf96-55bf-4037-9985-10a909291986",
+    group: PuzzleGroup.Unknown,
     name: "countOnMe3",
-    source: `// submitted by James
-function countOnMe3(x) {
+    source: `function countOnMe3(x) {
   var arrayElements = 1000;
 
   if (!(x instanceof Array))
@@ -276,29 +302,29 @@ function countOnMe3(x) {
 }`,
   },
   {
-    index: 27,
+    id: "a19edcaf-2da3-416b-adb9-ef2e9e077287",
+    group: PuzzleGroup.Unknown,
     name: "instance3",
-    source: `// submitted by @smelukov
-delete window.Symbol;
+    source: `delete window.Symbol;
 
 function instance3(x) {
   return x && typeof x === 'object' && !(x instanceof Object)
 }`,
   },
   {
-    index: 28,
+    id: "94a4e839-0e31-4584-8268-b2220a622cbd",
+    group: PuzzleGroup.Unknown,
     name: "letsgo",
-    source: `// submitted by MAY✪R
-function letsgo(x) {
+    source: `function letsgo(x) {
   let a = let\`abc\`;
   return \`abc\` === a;
 }`,
   },
   {
-    index: 29,
+    id: "7ab477e2-a97f-46f1-880a-1acfd1a1f7d9",
+    group: PuzzleGroup.Unknown,
     name: "associative",
-    source: `// submitted by Stephen Leppik
-function associative(x, y, z) {
+    source: `function associative(x, y, z) {
   return typeof x === "number"
       && typeof y === "number"
       && typeof z === "number"
@@ -306,10 +332,10 @@ function associative(x, y, z) {
 }`,
   },
   {
-    index: 30,
+    id: "e9155316-8322-4ed2-b9e1-2043d1f603bb",
+    group: PuzzleGroup.Bases,
     name: "base64",
-    source: `// Andrew Sillers
-verifyInput = input => JSON.parse('[' + input + ']');
+    source: `verifyInput = input => JSON.parse('[' + input + ']');
 
 const atob = window.atob;
 const globalEval = window.eval;
@@ -325,10 +351,10 @@ function base64(x, y) {
 }`,
   },
   {
-    index: 31,
+    id: "ad1eb180-b6a8-4c67-9616-d496482d63c1",
+    group: PuzzleGroup.Bases,
     name: "base65",
-    source: `// Andrew Sillers
-verifyInput = input => JSON.parse('[' + input + ']');
+    source: `verifyInput = input => JSON.parse('[' + input + ']');
 
 const atob = window.atob;
 const globalEval = window.eval;
@@ -346,10 +372,10 @@ function base65(x, y) {
 }`,
   },
   {
-    index: 32,
+    id: "4ed93259-5c68-414a-909b-f69f34d107bc",
+    group: PuzzleGroup.Bases,
     name: "base66",
-    source: `// Andrew Sillers
-verifyInput = input => JSON.parse('[' + input + ']');
+    source: `verifyInput = input => JSON.parse('[' + input + ']');
 
 const atob = window.atob;
 const globalEval = window.eval;
@@ -366,10 +392,10 @@ function base66(x, y) {
 }`,
   },
   {
-    index: 33,
+    id: "75a185e6-8f08-48a2-8d13-25bc21ec7fd5",
+    group: PuzzleGroup.Unknown,
     name: "decorator",
-    source: `// AndreiSoroka
-function decorator(obj) {
+    source: `function decorator(obj) {
   delete obj.a;
   delete obj.b;
   return obj.a && Object.keys(obj).indexOf('a') == -1
@@ -377,10 +403,10 @@ function decorator(obj) {
 }`,
   },
   {
-    index: 34,
+    id: "17410564-09c2-4868-b911-c970b6cf8b12",
+    group: PuzzleGroup.Eval,
     name: "e_aluate",
-    source: `// Andrew Sillers
-Object.freeze(RegExp.prototype);
+    source: `Object.freeze(RegExp.prototype);
 
 function e_aluate(v) {
   if (v == true) { throw 'input cannot be true'; }
@@ -390,10 +416,10 @@ function e_aluate(v) {
 }`,
   },
   {
-    index: 35,
+    id: "7a7b7da3-3d67-4999-83a0-1ea8fdf125fc",
+    group: PuzzleGroup.Unknown,
     name: "clobber",
-    source: `// Andrew Sillers
-var create = Object.create;
+    source: `var create = Object.create;
 var defineProperty = Object.defineProperty;
 
 function clobber(x, y) {
@@ -411,10 +437,10 @@ function clobber(x, y) {
 }`,
   },
   {
-    index: 36,
+    id: "6e1b874e-5767-45a0-a6aa-255a08cec51e",
+    group: PuzzleGroup.Eval,
     name: "typeyTypey",
-    source: `// submitted by James
-verifyInput = input => {
+    source: `verifyInput = input => {
   if (/[;(),]/.test(input)) throw 'Cannot use the following characters: ;(),';
   JSON.parse(input);
 }
@@ -426,10 +452,10 @@ function typeyTypey(a) {
 }`,
   },
   {
-    index: 37,
+    id: "dec80091-b0c5-46ad-b379-aeafa99d7a1e",
+    group: PuzzleGroup.Random,
     name: "random5",
-    source: `// James/Alf
-const secret = Math.random();
+    source: `const secret = Math.random();
 const abs = Math.abs;
 const max = Math.max;
 
@@ -444,10 +470,10 @@ function random5(x) {
 }`,
   },
   {
-    index: 38,
+    id: "0b7e4048-d270-43c1-b2a7-53fbeb2e4338",
+    group: PuzzleGroup.Random,
     name: "random6",
-    source: `// James/Alf
-const secret = Math.random();
+    source: `const secret = Math.random();
 const abs = Math.abs;
 
 function absoluteError(a, b) {
@@ -459,10 +485,10 @@ function random6(x) {
 }`,
   },
   {
-    index: 40,
+    id: "796b1904-c8d1-4bb0-bd3a-533607f8255a",
+    group: PuzzleGroup.Random,
     name: "random7",
-    source: `// submitted by James
-window.quiteRandomNumber = Math.random();
+    source: `window.quiteRandomNumber = Math.random();
 
 function random7() {
   const quiteRandomNumber = 4;
@@ -470,10 +496,10 @@ function random7() {
 }`,
   },
   {
-    index: 41,
+    id: "eb801efe-6a02-475e-9497-a246a5362a53",
+    group: PuzzleGroup.Random,
     name: "random8",
-    source: `// submitted by James
-window.quiteRandomNumber = Math.random();
+    source: `window.quiteRandomNumber = Math.random();
 
 function random8() {
   const quiteRandomNumber = 4;
@@ -481,10 +507,10 @@ function random8() {
 }`,
   },
   {
-    index: 42,
+    id: "c977c45f-1162-4698-9d11-27a54ed99172",
+    group: PuzzleGroup.Unknown,
     name: "myPlanetNeedsMe",
-    source: `// submitted by James
-const helpfulAdvice = 'This solution does not work!';
+    source: `const helpfulAdvice = 'This solution does not work!';
 const rand = Math.random();
 window.ܝ = 065432123456654321234560 * rand;
 
@@ -498,17 +524,18 @@ function myPlanetNeedsMe() {
 }`,
   },
   {
-    index: 43,
+    id: "e5dfb943-c578-45cf-a134-f0f99bc80846",
+    group: PuzzleGroup.Math,
     name: "math",
     source: `function math(x) {
   return x + 0.1 == 0.3;
 }`,
   },
   {
-    index: 44,
+    id: "41b531bd-91c0-4751-a982-cbdb871587cf",
+    group: PuzzleGroup.Eval,
     name: "invisibleCounter",
-    source: `// submitted by James
-verifyInput = JSON.parse;
+    source: `verifyInput = JSON.parse;
 
 const Symbol = window.Symbol;
 const eval = window.eval;
@@ -531,10 +558,10 @@ function invisibileCounter(x) {
 }`,
   },
   {
-    index: 45,
+    id: "a845c1e5-15f0-4d69-93ed-fff91da6a245",
+    group: PuzzleGroup.Objects,
     name: "notTooLong",
-    source: `// submitted by James
-const create = Object.create;
+    source: `const create = Object.create;
 const keys = Object.keys;
 
 function notTooLong(x) {
@@ -543,18 +570,18 @@ function notTooLong(x) {
 }`,
   },
   {
-    index: 46,
+    id: "570726ba-0781-43a1-9cdf-557d367f86be",
+    group: PuzzleGroup.Unknown,
     name: "confusedVar",
-    source: `// submitted by James
-function confusedVar(x) {
+    source: `function confusedVar(x) {
   return x == !x && x == x;
 }`,
   },
   {
-    index: 47,
+    id: "8a057b3d-0bc2-4ba3-9803-81230d2df9a2",
+    group: PuzzleGroup.Eval,
     name: "notANaN",
-    source: `// submitted by Itay
-const isNaN = window.isNaN
+    source: `const isNaN = window.isNaN
 const eval = window.eval
 const stringify = JSON.stringify
 
@@ -565,10 +592,10 @@ const notANaN = (x, y) => isNaN(x) && isNaN(x(y)) && !isNaN(y) &&
 `,
   },
   {
-    index: 48,
+    id: "46c7cd63-2691-4d47-8195-11d80023c4bf",
+    group: PuzzleGroup.Unknown,
     name: "numberFunTime",
-    source: `// submitted by James
-function numberFunTime(x) {
+    source: `function numberFunTime(x) {
   return x * x === 0 &&
       x + 1 === 1 &&
       x - 1 === -1 &&
@@ -576,10 +603,10 @@ function numberFunTime(x) {
 }`,
   },
   {
-    index: 49,
+    id: "82261914-7030-461c-af32-691660a036fa",
+    group: PuzzleGroup.Unknown,
     name: "andBeyond",
-    source: `// submitted by James
-verifyInput = input => {
+    source: `verifyInput = input => {
   if (/\>/.test(input)) throw 'Use of the greater than symbol is forbidden.';
 };
 
@@ -589,7 +616,18 @@ function andBeyond(x) {
   },
 ];
 
-export const puzzles: Record<string, Puzzle[]> = {
-  season1,
-  season2,
-};
+export const puzzlesAsMap = puzzles.reduce<Record<string, Puzzle>>(
+  (map, puzzle) => {
+    map[puzzle.id] = puzzle;
+    return map;
+  },
+  {},
+);
+
+export const puzzlesInGroups = Object.values(PuzzleGroup).reduce(
+  (map, group) => {
+    map[group] = puzzles.filter((p) => p.group === group);
+    return map;
+  },
+  {} as Record<PuzzleGroup, Puzzle[]>,
+);

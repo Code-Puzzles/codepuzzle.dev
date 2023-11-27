@@ -46,7 +46,7 @@ function puzzleState(puzzle: Puzzle, indentSize: number): PuzzleState {
     .map((line) => {
       // NOTE: puzzles by default use an indent size of 2, so we update them
       // to the desired indent size when creating them here
-      let [, ws, rest] = /^(\s*)(.+$)/.exec(line)!;
+      let [, ws, rest] = /^(\s*)(.*$)/.exec(line)!;
       // NOTE: `+ 1` because this puzzle will be wrapped in an iife
       return indent.repeat(ws!.length / 2 + 1) + rest;
     })

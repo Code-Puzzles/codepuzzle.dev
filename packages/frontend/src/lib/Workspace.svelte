@@ -1,5 +1,9 @@
 <script lang="ts">
-  import type { JudgeResultWithCount, Puzzle } from "@jspuzzles/common";
+  import type {
+    JudgeResultWithCount,
+    Puzzle,
+    UserState,
+  } from "@jspuzzles/common";
   import CodeMirror from "./CodeMirror.svelte";
   import CodeMirrorBar from "./CodeMirrorBar.svelte";
   import Results from "./Results.svelte";
@@ -10,6 +14,7 @@
   export let onChange: (value: string) => void;
   export let onSubmit: () => void;
   export let submitting = false;
+  export let userState: UserState;
 
   export let showSidebarClicked: () => void;
 
@@ -24,7 +29,8 @@
       configureEditorClicked={() => (showEditorSettings = true)}
       showSolutionClicked={() =>
         setEditorValue?.("TODO: render solution text into editor")}
-      showSolutionDisabled={puzzle ? puzzle.index > 3 : false}
+      showSolutionDisabled={puzzle &&
+        Number.isInteger(userState[puzzle.id]?.charCount)}
     />
     <CodeMirror
       class="flex-1 min-h-0"

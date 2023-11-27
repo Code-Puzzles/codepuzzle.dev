@@ -1,6 +1,11 @@
 <script lang="ts">
   // import { quintOut } from 'svelte/easing';
-  import { puzzles, type Puzzle } from "@jspuzzles/common";
+  import {
+    type Puzzle,
+    PuzzleGroup,
+    puzzlesInGroups,
+    type UserState,
+  } from "@jspuzzles/common";
   import {
     Sidebar,
     SidebarDropdownWrapper,
@@ -13,8 +18,9 @@
   import { twMerge } from "tailwind-merge";
 
   export let puzzle: Puzzle | undefined = undefined;
-  export let selectPuzzle: (namespace: string, puzzleName: string) => void;
+  export let selectPuzzle: (puzzleName: string) => void;
   export let isOpen: boolean;
+  export let userState: UserState;
 </script>
 
 {#if isOpen}
@@ -30,33 +36,37 @@
       <Sidebar>
         <SidebarWrapper class="rounded-none">
           <SidebarGroup>
-            {#each Object.entries(puzzles) as [name, items]}
+            {#each Object.values(PuzzleGroup) as group}
+              <!-- isOpen={puzzle && items.includes(puzzle)} -->
               <SidebarDropdownWrapper
-                isOpen={puzzle && items.includes(puzzle)}
                 class="capitalize"
-                label={name}
+                label={group.toString()}
+                isOpen={!!puzzlesInGroups[group].find(
+                  (other) => puzzle?.id === other.id,
+                )}
               >
                 <svelte:fragment slot="icon">
                   <LightbulbSolid />
                 </svelte:fragment>
 
-                {#each items as p}
+                {#each puzzlesInGroups[group] as p}
                   <SidebarItem
-                    href={`#${p.name}`}
+                    href={`#${p.id}`}
                     label={p.name}
                     spanClass={`ml-1 flex-1 ${p === puzzle ? "font-bold" : ""}`}
                     class={`ml-2 ${
                       p === puzzle ? "bg-gray-100 dark:bg-gray-700" : ""
                     }`}
-                    on:click={() => selectPuzzle(name, p.name)}
+                    on:click={() => selectPuzzle(p.id)}
                   >
                     <svelte:fragment slot="icon">
                       <span class="mr-2 opacity-25">•</span>
                     </svelte:fragment>
                     <svelte:fragment slot="subtext">
-                      {#if p.index < 3}
-                        <Badge color="green">{p.index} chars</Badge>
-                      {:else if p.index < 5}
+                      {@const state = userState[p.id]}
+                      {#if state && state.charCount}
+                        <Badge color="green">{state.charCount} chars</Badge>
+                      {:else if userState[p.id]?.draft}
                         <Badge color="yellow">draft</Badge>
                       {/if}
                     </svelte:fragment>

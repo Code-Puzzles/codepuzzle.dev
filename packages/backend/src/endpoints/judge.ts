@@ -3,19 +3,22 @@ import {
   JudgeResult,
   JudgeResultWithCount,
   LOG_PREFIX,
-  puzzles,
+  puzzlesAsMap,
 } from "@jspuzzles/common";
 import { Browser } from "../browser/types.js";
 import { lambdaHandler, withTimeout } from "../lambda-utils.js";
 import { BrowserName, BROWSERS } from "../browser/browsers.js";
 
 const judgeOptsShape = z.object({
-  puzzleNamespace: z.string(),
-  puzzleName: z.string(),
+  puzzleId: z.string(),
   solution: z.string(),
 });
-
 export type JudgeOpts = z.TypeOf<typeof judgeOptsShape>;
+
+const evaluateOptsShape = judgeOptsShape.extend({
+  puzzleName: z.string(),
+});
+export type EvaluateOpts = z.TypeOf<typeof evaluateOptsShape>;
 
 export const handler = lambdaHandler(judgeOptsShape, async (opts) => {
   // TODO: monkey patch process.stdout/stderr, rather than having to manually use LOG_PREFIX here
@@ -46,15 +49,13 @@ const judge = async (
   browser: Browser,
 ): Promise<JudgeResultWithCount> => {
   await withTimeout("browserStart", 60_000, () => browser.start());
-  const puzzleList = puzzles[opts.puzzleNamespace];
-  if (!puzzleList)
-    throw new Error(`Puzzle namespace not found: ${opts.puzzleNamespace}`);
-  const puzzle = puzzleList.find((puzzle) => puzzle.name === opts.puzzleName);
-  if (!puzzle) throw new Error(`Puzzle not found: ${opts.puzzleName}`);
+  const puzzle = puzzlesAsMap[opts.puzzleId];
+  if (!puzzle) throw new Error(`Puzzle not found: ${opts.puzzleId}`);
+  const evalOpts: EvaluateOpts = { ...opts, puzzleName: puzzle.name };
   const result = await withTimeout("runSolution", 60_000, async () =>
     browser.execute<JudgeResult>(
       `return (${evaluateSolution.toString()})(${JSON.stringify(
-        opts,
+        evalOpts,
       )}, ${JSON.stringify(puzzle.source)})`,
     ),
   );
@@ -81,7 +82,10 @@ const judge = async (
  * - No using `"value" in result` because `Object.prototype` may have been
  * manipulated by user code.
  */
-function evaluateSolution(opts: JudgeOpts, puzzleSource: string): JudgeResult {
+function evaluateSolution(
+  opts: EvaluateOpts,
+  puzzleSource: string,
+): JudgeResult {
   var jsonStringify = JSON.stringify;
   var toString = String;
   function stringify(value: unknown) {
