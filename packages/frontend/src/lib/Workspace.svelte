@@ -21,10 +21,14 @@
 
   let setEditorValue: ((value: string) => void) | undefined = undefined;
   let showEditorSettings: boolean;
+
+  const mainClass =
+    "flex flex-col flex-1 min-w-0 border-l-2 dark:border-gray-900";
+  const divClass = "flex flex-col flex-1 min-h-0";
 </script>
 
-<main class="flex flex-col flex-1 min-w-0 border-l-2 dark:border-gray-950">
-  <div class="flex flex-col flex-1 min-h-0">
+<main class={mainClass}>
+  <div class={divClass}>
     <CodeMirrorBar
       {showSidebarClicked}
       configureEditorClicked={() => (showEditorSettings = true)}

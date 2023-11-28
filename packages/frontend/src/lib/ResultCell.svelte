@@ -8,7 +8,7 @@
   export let content: string | undefined = undefined;
 
   const preClass =
-    "p-2 font-mono rounded border-2 dark:border-gray-950 text-left backdrop-brightness-75";
+    "p-2 font-mono rounded border-2 dark:border-gray-900 text-left backdrop-brightness-75";
   const maxLength = 500;
   const id = uniqueId();
   let modal = false;

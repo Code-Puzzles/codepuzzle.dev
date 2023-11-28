@@ -27,7 +27,7 @@
   <!-- NOTE: the `direction` styles are to position the scrollbar on the left -->
   <div
     class={twMerge(
-      "[position:absolute] md:[position:initial] h-full border-r-2 md:border-r-0 dark:border-gray-950 overflow-y-auto bg-gray-50 dark:bg-gray-800",
+      "[position:absolute] md:[position:initial] h-full border-r-2 md:border-r-0 dark:border-gray-900 overflow-y-auto bg-gray-50 dark:bg-gray-800",
       $$props["class"],
     )}
     style="direction: rtl;"

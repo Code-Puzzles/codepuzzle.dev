@@ -25,7 +25,7 @@
   const id = uniqueId();
 </script>
 
-<div class="wrapper relative dark:border-gray-950">
+<div class="wrapper relative dark:border-gray-900">
   <P {id} weight="semibold" class="w-full text-center">{title}</P>
   {#if description}
     <Tooltip triggeredBy="#{id}">{description}</Tooltip>
