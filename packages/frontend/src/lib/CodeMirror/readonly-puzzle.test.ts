@@ -241,12 +241,13 @@ describe("replace", () => {
   });
 
   test("over prefix.to boundary, with content", () => {
-    const tr = update(getState("foo"), pLen - 1, pLen + 1, "xxx");
+    const inserted = "xxx";
+    const tr = update(getState("foo"), pLen - 1, pLen + 1, inserted);
     expect(tr.newDoc.toString()).toEqual(doc("xxxoo"));
     expect(tr.newSelection.ranges).toEqual([
       expect.objectContaining({
-        anchor: pLen,
-        head: pLen,
+        anchor: pLen + inserted.length,
+        head: pLen + inserted.length,
       }),
     ]);
   });
@@ -259,8 +260,8 @@ describe("replace", () => {
     expect(tr.newDoc.toString()).toEqual(doc("fxxx"));
     expect(tr.newSelection.ranges).toEqual([
       expect.objectContaining({
-        anchor: pLen,
-        head: pLen,
+        anchor: pLen + 1,
+        head: pLen + 1,
       }),
     ]);
   });
