@@ -4,6 +4,7 @@ import {
   Facet,
   RangeSet,
   RangeValue,
+  SelectionRange,
   StateField,
   Text,
   Transaction,
@@ -195,7 +196,7 @@ const roField = StateField.define<ReadOnlyField>({
       // no changes were out of bounds, so allow this change
       if (!oob) return tr;
 
-      // othewise, clip the changes to within bounds before the transaction
+      // otherwise, clip the changes to within bounds before the transaction
       // so when it's applied they are still within bounds
       const clip = makeClipper(bounds);
       const changes = tr.startState.changes(
@@ -207,15 +208,28 @@ const roField = StateField.define<ReadOnlyField>({
       );
 
       // update selection to be within bounds
-      let selection = tr.newSelection;
-      // NOTE: iterate in reverse order so we don't mutate a range before
-      // we clip it
-      const ranges = Array.from(selection.ranges.entries()).reverse();
-      for (const [i, range] of ranges) {
-        selection = selection.replaceRange(
-          EditorSelection.range(clip(range.anchor), clip(range.head)),
-          i,
-        );
+      let selection: EditorSelection;
+      if (changes.empty) {
+        // if the change is empty, then clip to within bounds what the
+        // transaction thought the selection would be
+        selection = tr.newSelection;
+        // NOTE: iterate in reverse order to not interfere with other ranges
+        const ranges = Array.from(selection.ranges.entries()).reverse();
+        for (const [i, r] of ranges) {
+          selection = selection.replaceRange(
+            EditorSelection.range(clip(r.anchor), clip(r.head)),
+            i,
+          );
+        }
+      } else {
+        // if there was a change applied, then infer the selections from the
+        // changes themselves
+        let ranges: SelectionRange[] = [];
+        changes.iterChanges((_, __, from, ___, inserted) => {
+          const pos = from + inserted.length;
+          ranges.push(EditorSelection.range(pos, pos));
+        });
+        selection = EditorSelection.create(ranges);
       }
 
       return { changes, selection };

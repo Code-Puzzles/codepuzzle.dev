@@ -102,21 +102,50 @@ test("sanity", () => {
   expect(s.doc.toString()).toEqual(doc());
 });
 
-describe("selection", () => {
+describe("multiple cursors", () => {
   test("multiple cursors collapse when there's a change", () => {
     const s = getState();
-    const { length: len } = s.doc;
+    const cursors = [
+      { from: 0, to: 0 },
+      { from: s.doc.length, to: s.doc.length },
+    ];
     const tr = s.update({
-      selection: EditorSelection.create([
-        EditorSelection.range(0, 0),
-        EditorSelection.range(10, 10),
-        EditorSelection.range(len, len),
-      ]),
-      changes: s.changes({ from: 0, to: 0, insert: "x" }),
+      selection: EditorSelection.create(
+        cursors.map(({ from, to }) => EditorSelection.range(from, to)),
+      ),
+      changes: s.changes(
+        cursors.map(({ from, to }) => ({ from, to, insert: "x" })),
+      ),
     });
 
+    const { length: len } = tr.newDoc;
+    expect(tr.newDoc.toString()).toEqual(doc("xx"));
     expect(tr.newSelection.ranges).toEqual([
-      expect.objectContaining({ anchor: pLen, head: pLen }),
+      expect.objectContaining({ anchor: len - sLen, head: len - sLen }),
+    ]);
+  });
+
+  test("multiple cursors collapse when there's a change with content", () => {
+    const s = getState("123");
+
+    const cursors = [
+      { from: 0, to: 0 },
+      { from: s.doc.length, to: s.doc.length },
+    ];
+    const tr = s.update({
+      selection: EditorSelection.create(
+        cursors.map(({ from, to }) => EditorSelection.range(from, to)),
+      ),
+      changes: s.changes([
+        cursors.map(({ from, to }) => ({ from, to, insert: "x" })),
+      ]),
+    });
+
+    const { length: len } = tr.newDoc;
+    expect(tr.newDoc.toString()).toEqual(doc("x123x"));
+    expect(tr.newSelection.ranges).toEqual([
+      expect.objectContaining({ anchor: pLen + 1, head: pLen + 1 }),
+      expect.objectContaining({ anchor: len - sLen, head: len - sLen }),
     ]);
   });
 });
@@ -194,6 +223,25 @@ describe("insert", () => {
     expect(getDoc(s, len - 1, len - 1, "a")).toEqual(doc("a"));
   });
 
+  test("within prefix", () => {
+    const s = getState();
+    const tr = update(s, 0, 0, "a");
+    expect(tr.newDoc.toString()).toEqual(doc("a"));
+    expect(tr.newSelection.ranges).toEqual([
+      expect.objectContaining({ anchor: pLen + 1, head: pLen + 1 }),
+    ]);
+  });
+
+  test("within suffix", () => {
+    const s = getState();
+    const tr = update(s, 0, 0, "a");
+    const { length: len } = tr.newDoc;
+    expect(tr.newDoc.toString()).toEqual(doc("a"));
+    expect(tr.newSelection.ranges).toEqual([
+      expect.objectContaining({ anchor: len - sLen, head: len - sLen }),
+    ]);
+  });
+
   test("prefix.to boundary", () => {
     expect(getDoc(getState(), pLen - 1, pLen - 1, "a")).toEqual(doc("a"));
   });
@@ -260,8 +308,8 @@ describe("replace", () => {
     expect(tr.newDoc.toString()).toEqual(doc("fxxx"));
     expect(tr.newSelection.ranges).toEqual([
       expect.objectContaining({
-        anchor: pLen + 1,
-        head: pLen + 1,
+        anchor: pLen + v.length + 1,
+        head: pLen + v.length + 1,
       }),
     ]);
   });
