@@ -20,28 +20,31 @@ const evaluateOptsShape = judgeOptsShape.extend({
 });
 export type EvaluateOpts = z.TypeOf<typeof evaluateOptsShape>;
 
-export const handler = lambdaHandler(judgeOptsShape, async (opts) => {
-  // TODO: monkey patch process.stdout/stderr, rather than having to manually use LOG_PREFIX here
-  console.log(`${LOG_PREFIX} opts`, opts);
+export const handler = lambdaHandler({
+  bodyShape: judgeOptsShape,
+  async handler(opts) {
+    // TODO: monkey patch process.stdout/stderr, rather than having to manually use LOG_PREFIX here
+    console.log(`${LOG_PREFIX} opts`, opts);
 
-  const browserName = process.env["BROWSER_NAME"] as BrowserName | undefined;
-  if (!browserName || !(browserName in BROWSERS))
-    throw new Error(
-      `${LOG_PREFIX} Invalid BROWSER_NAME environment variable: ${browserName}`,
-    );
-  const browserVersion = process.env["BROWSER_VERSION"];
-  if (!browserVersion)
-    throw new Error(
-      `${LOG_PREFIX} Invalid BROWSER_VERSION environment variable: ${browserVersion}`,
-    );
+    const browserName = process.env["BROWSER_NAME"] as BrowserName | undefined;
+    if (!browserName || !(browserName in BROWSERS))
+      throw new Error(
+        `${LOG_PREFIX} Invalid BROWSER_NAME environment variable: ${browserName}`,
+      );
+    const browserVersion = process.env["BROWSER_VERSION"];
+    if (!browserVersion)
+      throw new Error(
+        `${LOG_PREFIX} Invalid BROWSER_VERSION environment variable: ${browserVersion}`,
+      );
 
-  // Trick tools like geckodriver into using a writable home directory
-  process.env["HOME"] = "/tmp";
+    // Trick tools like geckodriver into using a writable home directory
+    process.env["HOME"] = "/tmp";
 
-  const browser = new BROWSERS[browserName](browserVersion);
-  const result = await judge(opts, browser);
-  console.log(`${LOG_PREFIX} result`, result);
-  return { body: result };
+    const browser = new BROWSERS[browserName](browserVersion);
+    const result = await judge(opts, browser);
+    console.log(`${LOG_PREFIX} result`, result);
+    return { body: result };
+  },
 });
 
 const judge = async (

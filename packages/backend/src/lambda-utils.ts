@@ -1,32 +1,51 @@
 import { z } from "zod";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { LOG_PREFIX } from "@jspuzzles/common";
+import { SessionJwtPayload, requireAuth } from "./auth.js";
 
 type LambdaHandler = (
   evt: APIGatewayProxyEvent,
 ) => Promise<APIGatewayProxyResult>;
 
-export const lambdaHandler = <InputBody, OutputBody>(
-  bodyShape: z.ZodType<InputBody>,
+export interface LambdaOpts<
+  InputBody,
+  OutputBody,
+  IsUnauthenticated extends boolean,
+> {
+  isUnauthenticated?: IsUnauthenticated;
+  bodyShape: z.ZodType<InputBody>;
   handler: (
     body: InputBody,
+    session:
+      | SessionJwtPayload
+      | (IsUnauthenticated extends true ? undefined : never),
     event: APIGatewayProxyEvent,
   ) => Promise<{
     statusCode?: number;
     headers?: Record<string, string>;
     body: OutputBody;
-  }>,
+  }>;
+}
+
+export const lambdaHandler = <
+  InputBody,
+  OutputBody,
+  IsUnauthenticated extends boolean = false,
+>(
+  opts: LambdaOpts<InputBody, OutputBody, IsUnauthenticated>,
 ): LambdaHandler & {
   __inputBody: InputBody;
   __outputBody: OutputBody;
 } => {
   const innerHandler: LambdaHandler = async (evt) => {
+    const session = await getSession(evt, opts.isUnauthenticated);
+
     let body: InputBody;
     try {
       const bodyText = evt.isBase64Encoded
         ? Buffer.from(evt.body!, "base64").toString()
         : evt.body!;
-      body = bodyShape.parse(JSON.parse(bodyText));
+      body = opts.bodyShape.parse(JSON.parse(bodyText));
     } catch (err) {
       return {
         statusCode: 400,
@@ -36,7 +55,7 @@ export const lambdaHandler = <InputBody, OutputBody>(
     }
 
     try {
-      const result = await handler(body, evt);
+      const result = await opts.handler(body, session as any, evt);
       return {
         statusCode: result.statusCode ?? 200,
         headers: { "Content-Type": "application/json", ...result.headers },
@@ -60,6 +79,18 @@ export const lambdaHandler = <InputBody, OutputBody>(
     }
   };
   return innerHandler as any;
+};
+
+const getSession = async (
+  evt: APIGatewayProxyEvent,
+  isUnauthenticated?: boolean,
+) => {
+  try {
+    return await requireAuth(evt);
+  } catch (err) {
+    if (isUnauthenticated) return undefined;
+    throw err;
+  }
 };
 
 export class ClientError extends Error {

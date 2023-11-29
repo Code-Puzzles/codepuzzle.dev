@@ -3,9 +3,12 @@ import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { AnyDbTable } from "./table.js";
 import { getDbClient } from "../client.js";
 
+export const RECORD_TYPE = Symbol("RecordType");
+export const RUNTIME_TYPE = Symbol("RuntimeType");
+
 export interface MappedRecordClass<ClassType, RecordType, RuntimeType> {
-  __recordType: RecordType;
-  __runtimeType: RuntimeType;
+  [RECORD_TYPE]: RecordType;
+  [RUNTIME_TYPE]: RuntimeType;
 
   opts: RecordOpts<RecordType, RuntimeType>;
   fromRecord(record: RecordType): ClassType;

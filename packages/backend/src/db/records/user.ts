@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { mappedRecord } from "../util/record.js";
+import { RECORD_TYPE, RUNTIME_TYPE, mappedRecord } from "../util/record.js";
 import { mainTable } from "../table.js";
 
 export const buildUserLoginKey = (opts: {
@@ -36,3 +36,9 @@ export class User extends mappedRecord<User>()(
     created: value.createdDate.getTime(),
   }),
 }) {}
+
+const UserRecordType = User[RECORD_TYPE];
+export type UserRecordType = typeof UserRecordType;
+
+const UserRuntimeType = User[RUNTIME_TYPE];
+export type UserRuntimeType = typeof UserRuntimeType;

@@ -6,8 +6,12 @@ const healthcheckOptsShape = z.object({});
 
 export type HealthcheckOpts = z.TypeOf<typeof healthcheckOptsShape>;
 
-export const handler = lambdaHandler(healthcheckOptsShape, async (opts) => {
-  console.log(`${LOG_PREFIX} opts`, opts);
+export const handler = lambdaHandler({
+  isUnauthenticated: true,
+  bodyShape: healthcheckOptsShape,
+  async handler(opts) {
+    console.log(`${LOG_PREFIX} opts`, opts);
 
-  return { body: { status: "Good" } };
+    return { body: { status: "Good" } };
+  },
 });
