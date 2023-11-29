@@ -2,13 +2,26 @@ import { z } from "zod";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { LOG_PREFIX } from "@jspuzzles/common";
 
-export const lambdaHandler =
-  <Body>(
-    bodyShape: z.ZodType<Body>,
-    handler: (body: Body, event: APIGatewayProxyEvent) => Promise<unknown>,
-  ) =>
-  async (evt: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    let body: Body;
+type LambdaHandler = (
+  evt: APIGatewayProxyEvent,
+) => Promise<APIGatewayProxyResult>;
+
+export const lambdaHandler = <InputBody, OutputBody>(
+  bodyShape: z.ZodType<InputBody>,
+  handler: (
+    body: InputBody,
+    event: APIGatewayProxyEvent,
+  ) => Promise<{
+    statusCode?: number;
+    headers?: Record<string, string>;
+    body: OutputBody;
+  }>,
+): LambdaHandler & {
+  __inputBody: InputBody;
+  __outputBody: OutputBody;
+} => {
+  const innerHandler: LambdaHandler = async (evt) => {
+    let body: InputBody;
     try {
       const bodyText = evt.isBase64Encoded
         ? Buffer.from(evt.body!, "base64").toString()
@@ -23,15 +36,16 @@ export const lambdaHandler =
     }
 
     try {
+      const result = await handler(body, evt);
       return {
-        statusCode: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(await handler(body, evt)),
+        statusCode: result.statusCode ?? 200,
+        headers: { "Content-Type": "application/json", ...result.headers },
+        body: JSON.stringify(result.body),
       };
     } catch (err) {
       if (err instanceof ClientError) {
         return {
-          statusCode: 400,
+          statusCode: err.statusCode ?? 400,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ error: String(err) }),
         };
@@ -45,8 +59,17 @@ export const lambdaHandler =
       };
     }
   };
+  return innerHandler as any;
+};
 
-export class ClientError extends Error {}
+export class ClientError extends Error {
+  constructor(
+    message?: string,
+    public statusCode?: number,
+  ) {
+    super(message);
+  }
+}
 
 export const withTimeout = <T>(
   operationName: string,

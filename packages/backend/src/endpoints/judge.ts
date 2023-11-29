@@ -41,7 +41,7 @@ export const handler = lambdaHandler(judgeOptsShape, async (opts) => {
   const browser = new BROWSERS[browserName](browserVersion);
   const result = await judge(opts, browser);
   console.log(`${LOG_PREFIX} result`, result);
-  return result;
+  return { body: result };
 });
 
 const judge = async (

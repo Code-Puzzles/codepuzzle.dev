@@ -3,6 +3,8 @@ import { z } from "zod";
 import { GITHUB_OAUTH_CLIENT_ID, LOG_PREFIX } from "@jspuzzles/common";
 import { Octokit } from "octokit";
 import { lambdaHandler } from "../../lambda-utils.js";
+import { User } from "../../db/records/user.js";
+import { generateSessionJwt } from "../../auth.js";
 
 const githubLoginOptsShape = z.object({
   oauthCode: z.string(),
@@ -39,18 +41,39 @@ export const handler = lambdaHandler(githubLoginOptsShape, async (opts) => {
     auth: accessToken,
   });
 
-  const { data: user } = await octokit.rest.users.getAuthenticated();
-  saveToDb({
-    id: randomUUID(),
-    type: "GITHUB",
-    name: user.name,
-    profilePictureUrl: user.avatar_url,
+  const { data: githubUser } = await octokit.rest.users.getAuthenticated();
+
+  const user = await createUser({
+    loginProvider: "GITHUB",
+    loginId: githubUser.id.toString(),
+    name: githubUser.name ?? `Github user #${githubUser.id}`,
+    profilePictureUrl: githubUser.avatar_url,
   });
 
-  return {};
+  const jwt = generateSessionJwt("", user.id);
+
+  return {
+    body: {},
+  };
 });
 
-// TODO
-const saveToDb = (record: unknown) => {
-  console.log("=== saveToDb", record);
+const createUser = async (
+  userDetails: Omit<typeof User.__runtimeType, "id" | "createdDate">,
+) => {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const user = new User({
+        ...userDetails,
+        id: randomUUID(),
+        createdDate: new Date(),
+      });
+      await user.createInDb();
+      return user;
+    } catch (err) {
+      // TODO: Check for dynamodb condition failure
+      const userIdAlreadyExists = (err as any).userIdAlreadyExists;
+      if (!userIdAlreadyExists) throw err;
+    }
+  }
+  throw new Error("Failed to generate unique user ID after multiple attempts");
 };

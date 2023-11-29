@@ -9,5 +9,5 @@ export type HealthcheckOpts = z.TypeOf<typeof healthcheckOptsShape>;
 export const handler = lambdaHandler(healthcheckOptsShape, async (opts) => {
   console.log(`${LOG_PREFIX} opts`, opts);
 
-  return { status: "Good" };
+  return { body: { status: "Good" } };
 });
