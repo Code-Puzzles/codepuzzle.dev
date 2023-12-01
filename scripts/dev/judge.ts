@@ -1,4 +1,4 @@
-import { Readable, Transform, TransformCallback, Writable } from "node:stream";
+import { Transform, TransformCallback, Writable } from "node:stream";
 import { LOG_PREFIX } from "@jspuzzles/common";
 import { $, ExecaChildProcess } from "execa";
 import chalk from "chalk";
@@ -7,7 +7,7 @@ import {
   REPO_ROOT,
   BROWSER_CONFIGS,
 } from "@jspuzzles/infrastructure";
-import { createPrefixedOutputStream, prefixProcessOutput } from "../utils";
+import { prefixProcessOutput } from "../utils";
 
 // NOTE: set this to true to have an interactive shell in the built image
 const interactive = process.argv.includes("--interactive");

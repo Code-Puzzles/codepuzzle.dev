@@ -2,9 +2,9 @@ import crypto from "node:crypto";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import * as cookie from "cookie";
 import * as jwt from "jsonwebtoken";
-import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
 import { ClientError } from "./lambda-utils.js";
+import { getSecret } from "./secrets.js";
 
 export interface SessionJwtPayload {
   id: string;
@@ -15,28 +15,7 @@ const NOT_LOGGED_IN_ERROR = new ClientError("Not logged in", 401);
 const JWT_ALGORITHM: jwt.Algorithm = "ES256";
 const SESSION_JWT_COOKIE = "session";
 
-export const requireSecret = async (paramName: string): Promise<string> => {
-  const ssmClient = new SSMClient({});
-  const { Parameter: parameter } = await ssmClient.send(
-    new GetParameterCommand({
-      Name: paramName,
-      WithDecryption: true,
-    }),
-  );
-  const value = parameter?.Value;
-  if (!value) {
-    throw new Error(`Secret parameter '${paramName}' not found or empty`);
-  }
-  return value;
-};
-
-let _cachedPrivateKey: string | undefined = undefined;
-const getPrivateKey = async () => {
-  if (!_cachedPrivateKey) {
-    _cachedPrivateKey = await requireSecret("SessionJwtPrivateKey");
-  }
-  return _cachedPrivateKey;
-};
+const getPrivateKey = async () => getSecret("sessionJwtPrivateKey");
 
 export const generateSessionCookieHeader = async (
   userId: string,

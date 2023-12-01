@@ -1,26 +1,30 @@
 import { fileURLToPath } from "node:url";
+import type * as aws from "@pulumi/aws";
 import type { handler as healthcheckHandler } from "./endpoints/healthcheck.js";
 import type { handler as loginGithubHandler } from "./endpoints/login/github.js";
 import type { handler as judgeHandler } from "./endpoints/judge.js";
 
-interface EndpointShape<Handler> {
-  __handlerType: Handler;
+export class Endpoint<Handler> {
+  __handlerType!: Handler;
   path: string;
+  constructor(
+    public relativePath: string,
+    public opts: Partial<aws.lambda.FunctionArgs> = {},
+  ) {
+    this.path = fileURLToPath(
+      new URL(`./endpoints/${relativePath}`, import.meta.url),
+    );
+  }
 }
 
-const defineEndpoint = <Handler>(
-  relativePath: string,
-): EndpointShape<Handler> =>
-  ({
-    path: fileURLToPath(
-      new URL(`./endpoints/${relativePath}`, import.meta.url),
-    ),
-  }) as any;
+export interface Endpoints {
+  [name: string]: Endpoint<unknown> | Endpoints;
+}
 
 export const endpoints = {
-  healthcheck: defineEndpoint<typeof healthcheckHandler>("healthcheck.ts"),
+  healthcheck: new Endpoint<typeof healthcheckHandler>("healthcheck.ts"),
   login: {
-    github: defineEndpoint<typeof loginGithubHandler>("login/github.ts"),
+    github: new Endpoint<typeof loginGithubHandler>("login/github.ts"),
   },
-  judge: defineEndpoint<typeof judgeHandler>("judge.ts"),
-};
+  judge: new Endpoint<typeof judgeHandler>("judge.ts"),
+} satisfies Endpoints;

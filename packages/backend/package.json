@@ -17,6 +17,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@pulumi/aws": "^6.12.1",
     "@types/aws-lambda": "^8.10.125",
     "@types/cookie": "^0.6.0"
   }

@@ -7,6 +7,7 @@ import {
   ENDPOINTS_DIR,
   NODE_VERSION,
 } from "@jspuzzles/infrastructure";
+import { endpoints, Endpoint, Endpoints } from "../packages/backend/src";
 
 export const bundle = async (
   watchCallback?: (result: BuildResult) => Promise<boolean>,
@@ -51,21 +52,16 @@ export const bundle = async (
 const entryPointsFromDir = async (dir: string) => {
   const entryPoints: Record<string, string> = {};
 
-  const visitDir = async (relativeDir: string) => {
-    const entries = await fs.readdir(path.join(dir, relativeDir), {
-      withFileTypes: true,
-    });
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        await visitDir(path.join(relativeDir, entry.name));
-      } else if (entry.isFile()) {
-        entryPoints[
-          path.posix.join(relativeDir, path.parse(entry.name).name, "index")
-        ] = path.join(entry.path, entry.name);
+  const build = (eps: Endpoints) => {
+    for (const ep of Object.values(eps)) {
+      if (ep instanceof Endpoint) {
+        entryPoints[ep.relativePath.replace(/\.ts$/, "")] = ep.path;
+      } else {
+        build(ep);
       }
     }
   };
-  await visitDir("");
+  build(endpoints);
 
   return entryPoints;
 };

@@ -1,11 +1,19 @@
 import { z } from "zod";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import type * as aws from "@pulumi/aws";
 import { LOG_PREFIX } from "@jspuzzles/common";
 import { SessionJwtPayload, requireAuth } from "./auth.js";
 
 type LambdaHandler = (
   evt: APIGatewayProxyEvent,
 ) => Promise<APIGatewayProxyResult>;
+
+export interface HandlerContext<IsUnauthenticated extends boolean> {
+  session:
+    | SessionJwtPayload
+    | (IsUnauthenticated extends true ? undefined : never);
+  event: APIGatewayProxyEvent;
+}
 
 export interface LambdaOpts<
   InputBody,
@@ -14,12 +22,10 @@ export interface LambdaOpts<
 > {
   isUnauthenticated?: IsUnauthenticated;
   bodyShape: z.ZodType<InputBody>;
+  infra?: Partial<aws.lambda.FunctionArgs>;
   handler: (
     body: InputBody,
-    session:
-      | SessionJwtPayload
-      | (IsUnauthenticated extends true ? undefined : never),
-    event: APIGatewayProxyEvent,
+    context: HandlerContext<IsUnauthenticated>,
   ) => Promise<{
     statusCode?: number;
     headers?: Record<string, string>;
@@ -55,7 +61,10 @@ export const lambdaHandler = <
     }
 
     try {
-      const result = await opts.handler(body, session as any, evt);
+      const result = await opts.handler(body, {
+        session: session as any,
+        event: evt,
+      });
       return {
         statusCode: result.statusCode ?? 200,
         headers: { "Content-Type": "application/json", ...result.headers },
