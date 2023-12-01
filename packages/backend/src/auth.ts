@@ -3,7 +3,7 @@ import type { APIGatewayProxyEvent } from "aws-lambda";
 import * as cookie from "cookie";
 import * as jwt from "jsonwebtoken";
 
-import { ClientError } from "./lambda-utils.js";
+import { ClientError } from "./lambda/common.js";
 import { getSecret } from "./secrets.js";
 
 export interface SessionJwtPayload {

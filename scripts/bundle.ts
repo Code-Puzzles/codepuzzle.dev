@@ -1,4 +1,4 @@
-import path, { relative } from "node:path";
+import { relative } from "node:path";
 import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import esbuild, { BuildResult } from "esbuild";
@@ -24,6 +24,10 @@ export const bundle = async (
     target: `node${NODE_VERSION}`,
     sourcemap: "external",
     bundle: true,
+    banner: {
+      // Fixes esbuild issue with CommonJS modules
+      js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
+    },
     plugins: [
       {
         name: "onBuildEndCallback",
@@ -55,7 +59,8 @@ const entryPointsFromDir = async (dir: string) => {
   const build = (eps: Endpoints) => {
     for (const ep of Object.values(eps)) {
       if (ep instanceof Endpoint) {
-        entryPoints[ep.relativePath.replace(/\.ts$/, "")] = ep.path;
+        const outfile = `${ep.relativePath.replace(/\.ts$/, "")}/index`;
+        entryPoints[outfile] = ep.path;
       } else {
         build(ep);
       }

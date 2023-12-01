@@ -6,7 +6,7 @@ import {
   puzzlesAsMap,
 } from "@jspuzzles/common";
 import { Browser } from "../browser/types.js";
-import { lambdaHandler, withTimeout } from "../lambda-utils.js";
+import { lambdaHandler, withTimeout } from "../lambda/utils.js";
 import { BrowserName, BROWSERS } from "../browser/browsers.js";
 
 const judgeOptsShape = z.object({

@@ -6,6 +6,7 @@ config:
     - apigateway: http://localhost:4566
     - lambda: http://localhost:4566
     - dynamodb: http://localhost:4566
+    - ssm: http://localhost:4566
   aws:region: us-east-1
   aws:secretKey: localSecretKey
   aws:skipCredentialsValidation: "true"

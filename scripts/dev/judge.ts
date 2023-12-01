@@ -1,4 +1,4 @@
-import { Transform, TransformCallback, Writable } from "node:stream";
+import { Transform, TransformCallback } from "node:stream";
 import { LOG_PREFIX } from "@jspuzzles/common";
 import { $, ExecaChildProcess } from "execa";
 import chalk from "chalk";

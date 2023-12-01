@@ -2,7 +2,8 @@ import { z } from "zod";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import type * as aws from "@pulumi/aws";
 import { LOG_PREFIX } from "@jspuzzles/common";
-import { SessionJwtPayload, requireAuth } from "./auth.js";
+import { SessionJwtPayload, requireAuth } from "../auth.js";
+import { ClientError } from "./common.js";
 
 type LambdaHandler = (
   evt: APIGatewayProxyEvent,
@@ -101,15 +102,6 @@ const getSession = async (
     throw err;
   }
 };
-
-export class ClientError extends Error {
-  constructor(
-    message?: string,
-    public statusCode?: number,
-  ) {
-    super(message);
-  }
-}
 
 export const withTimeout = <T>(
   operationName: string,

@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { GITHUB_OAUTH_CLIENT_ID, LOG_PREFIX } from "@jspuzzles/common";
 import { Octokit } from "octokit";
-import { lambdaHandler } from "../../lambda-utils.js";
+import { lambdaHandler } from "../../lambda/utils.js";
 import { User, UserRuntimeType } from "../../db/records/user.js";
 import { generateSessionCookieHeader } from "../../auth.js";
 import { getUserByLogin } from "../../db/queries.js";

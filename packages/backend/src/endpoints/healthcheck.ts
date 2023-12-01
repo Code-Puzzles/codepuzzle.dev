@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { LOG_PREFIX } from "@jspuzzles/common";
-import { lambdaHandler } from "../lambda-utils.js";
+import { lambdaHandler } from "../lambda/utils.js";
 
 const healthcheckOptsShape = z.object({});
 
