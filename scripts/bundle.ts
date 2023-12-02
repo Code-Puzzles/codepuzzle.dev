@@ -1,4 +1,4 @@
-import { relative } from "node:path";
+import path from "node:path";
 import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import esbuild, { BuildResult } from "esbuild";
@@ -12,7 +12,7 @@ import { endpoints, Endpoint, Endpoints } from "../packages/backend/src";
 export const bundle = async (
   watchCallback?: (result: BuildResult) => Promise<boolean>,
 ) => {
-  console.log(`Cleaning ${relative(process.cwd(), DIST_BUNDLES_DIR)}...`);
+  console.log(`Cleaning ${path.relative(process.cwd(), DIST_BUNDLES_DIR)}...`);
   await fs.rm(DIST_BUNDLES_DIR, { recursive: true, force: true });
 
   const ctx = await esbuild.context({
@@ -54,7 +54,9 @@ export const bundle = async (
 };
 
 const entryPointsFromDir = async (dir: string) => {
-  const entryPoints: Record<string, string> = {};
+  const entryPoints: Record<string, string> = {
+    ["judge/index"]: path.join(ENDPOINTS_DIR, "judge.ts"),
+  };
 
   const build = (eps: Endpoints) => {
     for (const ep of Object.values(eps)) {

@@ -66,7 +66,7 @@
     if (!code) return;
 
     try {
-      await fetch("/api/login/github", {
+      await fetch(`${API_BASE_URL}/login/github`, {
         method: "POST",
         body: JSON.stringify({ code }),
       });

@@ -95,10 +95,8 @@ console.log(chalk.green("Backend is now set up and running!"));
 console.log("\nCommand to test local backend:");
 console.log(
   chalk.gray(
-    `curl http://${
-      result.outputs.restApiId.value
-    }.execute-api.localhost.localstack.cloud:4566/${
-      result.outputs.stageName.value
+    `curl ${
+      result.outputs.url.value
     }/healthcheck -H 'Content-Type: application/json' -d '${JSON.stringify(
       {},
     )}'`,

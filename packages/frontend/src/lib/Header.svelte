@@ -11,7 +11,7 @@
   import { SunSolid, MoonSolid, GithubSolid } from "flowbite-svelte-icons";
   import NavContainer from "flowbite-svelte/NavContainer.svelte";
 
-  const GITHUB_LOGIN_PATH = "https://localhost:5173/login/github";
+  const GITHUB_LOGIN_PATH = `${window.location.origin}/login/github`;
 
   const headerClass = "w-full border-b-2 dark:border-gray-900";
 </script>

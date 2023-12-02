@@ -16,6 +16,7 @@ const githubLoginOptsShape = z.object({
 export type GithubLoginOpts = z.TypeOf<typeof githubLoginOptsShape>;
 
 export const handler = lambdaHandler({
+  isUnauthenticated: true,
   bodyShape: githubLoginOptsShape,
   async handler(opts) {
     console.log(`${LOG_PREFIX} opts`, opts);

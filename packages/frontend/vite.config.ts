@@ -3,19 +3,20 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import sveltePreprocess from "svelte-preprocess";
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    svelte({
-      preprocess: [sveltePreprocess({ typescript: true })],
-    }),
-  ],
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:9000",
-        changeOrigin: false,
-        rewrite: (path) => path.replace(/^\/api/, ""),
-      },
+export default defineConfig(({ mode }) => {
+  const isLocalDev = mode === "development";
+  const API_BASE_URL = isLocalDev
+    ? "http://api.execute-api.localhost.localstack.cloud:4566/stage"
+    : "TODO";
+  return {
+    define: {
+      IS_LOCAL_DEV: isLocalDev,
+      API_BASE_URL: JSON.stringify(API_BASE_URL),
     },
-  },
+    plugins: [
+      svelte({
+        preprocess: [sveltePreprocess({ typescript: true })],
+      }),
+    ],
+  };
 });

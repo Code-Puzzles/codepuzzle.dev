@@ -33,7 +33,9 @@ export async function submitToBackend(
   }
 
   async function inner() {
-    const url = "/api/2015-03-31/functions/function/invocations";
+    const url = IS_LOCAL_DEV
+      ? "http://localhost:9000/2015-03-31/functions/function/invocations"
+      : `${API_BASE_URL}/judge/firefox/119.0`;
 
     const inner = JSON.stringify({
       puzzleNamespace: "season1",
