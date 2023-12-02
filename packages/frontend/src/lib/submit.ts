@@ -33,19 +33,14 @@ export async function submitToBackend(
   }
 
   async function inner() {
-    const url = IS_LOCAL_DEV
-      ? "http://localhost:9000/2015-03-31/functions/function/invocations"
-      : `${API_BASE_URL}/judge/firefox/119.0`;
-
-    const inner = JSON.stringify({
-      puzzleNamespace: "season1",
-      puzzleName: puzzle.name,
-      solution,
-    });
     console.log("Sending solution", inner);
-    const resp = await fetch(url, {
+    const resp = await fetch(`${API_BASE_URL}/judge/firefox/119.0`, {
       method: "POST",
-      body: JSON.stringify({ body: btoa(inner), isBase64Encoded: true }),
+      body: JSON.stringify({
+        puzzleNamespace: "season1",
+        puzzleName: puzzle.name,
+        solution,
+      }),
     });
 
     if (!resp.ok) {

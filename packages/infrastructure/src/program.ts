@@ -185,7 +185,7 @@ export const buildProgram = (isLocalDev: boolean) => {
 
   const mergedEndpoints: EndpointsOrFuncs = {
     ...endpoints,
-    ...(isLocalDev ? {} : { judge: createJudgeFuncs(namePrefix) }),
+    judge: createJudgeFuncs(namePrefix, isLocalDev),
   };
   buildRoutes(mergedEndpoints, apiRest.rootResourceId, []);
 

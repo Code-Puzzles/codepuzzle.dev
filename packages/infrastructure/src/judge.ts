@@ -2,12 +2,46 @@ import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as docker from "@pulumi/docker";
 import { ECR } from "@aws-sdk/client-ecr";
+import { LambdaHandler } from "@jspuzzles/backend";
 import { BROWSER_CONFIGS } from "./browsers.js";
 import { REPO_ROOT } from "./paths.js";
+import { NODE_VERSION } from "./versions.js";
 
-export const createJudgeFuncs = (namePrefix: string) => {
-  const ecr = new ECR({ region: aws.config.region! });
-  const ecrAuthToken = aws.ecr.getAuthorizationToken();
+const localDevLambdaHandler: LambdaHandler = async (evt) => {
+  try {
+    const result = await fetch(
+      "http://host.docker.internal:9000/2015-03-31/functions/function/invocations",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(evt),
+      },
+    );
+
+    if (!result.ok) {
+      console.error("Result not ok:", result);
+      throw new Error("Result not ok");
+    }
+
+    return await result.json();
+  } catch (err) {
+    console.error("Failed to proxy to local judge:", err);
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        error: "Failed to proxy to local judge",
+      }),
+    };
+  }
+};
+
+export const createJudgeFuncs = (namePrefix: string, isLocalDev: boolean) => {
+  const ecr = new ECR({
+    region: aws.config.region,
+    endpoint: aws.config.endpoints?.find((ep) => ep.ecr)?.ecr,
+  });
+  const ecrAuthToken = isLocalDev ? undefined : aws.ecr.getAuthorizationToken();
 
   const lambdaRole = new aws.iam.Role(`${namePrefix}-judge-lambda-role`, {
     assumeRolePolicy: {
@@ -29,6 +63,12 @@ export const createJudgeFuncs = (namePrefix: string) => {
     policyArn: aws.iam.ManagedPolicies.AWSLambdaExecute,
   });
 
+  const functionOpts: aws.lambda.FunctionArgs = {
+    architectures: ["x86_64"],
+    timeout: 2 * 60,
+    role: lambdaRole.arn,
+  };
+
   return Object.fromEntries(
     Object.entries(BROWSER_CONFIGS).map(([name, buildConfig]) => [
       name,
@@ -38,6 +78,21 @@ export const createJudgeFuncs = (namePrefix: string) => {
             /\W+/g,
             "_",
           )}`;
+
+          if (isLocalDev) {
+            const func = new aws.lambda.Function(`${lambdaPrefix}-func`, {
+              ...functionOpts,
+              runtime: `nodejs${NODE_VERSION}.x`,
+              handler: "index.handler",
+              code: new pulumi.asset.AssetArchive({
+                "index.mjs": new pulumi.asset.StringAsset(
+                  `export const handler = ${localDevLambdaHandler};`,
+                ),
+              }),
+            });
+
+            return [version, func];
+          }
 
           const repo = new aws.ecr.Repository(`${lambdaPrefix}-repo`, {
             name: lambdaPrefix,
@@ -54,19 +109,17 @@ export const createJudgeFuncs = (namePrefix: string) => {
             },
             registry: {
               server: repo.repositoryUrl,
-              username: ecrAuthToken.then((token) => token.userName),
-              password: ecrAuthToken.then((token) => token.password),
+              username: ecrAuthToken!.then((token) => token.userName),
+              password: ecrAuthToken!.then((token) => token.password),
             },
           });
 
           // TODO: Disable internet access
           const func = new aws.lambda.Function(`${lambdaPrefix}-func`, {
+            ...functionOpts,
             packageType: "Image",
             imageUri: image.repoDigest,
-            architectures: ["x86_64"],
             memorySize: 2048,
-            role: lambdaRole.arn,
-            timeout: 2 * 60,
           });
 
           // Delete all images from registry except the one we just added

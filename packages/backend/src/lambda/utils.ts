@@ -5,7 +5,7 @@ import { LOG_PREFIX } from "@jspuzzles/common";
 import { SessionJwtPayload, requireAuth } from "../auth.js";
 import { ClientError } from "./common.js";
 
-type LambdaHandler = (
+export type LambdaHandler = (
   evt: APIGatewayProxyEvent,
 ) => Promise<APIGatewayProxyResult>;
 
