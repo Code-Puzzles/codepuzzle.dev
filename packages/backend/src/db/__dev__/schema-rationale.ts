@@ -1,5 +1,5 @@
 /** The data we need to store for each type of record. */
-type RecordData = {
+export type RecordData = {
   user: {
     userUuid: string;
     loginId: string; // provider-specific ID (eg. Github ID)
@@ -25,7 +25,7 @@ type RecordData = {
 
 /** Mapping of data access queries to required pk+sk data from records.
  * Used for reference when calculating the final schema next. */
-type RecordIndexKeys = {
+export type RecordIndexKeys = {
   user: [
     // Should be pk but unnecessary right now
     // { pk: "userUuid" },
@@ -40,7 +40,7 @@ type RecordIndexKeys = {
 
 /** Mappings of pk+sk indexes to fields in the `RecordIndexSchema` below for the
  * main index along with other GSIs. Comment is records returned by queries it is used in. */
-type Indexes = [
+export type Indexes = [
   { pk: "pk0"; sk: "sk0" }, // all
 ];
 
@@ -49,7 +49,7 @@ type Indexes = [
 
 /** Fields used as index keys.
  * Data from `RecordData` will be included in addition to these fields. */
-type RecordIndexSchema = {
+export type RecordIndexSchema = {
   user: {
     pk0: `USER/${"loginId"}`;
   };
@@ -62,7 +62,7 @@ type RecordIndexSchema = {
 /** Pseudo-code for all the DynamoDB queries we'll need to make using the fields in `RecordIndexSchema`.
  * Note that for every query the first assertion must be a partition key and the second and order (if they
  * exist) must be a matching range key for one of the indexes in `Indexes`. */
-type Queries = [
+export type Queries = [
   // Get user for login ID (login)
   `get pk0:${"loginId"}`,
   // List solutions for user (login)
