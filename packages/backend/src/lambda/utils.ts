@@ -38,19 +38,16 @@ export const IS_DEV = process.env["IS_DEV"];
 
 const getCommonHeaders = (
   evt: APIGatewayProxyEvent,
-): Record<string, string> => {
-  const host = evt.headers["host"]?.toLowerCase();
-  return {
-    "Content-Type": "application/json",
-    // TODO: Can we get the calling domain in dev mode?
-    "Access-Control-Allow-Origin": IS_DEV
-      ? host ?? "http://localhost:5173"
-      : "TODO",
-    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Accept",
-    "Access-Control-Max-Age": "86400",
-  };
-};
+): Record<string, string> => ({
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": IS_DEV
+    ? evt.headers["origin"] ?? "http://localhost:5173"
+    : "TODO",
+  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Accept",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Max-Age": "86400",
+});
 
 const normalizeHeaders = (evt: APIGatewayProxyEvent) => {
   evt.headers = Object.fromEntries(

@@ -33,7 +33,6 @@ export async function submitToBackend(
   }
 
   async function inner() {
-    console.log("Sending solution", inner);
     const resp = await fetch(`${API_BASE_URL}/judge/firefox/119.0`, {
       method: "POST",
       body: JSON.stringify({
@@ -49,14 +48,6 @@ export async function submitToBackend(
       );
     }
 
-    interface LambdaResponse {
-      status: number;
-      headers: Record<string, string>;
-      body: string;
-    }
-
-    const data: LambdaResponse = await resp.json();
-    console.log("Backend result", data);
-    return JSON.parse(data.body);
+    return resp.json();
   }
 }

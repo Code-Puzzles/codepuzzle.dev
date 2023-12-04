@@ -102,7 +102,6 @@ export class FirefoxBrowser extends Browser {
     const sessionData = (await sessionResponse.json()) as {
       value: { sessionId: string };
     };
-    console.log(`${LOG_PREFIX} sessionData`, sessionData);
     this.sessionId = sessionData.value.sessionId;
 
     const scriptResponse = await fetch(
