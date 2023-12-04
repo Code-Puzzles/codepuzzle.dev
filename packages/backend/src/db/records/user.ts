@@ -8,9 +8,10 @@ export const buildUserLoginKey = (opts: {
 }) => ["LOGIN", opts.loginProvider, opts.loginId].join("/");
 
 export class User extends mappedRecord<User>()(
+  mainTable,
   z.object({
     pk0: z.string().startsWith("LOGIN/"),
-    sk0: z.string().startsWith("USER/"),
+    sk0: z.literal("USER"),
     name: z.string(),
     pfp: z.string().optional(),
     created: z.number(),
@@ -27,10 +28,10 @@ export class User extends mappedRecord<User>()(
     createdDate: new Date(record.created),
   };
 })({
-  table: mainTable,
   toRecord: (value) => ({
     pk0: buildUserLoginKey(value),
-    sk0: ["USER", value.id].join("/"),
+    sk0: "USER",
+    id: value.id,
     name: value.name,
     pfp: value.profilePictureUrl,
     created: value.createdDate.getTime(),

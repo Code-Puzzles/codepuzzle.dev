@@ -37,8 +37,7 @@ export async function submitToBackend(
     const resp = await fetch(`${API_BASE_URL}/judge/firefox/119.0`, {
       method: "POST",
       body: JSON.stringify({
-        puzzleNamespace: "season1",
-        puzzleName: puzzle.name,
+        puzzleId: puzzle.id,
         solution,
       }),
     });

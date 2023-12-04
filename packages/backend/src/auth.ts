@@ -4,7 +4,7 @@ import * as cookie from "cookie";
 import * as jwt from "jsonwebtoken";
 
 import { ClientError } from "./lambda/common.js";
-import { getSecret } from "./secrets.js";
+import { getParam } from "./parameters.js";
 
 export interface SessionJwtPayload {
   id: string;
@@ -14,8 +14,6 @@ export interface SessionJwtPayload {
 const NOT_LOGGED_IN_ERROR = new ClientError("Not logged in", 401);
 const JWT_ALGORITHM: jwt.Algorithm = "ES256";
 const SESSION_JWT_COOKIE = "session";
-
-const getPrivateKey = async () => getSecret("sessionJwtPrivateKey");
 
 export const generateSessionCookieHeader = async (
   userId: string,
@@ -35,7 +33,7 @@ export const generateSessionCookieHeader = async (
 export const generateSessionJwt = async (userId: string): Promise<string> => {
   const csrf = crypto.pseudoRandomBytes(12).toString("base64");
   const payload: SessionJwtPayload = { id: userId, csrf };
-  return jwt.sign(payload, await getPrivateKey(), {
+  return jwt.sign(payload, await getParam("sessionJwtPrivateKey"), {
     algorithm: JWT_ALGORITHM,
     expiresIn: "90d",
   });
@@ -50,7 +48,7 @@ export const requireAuth = async (
   const token = cookies[SESSION_JWT_COOKIE];
   if (!token) throw NOT_LOGGED_IN_ERROR;
   try {
-    const payload = jwt.verify(token, await getPrivateKey(), {
+    const payload = jwt.verify(token, await getParam("sessionJwtPublicKey"), {
       algorithms: [JWT_ALGORITHM],
     }) as SessionJwtPayload;
     return payload;

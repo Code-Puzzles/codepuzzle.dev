@@ -40,7 +40,7 @@ type TableKey<
 
 export const get = async <
   Table extends DbTable<any, any, any, any>,
-  RecordClass extends MappedRecordClass<any, any, any>,
+  RecordClass extends MappedRecordClass<any, any, any, any>,
 >(
   recordClass: RecordClass,
   input: Omit<GetCommandInput, "TableName"> & {
@@ -49,7 +49,7 @@ export const get = async <
 ): Promise<InstanceType<RecordClass> | undefined> => {
   const res = await getDbClient().send(
     new GetCommand({
-      TableName: recordClass.opts.table.name,
+      TableName: recordClass.table.name,
       ...input,
     }),
   );
@@ -59,7 +59,7 @@ export const get = async <
 export const query = async <
   Table extends DbTable<any, any, any, any>,
   IndexName extends keyof Table["globalSecondaryIndexes"] | undefined,
-  RecordClass extends MappedRecordClass<any, any, any>,
+  RecordClass extends MappedRecordClass<any, any, any, any>,
 >(
   recordClass: RecordClass,
   input: Omit<QueryCommandInput, "TableName"> & {
@@ -70,7 +70,7 @@ export const query = async <
   const res = paginateQuery(
     { client: getDbClient() },
     {
-      TableName: recordClass.opts.table.name,
+      TableName: recordClass.table.name,
       ...input,
     },
   );

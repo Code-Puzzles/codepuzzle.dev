@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
     define: {
       IS_LOCAL_DEV: isLocalDev,
       API_BASE_URL: JSON.stringify(API_BASE_URL),
+      MOCK_LOGIN: JSON.stringify(isLocalDev && !process.env["UNMOCK_LOGIN"]),
     },
     plugins: [
       svelte({

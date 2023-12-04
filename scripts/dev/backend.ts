@@ -39,6 +39,8 @@ await stack.importStack({
   },
 });
 
+await $`docker rm --force js-puzzles-localstack`;
+
 const localstack = $({
   cwd: INFRASTRUCTURE_DIR,
   stdio: ["ignore", "pipe", "pipe"],

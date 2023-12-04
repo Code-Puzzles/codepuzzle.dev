@@ -2,7 +2,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
-import { Endpoint, endpoints, secrets } from "@jspuzzles/backend";
+import { Endpoint, endpoints, params } from "@jspuzzles/backend";
 import { NODE_VERSION } from "./versions.js";
 import { createJudgeFuncs } from "./judge.js";
 import { DIST_BUNDLES_DIR } from "./paths.js";
@@ -15,26 +15,43 @@ interface EndpointsOrFuncs {
 const defineInlinePolicyDocument = (policy: aws.iam.PolicyDocument) =>
   JSON.stringify(policy);
 
+const generateSessionKeys = () =>
+  crypto.generateKeyPairSync("ec", {
+    namedCurve: "P-256",
+    publicKeyEncoding: {
+      type: "spki",
+      format: "pem",
+    },
+    privateKeyEncoding: {
+      type: "pkcs8",
+      format: "pem",
+    },
+  });
+
 export const buildProgram = (isLocalDev: boolean) => {
   const stackName = pulumi.getStack();
 
   const namePrefix = `${stackName}`;
 
   if (isLocalDev) {
-    for (const [name, { envVar, getDevValue }] of Object.entries(secrets)) {
-      new aws.ssm.Parameter(`${namePrefix}-secret-${name}`, {
-        type: aws.ssm.ParameterType.SecureString,
+    const sessionKeys = generateSessionKeys();
+    const defaultValues: Record<keyof typeof params, string | undefined> = {
+      sessionJwtPrivateKey: sessionKeys.privateKey,
+      sessionJwtPublicKey: sessionKeys.publicKey,
+      githubOauthClientSecret: process.env["UNMOCK_LOGIN"]
+        ? undefined
+        : "mock_github_oauth_client_secret",
+    };
+    for (const [name, { isSecret, envVar }] of Object.entries(params)) {
+      const value =
+        process.env[envVar] ?? defaultValues[name as keyof typeof params];
+      if (!value) throw new Error(`Missing value for parameter: ${name}`);
+      new aws.ssm.Parameter(`${namePrefix}-param-${name}`, {
+        type: isSecret
+          ? aws.ssm.ParameterType.SecureString
+          : aws.ssm.ParameterType.String,
         name,
-        value: Promise.resolve(process.env[envVar] ?? getDevValue()).then(
-          (value) => {
-            if (!value) {
-              throw new Error(
-                `Environment variable for secret not set: ${envVar}`,
-              );
-            }
-            return value;
-          },
-        ),
+        value,
       });
     }
   }
@@ -143,6 +160,11 @@ export const buildProgram = (isLocalDev: boolean) => {
                 timeout: 5,
                 runtime: `nodejs${NODE_VERSION}.x`,
                 handler: "index.handler",
+                environment: {
+                  variables: isLocalDev
+                    ? { IS_DEV: String(!!isLocalDev) }
+                    : undefined,
+                },
                 ...ep.opts,
                 ...(isLocalDev
                   ? {

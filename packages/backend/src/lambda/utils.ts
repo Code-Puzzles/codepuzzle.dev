@@ -34,6 +34,8 @@ export interface LambdaOpts<
   }>;
 }
 
+export const IS_DEV = process.env["IS_DEV"];
+
 export const lambdaHandler = <
   InputBody,
   OutputBody,
@@ -45,8 +47,6 @@ export const lambdaHandler = <
   __outputBody: OutputBody;
 } => {
   const innerHandler: LambdaHandler = async (evt) => {
-    const session = await getSession(evt, opts.isUnauthenticated);
-
     let body: InputBody;
     try {
       const bodyText = evt.isBase64Encoded
@@ -62,6 +62,7 @@ export const lambdaHandler = <
     }
 
     try {
+      const session = await getSession(evt, opts.isUnauthenticated);
       const result = await opts.handler(body, {
         session: session as any,
         event: evt,

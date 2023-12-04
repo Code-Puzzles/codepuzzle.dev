@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { GITHUB_OAUTH_CLIENT_ID } from "@jspuzzles/common";
+  import {
+    GITHUB_OAUTH_CLIENT_ID,
+    GITHUB_OAUTH_MOCK_CODE,
+  } from "@jspuzzles/common";
   import {
     Navbar,
     NavBrand,
@@ -12,6 +15,13 @@
   import NavContainer from "flowbite-svelte/NavContainer.svelte";
 
   const GITHUB_LOGIN_PATH = `${window.location.origin}/login/github`;
+  const loginUrl = MOCK_LOGIN
+    ? `${GITHUB_LOGIN_PATH}?code=${GITHUB_OAUTH_MOCK_CODE}`
+    : `https://github.com/login/oauth/authorize?${new URLSearchParams({
+        client_id: GITHUB_OAUTH_CLIENT_ID,
+        redirect_uri: GITHUB_LOGIN_PATH,
+        // TODO: Pass random state
+      })}`;
 
   const headerClass = "w-full border-b-2 dark:border-gray-900";
 </script>
@@ -64,15 +74,7 @@
             </NavLi>
           </svelte:fragment>
         </DarkMode>
-        <NavLi
-          href="https://github.com/login/oauth/authorize?{new URLSearchParams({
-            client_id: GITHUB_OAUTH_CLIENT_ID,
-            redirect_uri: GITHUB_LOGIN_PATH,
-            // TODO: Pass random state
-          })}"
-        >
-          Login with GitHub
-        </NavLi>
+        <NavLi href={loginUrl}>Login with GitHub</NavLi>
       </NavUl>
     </NavContainer>
   </Navbar>

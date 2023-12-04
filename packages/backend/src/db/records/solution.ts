@@ -6,6 +6,7 @@ export const buildSolutionKey = (userId: string) =>
   ["USER", userId, "SOLUTION"].join("/");
 
 export class Solution extends mappedRecord<Solution>()(
+  mainTable,
   z.object({
     pk0: z.string().startsWith("USER/").endsWith("/SOLUTION"),
     sk0: z.string(),
@@ -19,7 +20,6 @@ export class Solution extends mappedRecord<Solution>()(
     code: record.code,
   };
 })({
-  table: mainTable,
   toRecord: (value) => ({
     pk0: buildSolutionKey(value.userId),
     sk0: value.puzzleId,

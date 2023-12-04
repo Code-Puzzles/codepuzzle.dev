@@ -6,6 +6,7 @@ export const getUserByLogin = async (loginProvider: string, loginId: string) =>
   get(User, {
     Key: {
       pk0: buildUserLoginKey({ loginProvider, loginId }),
+      sk0: "USER",
     },
   });
 
