@@ -47,12 +47,13 @@ export const requireAuth = async (
   const cookies = cookie.parse(cookieHeader);
   const token = cookies[SESSION_JWT_COOKIE];
   if (!token) throw NOT_LOGGED_IN_ERROR;
+  const sessionJwtPublicKey = await getParam("sessionJwtPublicKey");
   try {
-    const payload = jwt.verify(token, await getParam("sessionJwtPublicKey"), {
+    const payload = jwt.verify(token, sessionJwtPublicKey, {
       algorithms: [JWT_ALGORITHM],
     }) as SessionJwtPayload;
     return payload;
   } catch (err) {
-    throw new ClientError(`Session token: ${err}`);
+    throw new ClientError(`Failed to verify session token: ${err}`);
   }
 };

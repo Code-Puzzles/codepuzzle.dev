@@ -68,6 +68,7 @@ const fetchUserDetails = async (
       client_secret: githubOauthSecret,
       code: oauthCode,
     }),
+    credentials: "include",
   }).then(
     (res) => res.json() as Promise<{ access_token?: string } | undefined>,
   );

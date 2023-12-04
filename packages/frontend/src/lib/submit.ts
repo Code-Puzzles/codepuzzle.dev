@@ -40,6 +40,7 @@ export async function submitToBackend(
         puzzleId: puzzle.id,
         solution,
       }),
+      credentials: "include",
     });
 
     if (!resp.ok) {

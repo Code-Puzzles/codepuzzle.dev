@@ -36,6 +36,31 @@ export interface LambdaOpts<
 
 export const IS_DEV = process.env["IS_DEV"];
 
+const getCommonHeaders = (
+  evt: APIGatewayProxyEvent,
+): Record<string, string> => {
+  const host = evt.headers["host"]?.toLowerCase();
+  return {
+    "Content-Type": "application/json",
+    // TODO: Can we get the calling domain in dev mode?
+    "Access-Control-Allow-Origin": IS_DEV
+      ? host ?? "http://localhost:5173"
+      : "TODO",
+    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Accept",
+    "Access-Control-Max-Age": "86400",
+  };
+};
+
+const normalizeHeaders = (evt: APIGatewayProxyEvent) => {
+  evt.headers = Object.fromEntries(
+    Object.entries(evt.headers).map(([key, value]) => [
+      key.toLowerCase(),
+      value,
+    ]),
+  );
+};
+
 export const lambdaHandler = <
   InputBody,
   OutputBody,
@@ -47,6 +72,8 @@ export const lambdaHandler = <
   __outputBody: OutputBody;
 } => {
   const innerHandler: LambdaHandler = async (evt) => {
+    normalizeHeaders(evt);
+
     let body: InputBody;
     try {
       const bodyText = evt.isBase64Encoded
@@ -56,7 +83,7 @@ export const lambdaHandler = <
     } catch (err) {
       return {
         statusCode: 400,
-        headers: { "Content-Type": "application/json" },
+        headers: getCommonHeaders(evt),
         body: JSON.stringify({ error: String(err) }),
       };
     }
@@ -69,14 +96,14 @@ export const lambdaHandler = <
       });
       return {
         statusCode: result.statusCode ?? 200,
-        headers: { "Content-Type": "application/json", ...result.headers },
+        headers: { ...getCommonHeaders(evt), ...result.headers },
         body: JSON.stringify(result.body),
       };
     } catch (err) {
       if (err instanceof ClientError) {
         return {
           statusCode: err.statusCode ?? 400,
-          headers: { "Content-Type": "application/json" },
+          headers: getCommonHeaders(evt),
           body: JSON.stringify({ error: String(err) }),
         };
       }
@@ -84,7 +111,7 @@ export const lambdaHandler = <
       console.error("Uncaught error:", err);
       return {
         statusCode: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: getCommonHeaders(evt),
         body: JSON.stringify({ error: "Internal server error" }),
       };
     }

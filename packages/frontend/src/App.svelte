@@ -69,6 +69,7 @@
       await fetch(`${API_BASE_URL}/login/github`, {
         method: "POST",
         body: JSON.stringify({ oauthCode: code }),
+        credentials: "include",
       });
     } finally {
       const newUrl = new URL(window.location.href);

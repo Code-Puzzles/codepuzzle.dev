@@ -41,10 +41,22 @@ const runContainer = () => {
     ? [`--interactive`, `--tty`, `--entrypoint=/bin/bash`, imageName]
     : ["--entrypoint=/dev-loop.sh", imageName];
 
+  const envVars = {
+    AWS_ENDPOINT_URL: "http://host.docker.internal:4566",
+    AWS_REGION: "us-east-1",
+    AWS_ACCESS_KEY_ID: "test",
+    AWS_SECRET_ACCESS_KEY: "test",
+  };
+
   const proc = $$({
     reject: false,
     stdio: interactive ? "inherit" : "pipe",
-  })`docker run --rm --name ${imageName} -v ${mount} --platform linux/amd64 --publish 9000:8080 ${finalArgs}`;
+  })`docker run --rm --name ${imageName} -v ${mount} ${Object.entries(
+    envVars,
+  ).flatMap(([name, value]) => [
+    "--env",
+    `${name}=${value}`,
+  ])} --platform linux/amd64 --publish 9000:8080 ${finalArgs}`;
 
   if (!interactive) {
     const stdoutStream = new JudgeOutputFormatter();
