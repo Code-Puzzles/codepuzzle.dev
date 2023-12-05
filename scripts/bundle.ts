@@ -17,7 +17,7 @@ export const bundle = async (
 
   const ctx = await esbuild.context({
     outdir: DIST_BUNDLES_DIR,
-    entryPoints: await entryPointsFromDir(ENDPOINTS_DIR),
+    entryPoints: await entryPointsFromDir(),
     format: "esm",
     outExtension: { ".js": ".mjs" },
     platform: "node",
@@ -53,9 +53,10 @@ export const bundle = async (
   }
 };
 
-const entryPointsFromDir = async (dir: string) => {
+const entryPointsFromDir = async () => {
   const entryPoints: Record<string, string> = {
     ["judge/index"]: path.join(ENDPOINTS_DIR, "judge.ts"),
+    ["options/index"]: path.join(ENDPOINTS_DIR, "options.ts"),
   };
 
   const build = (eps: Endpoints) => {

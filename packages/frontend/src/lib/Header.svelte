@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { UserRuntimeType } from "@jspuzzles/backend";
   import {
     GITHUB_OAUTH_CLIENT_ID,
     GITHUB_OAUTH_MOCK_CODE,
@@ -24,6 +25,8 @@
       })}`;
 
   const headerClass = "w-full border-b-2 dark:border-gray-900";
+
+  export let loggedInUser: UserRuntimeType | undefined;
 </script>
 
 <header class={headerClass}>
@@ -74,7 +77,11 @@
             </NavLi>
           </svelte:fragment>
         </DarkMode>
-        <NavLi href={loginUrl}>Login with GitHub</NavLi>
+        {#if loggedInUser}
+          <NavLi>Logged in as: {loggedInUser.name}</NavLi>
+        {:else}
+          <NavLi href={loginUrl}>Login with GitHub</NavLi>
+        {/if}
       </NavUl>
     </NavContainer>
   </Navbar>

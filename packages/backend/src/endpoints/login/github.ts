@@ -6,7 +6,8 @@ import {
   LOG_PREFIX,
 } from "@jspuzzles/common";
 import { Octokit } from "octokit";
-import { IS_DEV, lambdaHandler } from "../../lambda/utils.js";
+import { lambdaHandler } from "../../lambda/handler.js";
+import { IS_DEV } from "../../lambda/utils.js";
 import { User, UserRuntimeType } from "../../db/records/user.js";
 import { generateSessionCookieHeader } from "../../auth.js";
 import { getUserByLogin } from "../../db/queries.js";
@@ -36,7 +37,7 @@ export const handler = lambdaHandler({
 
     return {
       headers: {
-        ...(await generateSessionCookieHeader(user.id)),
+        ...(await generateSessionCookieHeader(user.id, user.loginId)),
       },
       body: {},
     };

@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import type * as aws from "@pulumi/aws";
 import type { handler as healthcheckHandler } from "./endpoints/healthcheck.js";
 import type { handler as loginGithubHandler } from "./endpoints/login/github.js";
+import type { handler as meHandler } from "./endpoints/me.js";
 
 export class Endpoint<Handler> {
   __handlerType!: Handler;
@@ -25,4 +26,5 @@ export const endpoints = {
   login: {
     github: new Endpoint<typeof loginGithubHandler>("login/github.ts"),
   },
+  me: new Endpoint<typeof meHandler>("me.ts"),
 } satisfies Endpoints;

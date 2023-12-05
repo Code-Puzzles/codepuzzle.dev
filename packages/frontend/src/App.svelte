@@ -6,6 +6,7 @@
     puzzlesAsMap,
     type UserState,
   } from "@jspuzzles/common";
+  import type { UserRuntimeType } from "@jspuzzles/backend";
   import { onMount } from "svelte";
   import { evalInBrowser, submitToBackend } from "./lib/submit";
   import Sidebar from "./lib/Sidebar.svelte";
@@ -25,10 +26,22 @@
   let submitting = false;
   let solution = "";
 
+  let loggedInUser: UserRuntimeType | undefined = undefined;
   // TODO: get from backend
   const userState: UserState = {
     [puzzles[0]!.id]: { charCount: 2 },
   };
+  const refreshLoginState = async () => {
+    const res = await fetch(`${API_BASE_URL}/me`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+      credentials: "include",
+    });
+    const { user } = (await res.json()) as { user?: UserRuntimeType };
+    loggedInUser = user;
+  };
+  onMount(refreshLoginState);
 
   const onChange: OnChangeCb = (value, selection) => {
     if (!puzzle) return;
@@ -72,16 +85,15 @@
         credentials: "include",
       });
     } finally {
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete("code");
-      history.replaceState(null, "", newUrl);
+      history.replaceState(null, "", "/");
+      await refreshLoginState();
     }
   });
 </script>
 
 <svelte:window bind:innerWidth={width} />
 <div class="flex flex-col h-full">
-  <Header />
+  <Header {loggedInUser} />
 
   <div class="relative flex flex-1 min-h-0">
     <SidebarWrapper

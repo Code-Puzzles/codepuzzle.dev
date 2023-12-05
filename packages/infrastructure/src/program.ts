@@ -115,6 +115,30 @@ export const buildProgram = (isLocalDev: boolean) => {
     isLocalDev ? { tags: { _custom_id_: "api" } } : {},
   );
 
+  // TODO: Only do this in dev and hardcode options prod response
+  const optionsBundlePath = path.join(DIST_BUNDLES_DIR, "options");
+  const optionsFunc = new aws.lambda.Function(`${namePrefix}-options-func`, {
+    architectures: ["x86_64"],
+    memorySize: 128,
+    role: lambdaRole.arn,
+    timeout: 5,
+    runtime: `nodejs${NODE_VERSION}.x`,
+    handler: "index.handler",
+    environment: {
+      variables: isLocalDev ? { IS_DEV: String(!!isLocalDev) } : undefined,
+    },
+    ...(isLocalDev
+      ? {
+          s3Bucket: "hot-reload",
+          s3Key: optionsBundlePath,
+        }
+      : {
+          code: new pulumi.asset.AssetArchive({
+            ".": new pulumi.asset.FileArchive(optionsBundlePath),
+          }),
+        }),
+  });
+
   const apiResourceIds: pulumi.Input<string>[] = [];
   const buildRoutes = (
     eps: EndpointsOrFuncs,
@@ -135,16 +159,42 @@ export const buildProgram = (isLocalDev: boolean) => {
       apiResourceIds.push(resource.id);
 
       if (ep instanceof Endpoint || ep instanceof aws.lambda.Function) {
+        const optionsMethod = new aws.apigateway.Method(
+          `${namePrefix}-api-options-method-${namePostfix}`,
+          {
+            restApi: apiRest.id,
+            resourceId: resource.id,
+            httpMethod: "OPTIONS",
+            authorization: "NONE",
+          },
+        );
+        apiResourceIds.push(optionsMethod.id);
+
+        const optionsIntegration = new aws.apigateway.Integration(
+          `${namePrefix}-api-options-integration-${namePostfix}`,
+          {
+            restApi: apiRest.id,
+            resourceId: resource.id,
+            httpMethod: optionsMethod.httpMethod,
+            type: "AWS_PROXY",
+            integrationHttpMethod: "OPTIONS",
+            uri: pulumi.interpolate`arn:aws:apigateway:${aws.config.requireRegion()}:lambda:path/2015-03-31/functions/${
+              optionsFunc.arn
+            }/invocations`,
+          },
+        );
+        apiResourceIds.push(optionsIntegration.id);
+
         const method = new aws.apigateway.Method(
           `${namePrefix}-api-method-${namePostfix}`,
           {
             restApi: apiRest.id,
             resourceId: resource.id,
-            authorization: "NONE",
             httpMethod:
               (ep instanceof aws.lambda.Function
                 ? undefined
                 : ep.opts.method) ?? "POST",
+            authorization: "NONE",
           },
         );
         apiResourceIds.push(method.id);

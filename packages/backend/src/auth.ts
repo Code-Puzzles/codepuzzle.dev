@@ -8,6 +8,8 @@ import { getParam } from "./parameters.js";
 
 export interface SessionJwtPayload {
   id: string;
+  // TODO: Remove this and allow lookup by user ID in DB
+  ghid: string;
   csrf: string;
 }
 
@@ -17,10 +19,11 @@ const SESSION_JWT_COOKIE = "session";
 
 export const generateSessionCookieHeader = async (
   userId: string,
+  githubLoginId: string,
 ): Promise<Record<"Set-Cookie", string>> => {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 90);
-  const jwt = await generateSessionJwt(userId);
+  const jwt = await generateSessionJwt(userId, githubLoginId);
   return {
     "Set-Cookie": cookie.serialize(SESSION_JWT_COOKIE, jwt, {
       path: "/",
@@ -30,9 +33,12 @@ export const generateSessionCookieHeader = async (
   };
 };
 
-export const generateSessionJwt = async (userId: string): Promise<string> => {
+export const generateSessionJwt = async (
+  userId: string,
+  githubLoginId: string,
+): Promise<string> => {
   const csrf = crypto.pseudoRandomBytes(12).toString("base64");
-  const payload: SessionJwtPayload = { id: userId, csrf };
+  const payload: SessionJwtPayload = { id: userId, ghid: githubLoginId, csrf };
   return jwt.sign(payload, await getParam("sessionJwtPrivateKey"), {
     algorithm: JWT_ALGORITHM,
     expiresIn: "90d",
