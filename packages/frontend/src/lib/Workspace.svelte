@@ -50,13 +50,13 @@
     <Results
       title="local"
       description="run in your browser"
-      waitingMessage="Waiting for solution..."
+      waitingMessage="Waiting for solution"
       result={localResult}
     />
     <Results
       title="verified"
       description="verified at puzzles.js.org"
-      waitingMessage="Waiting for submit..."
+      waitingMessage="Waiting submit"
       loading={submitting}
       disabled={!localResult?.passed ? "solve it locally first" : false}
       result={verifiedResult}
