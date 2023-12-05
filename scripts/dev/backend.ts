@@ -11,6 +11,7 @@ import {
   localstackLogCleaner,
   prefixProcessOutput,
 } from "../utils.js";
+import { DOCKER_LS_NAME, DOCKER_NET_NAME } from "@jspuzzles/common";
 
 // TODO: Store prod pulumi state in private repo or s3
 
@@ -39,27 +40,27 @@ await stack.importStack({
   },
 });
 
-await $`docker rm --force js-puzzles-localstack`;
+// remove any pre-existing containers
+await $`docker rm --force ${DOCKER_LS_NAME}`;
+
+// create docker network if it's not already created
+await $`docker network inspect ${DOCKER_NET_NAME}`.catch(
+  () => $`docker network create ${DOCKER_NET_NAME}`,
+);
 
 const localstack = $({
   cwd: INFRASTRUCTURE_DIR,
   stdio: ["ignore", "pipe", "pipe"],
 })`docker run ${[
+  `--net=${DOCKER_NET_NAME}`,
   "--rm",
-  "--name",
-  "js-puzzles-localstack",
-  "-p",
-  "127.0.0.1:4566:4566",
-  "-p",
-  "127.0.0.1:4510-4559:4510-4559",
-  "-e",
-  "DOCKER_HOST=unix:///var/run/docker.sock",
-  "-e",
-  "DEBUG=1",
-  "-v",
-  `${path.join(INFRASTRUCTURE_DIR, ".localstack")}:/var/lib/localstack`,
-  "-v",
-  "/var/run/docker.sock:/var/run/docker.sock",
+  `--name=${DOCKER_LS_NAME}`,
+  "-p=127.0.0.1:4566:4566",
+  "-p=127.0.0.1:4510-4559:4510-4559",
+  "-e=DOCKER_HOST=unix:///var/run/docker.sock",
+  "-eDEBUG=1",
+  `-v=${path.join(INFRASTRUCTURE_DIR, ".localstack")}:/var/lib/localstack`,
+  "-v=/var/run/docker.sock:/var/run/docker.sock",
   "localstack/localstack",
 ]}`;
 prefixProcessOutput(

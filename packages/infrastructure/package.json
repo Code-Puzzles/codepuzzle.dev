@@ -4,7 +4,8 @@
   "private": true,
   "main": "src/index.ts",
   "dependencies": {
-    "@jspuzzles/backend": "*"
+    "@jspuzzles/backend": "*",
+    "@jspuzzles/common": "*"
   },
   "devDependencies": {
     "@aws-sdk/client-ecr": "^3.441.0",

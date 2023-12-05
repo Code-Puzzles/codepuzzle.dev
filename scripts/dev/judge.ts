@@ -1,5 +1,9 @@
 import { Transform, TransformCallback } from "node:stream";
-import { LOG_PREFIX } from "@jspuzzles/common";
+import {
+  DOCKER_JUDGE_NAME,
+  DOCKER_NET_NAME,
+  LOG_PREFIX,
+} from "@jspuzzles/common";
 import { $, ExecaChildProcess } from "execa";
 import chalk from "chalk";
 import {
@@ -11,7 +15,6 @@ import { prefixProcessOutput } from "../utils";
 
 // NOTE: set this to true to have an interactive shell in the built image
 const interactive = process.argv.includes("--interactive");
-const imageName = "js-puzzles-judge-dev";
 
 const $$ = $({
   cwd: REPO_ROOT,
@@ -30,19 +33,24 @@ const buildImage = async () => {
   const firefoxDockerfile = BROWSER_CONFIGS.firefox.dockerfilePath(version);
   await $$({
     stdio: "inherit",
-  })`docker build --tag ${imageName} --platform linux/amd64 --file ${firefoxDockerfile} ${buildArgs} .`;
+  })`docker build ${[
+    `--tag=${DOCKER_JUDGE_NAME}`,
+    "--platform=linux/amd64",
+    `--file=${firefoxDockerfile}`,
+    ...buildArgs,
+    ".",
+  ]}`;
 };
 
 const runContainer = () => {
   console.log("Running...");
 
-  const mount = `${DIST_BUNDLES_DIR}/judge:/var/task`;
   const finalArgs = interactive
-    ? [`--interactive`, `--tty`, `--entrypoint=/bin/bash`, imageName]
-    : ["--entrypoint=/dev-loop.sh", imageName];
+    ? [`--interactive`, `--tty`, `--entrypoint=/bin/bash`, DOCKER_JUDGE_NAME]
+    : ["--entrypoint=/dev-loop.sh", DOCKER_JUDGE_NAME];
 
   const envVars = {
-    AWS_ENDPOINT_URL: "http://host.docker.internal:4566",
+    AWS_ENDPOINT_URL: "http://js-puzzles-localstack:4566",
     AWS_REGION: "us-east-1",
     AWS_ACCESS_KEY_ID: "test",
     AWS_SECRET_ACCESS_KEY: "test",
@@ -52,12 +60,19 @@ const runContainer = () => {
   const proc = $$({
     reject: false,
     stdio: interactive ? "inherit" : "pipe",
-  })`docker run --rm --name ${imageName} -v ${mount} ${Object.entries(
-    envVars,
-  ).flatMap(([name, value]) => [
-    "--env",
-    `${name}=${value}`,
-  ])} --platform linux/amd64 --publish 9000:8080 ${finalArgs}`;
+  })`docker run ${[
+    "--platform=linux/amd64",
+    "--publish=9000:8080",
+    `--net=${DOCKER_NET_NAME}`,
+    "--rm",
+    `--name=${DOCKER_JUDGE_NAME}`,
+    `-v=${DIST_BUNDLES_DIR}/judge:/var/task`,
+    ...Object.entries(envVars).flatMap(([name, value]) => [
+      "--env",
+      `${name}=${value}`,
+    ]),
+    ...finalArgs,
+  ]}`;
 
   if (!interactive) {
     const stdoutStream = new JudgeOutputFormatter();

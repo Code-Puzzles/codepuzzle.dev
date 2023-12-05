@@ -6,11 +6,12 @@ import { LambdaHandler } from "@jspuzzles/backend";
 import { BROWSER_CONFIGS } from "./browsers.js";
 import { REPO_ROOT } from "./paths.js";
 import { NODE_VERSION } from "./versions.js";
+import { DOCKER_JUDGE_NAME } from "@jspuzzles/common";
 
 const localDevLambdaHandler: LambdaHandler = async (evt) => {
   try {
     const result = await fetch(
-      "http://host.docker.internal:9000/2015-03-31/functions/function/invocations",
+      `http://${DOCKER_JUDGE_NAME}:8080/2015-03-31/functions/function/invocations`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,7 +87,10 @@ export const createJudgeFuncs = (namePrefix: string, isLocalDev: boolean) => {
               handler: "index.handler",
               code: new pulumi.asset.AssetArchive({
                 "index.mjs": new pulumi.asset.StringAsset(
-                  `export const handler = ${localDevLambdaHandler};`,
+                  `export const handler = ${localDevLambdaHandler};`.replace(
+                    /\${DOCKER_JUDGE_NAME}/g,
+                    DOCKER_JUDGE_NAME,
+                  ),
                 ),
               }),
             });
