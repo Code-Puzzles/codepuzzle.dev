@@ -24,6 +24,7 @@
     "format": "prettier --check '**/*.{js,ts,svelte,json,md}'",
     "test": "vitest",
     "deploy": "tsx ./scripts/deploy.ts",
+    "deploy:preview:frontend": "cd packages/frontend && vite preview",
     "pulumi": "cd ./packages/infrastructure && pulumi"
   },
   "devDependencies": {
