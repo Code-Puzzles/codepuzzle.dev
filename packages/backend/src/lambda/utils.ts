@@ -1,4 +1,4 @@
-import { JUDGE_DOMAIN } from "@jspuzzles/common";
+import { JUDGE_BASE_URL } from "@jspuzzles/common";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 export type LambdaHandler = (
@@ -12,7 +12,7 @@ export const getCorsHeaders = (
 ): Record<string, string> => ({
   "Access-Control-Allow-Origin": IS_DEV
     ? evt.headers["origin"] ?? "http://localhost:5173"
-    : JUDGE_DOMAIN,
+    : JUDGE_BASE_URL,
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Accept",
   "Access-Control-Allow-Credentials": "true",
