@@ -11,7 +11,11 @@ import { EditorView, keymap } from "@codemirror/view";
 import { indentRange, indentUnit } from "@codemirror/language";
 import { basicSetup } from "codemirror";
 import { type Puzzle } from "@jspuzzles/common";
-import { puzzleReadOnlyExtension, setSolution } from "./readonly-puzzle";
+import {
+  getSolution,
+  puzzleReadOnlyExtension,
+  setSolution,
+} from "./readonly-puzzle";
 import { onChangeHandler, type OnChangeCb } from "./on-change-listener";
 import { displayExtension } from "./display";
 import { cursorLineMarginFacet, cursorLineMargin } from "./cursor-line-margin";
@@ -182,7 +186,13 @@ export class CodeMirror {
       ],
     };
 
-    this.#view.setState(EditorState.create(editorConfig));
+    const state = EditorState.create(editorConfig);
+    this.#view.setState(state);
+
+    if (initialValue) {
+      onChange(getSolution(state), state.selection);
+    }
+
     this.#view.focus();
   }
 
