@@ -11,6 +11,7 @@ jobs:
     environment: Prod
     permissions:
       id-token: write
+      pages: write
     steps:
       # Setup
       - uses: actions/checkout@v3
