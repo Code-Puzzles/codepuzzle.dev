@@ -33,7 +33,7 @@
   <Navbar let:hidden fluid={true}>
     <NavContainer>
       <NavBrand href="/">
-        <img src="/logo.png" class="mr-3 h-6 sm:h-9" alt="logo" />
+        <img src="logo.png" class="mr-3 h-6 sm:h-9" alt="logo" />
         <span
           class="self-center whitespace-nowrap text-xl font-semibold dark:text-white"
         >
