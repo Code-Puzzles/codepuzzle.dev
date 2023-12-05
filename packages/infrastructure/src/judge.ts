@@ -7,6 +7,7 @@ import { BROWSER_CONFIGS } from "./browsers.js";
 import { REPO_ROOT } from "./paths.js";
 import { NODE_VERSION } from "./versions.js";
 import { DOCKER_JUDGE_NAME } from "@jspuzzles/common";
+import type { APIGatewayProxyResult } from "aws-lambda";
 
 const localDevLambdaHandler: LambdaHandler = async (evt) => {
   try {
@@ -24,7 +25,7 @@ const localDevLambdaHandler: LambdaHandler = async (evt) => {
       throw new Error("Result not ok");
     }
 
-    return await result.json();
+    return (await result.json()) as APIGatewayProxyResult;
   } catch (err) {
     console.error("Failed to proxy to local judge:", err);
     return {
