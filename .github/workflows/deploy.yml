@@ -9,6 +9,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: Prod
+    permissions:
+      id-token: write
     steps:
       # Setup
       - uses: actions/checkout@v3
