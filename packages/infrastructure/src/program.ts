@@ -240,7 +240,11 @@ export const buildProgram = (isLocalDev: boolean) => {
               responseTemplates: {
                 "application/json": "",
               },
-              responseParameters: getCorsHeaders({ headers: {} }, false),
+              responseParameters: Object.fromEntries(
+                Object.entries(getCorsHeaders({ headers: {} }, false)).map(
+                  ([name, value]) => [`method.response.header.${name}`, value],
+                ),
+              ),
             },
           );
           apiResourceIds.push(integrationResponse.id);
