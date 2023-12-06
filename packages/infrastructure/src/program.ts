@@ -2,7 +2,12 @@ import path from "node:path";
 import crypto from "node:crypto";
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
-import { Endpoint, endpoints, params } from "@jspuzzles/backend";
+import {
+  Endpoint,
+  endpoints,
+  getCorsHeaders,
+  params,
+} from "@jspuzzles/backend";
 import { NODE_VERSION } from "./versions.js";
 import { createJudgeFuncs } from "./judge.js";
 import { DIST_BUNDLES_DIR } from "./paths.js";
@@ -176,21 +181,6 @@ export const buildProgram = (isLocalDev: boolean) => {
         );
         apiResourceIds.push(optionsMethod.id);
 
-        const optionsIntegration = new aws.apigateway.Integration(
-          `${namePrefix}-api-options-integration-${namePostfix}`,
-          {
-            restApi: apiRest.id,
-            resourceId: resource.id,
-            httpMethod: optionsMethod.httpMethod,
-            type: "AWS_PROXY",
-            integrationHttpMethod: "POST",
-            uri: pulumi.interpolate`arn:aws:apigateway:${aws.config.requireRegion()}:lambda:path/2015-03-31/functions/${
-              optionsFunc.arn
-            }/invocations`,
-          },
-        );
-        apiResourceIds.push(optionsIntegration.id);
-
         const method = new aws.apigateway.Method(
           `${namePrefix}-api-method-${namePostfix}`,
           {
@@ -204,6 +194,72 @@ export const buildProgram = (isLocalDev: boolean) => {
           },
         );
         apiResourceIds.push(method.id);
+
+        if (isLocalDev) {
+          const optionsIntegration = new aws.apigateway.Integration(
+            `${namePrefix}-api-options-integration-${namePostfix}`,
+            {
+              restApi: apiRest.id,
+              resourceId: resource.id,
+              httpMethod: optionsMethod.httpMethod,
+              type: "AWS_PROXY",
+              integrationHttpMethod: "POST",
+              uri: pulumi.interpolate`arn:aws:apigateway:${aws.config.requireRegion()}:lambda:path/2015-03-31/functions/${
+                optionsFunc.arn
+              }/invocations`,
+            },
+          );
+          apiResourceIds.push(optionsIntegration.id);
+        } else {
+          const response200 = new aws.apigateway.MethodResponse(
+            `${namePrefix}-api-options-method-response`,
+            {
+              restApi: apiRest.id,
+              resourceId: resource.id,
+              httpMethod: optionsMethod.httpMethod,
+              statusCode: "200",
+              responseModels: {
+                "application/json": "Empty",
+              },
+              responseParameters: Object.fromEntries(
+                Object.keys(getCorsHeaders({ headers: {} }, false)).map(
+                  (name) => [`method.response.header.${name}`, false],
+                ),
+              ),
+            },
+          );
+          apiResourceIds.push(response200.id);
+
+          const integrationResponse = new aws.apigateway.IntegrationResponse(
+            `${namePrefix}-api-options-integration-response`,
+            {
+              restApi: apiRest.id,
+              resourceId: resource.id,
+              httpMethod: optionsMethod.httpMethod,
+              statusCode: "200",
+              responseTemplates: {
+                "application/json": "",
+              },
+              responseParameters: getCorsHeaders({ headers: {} }, false),
+            },
+          );
+          apiResourceIds.push(integrationResponse.id);
+
+          const integration = new aws.apigateway.Integration(
+            `${namePrefix}-api-options-integration`,
+            {
+              restApi: apiRest.id,
+              resourceId: resource.id,
+              httpMethod: optionsMethod.httpMethod,
+              type: "MOCK",
+              passthroughBehavior: "WHEN_NO_MATCH",
+              requestTemplates: {
+                "application/json": JSON.stringify({ statusCode: 200 }),
+              },
+            },
+          );
+          apiResourceIds.push(integration.id);
+        }
 
         const bundlePath = path.join(DIST_BUNDLES_DIR, ...segments);
         const func =

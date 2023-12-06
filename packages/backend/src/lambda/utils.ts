@@ -8,9 +8,10 @@ export type LambdaHandler = (
 export const IS_DEV = process.env["IS_DEV"];
 
 export const getCorsHeaders = (
-  evt: APIGatewayProxyEvent,
+  evt: Pick<APIGatewayProxyEvent, "headers">,
+  isDev = !!IS_DEV,
 ): Record<string, string> => ({
-  "Access-Control-Allow-Origin": IS_DEV
+  "Access-Control-Allow-Origin": isDev
     ? evt.headers["origin"] ?? "http://localhost:5173"
     : JUDGE_BASE_URL,
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
