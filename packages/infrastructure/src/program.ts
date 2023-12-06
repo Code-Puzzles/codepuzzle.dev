@@ -212,7 +212,7 @@ export const buildProgram = (isLocalDev: boolean) => {
           apiResourceIds.push(optionsIntegration.id);
         } else {
           const response200 = new aws.apigateway.MethodResponse(
-            `${namePrefix}-api-options-method-response`,
+            `${namePrefix}-api-options-method-response-${namePostfix}`,
             {
               restApi: apiRest.id,
               resourceId: resource.id,
@@ -231,7 +231,7 @@ export const buildProgram = (isLocalDev: boolean) => {
           apiResourceIds.push(response200.id);
 
           const integrationResponse = new aws.apigateway.IntegrationResponse(
-            `${namePrefix}-api-options-integration-response`,
+            `${namePrefix}-api-options-integration-response-${namePostfix}`,
             {
               restApi: apiRest.id,
               resourceId: resource.id,
@@ -246,7 +246,7 @@ export const buildProgram = (isLocalDev: boolean) => {
           apiResourceIds.push(integrationResponse.id);
 
           const integration = new aws.apigateway.Integration(
-            `${namePrefix}-api-options-integration`,
+            `${namePrefix}-api-options-integration-${namePostfix}`,
             {
               restApi: apiRest.id,
               resourceId: resource.id,
