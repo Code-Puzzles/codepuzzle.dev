@@ -138,6 +138,12 @@ export const buildProgram = (isLocalDev: boolean) => {
           }),
         }),
   });
+  new aws.lambda.Permission(`${namePrefix}-options-permission`, {
+    action: "lambda:InvokeFunction",
+    function: optionsFunc.name,
+    principal: "apigateway.amazonaws.com",
+    sourceArn: pulumi.interpolate`${apiRest.executionArn}/*/*`,
+  });
 
   const apiResourceIds: pulumi.Input<string>[] = [];
   const buildRoutes = (
