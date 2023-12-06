@@ -6,7 +6,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "module": "Node16",
-    "types": [],
+    "types": ["node"],
     "lib": ["ES2017"]
   }
 }
