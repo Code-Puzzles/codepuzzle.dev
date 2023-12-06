@@ -214,6 +214,21 @@ export const buildProgram = (isLocalDev: boolean) => {
           );
           apiResourceIds.push(optionsIntegration.id);
         } else {
+          const integration = new aws.apigateway.Integration(
+            `${namePrefix}-api-options-integration-${namePostfix}`,
+            {
+              restApi: apiRest.id,
+              resourceId: resource.id,
+              httpMethod: optionsMethod.httpMethod,
+              type: "MOCK",
+              passthroughBehavior: "WHEN_NO_MATCH",
+              requestTemplates: {
+                "application/json": JSON.stringify({ statusCode: 200 }),
+              },
+            },
+          );
+          apiResourceIds.push(integration.id);
+
           const response200 = new aws.apigateway.MethodResponse(
             `${namePrefix}-api-options-method-response-${namePostfix}`,
             {
@@ -252,23 +267,9 @@ export const buildProgram = (isLocalDev: boolean) => {
                 ),
               ),
             },
+            { dependsOn: integration },
           );
           apiResourceIds.push(integrationResponse.id);
-
-          const integration = new aws.apigateway.Integration(
-            `${namePrefix}-api-options-integration-${namePostfix}`,
-            {
-              restApi: apiRest.id,
-              resourceId: resource.id,
-              httpMethod: optionsMethod.httpMethod,
-              type: "MOCK",
-              passthroughBehavior: "WHEN_NO_MATCH",
-              requestTemplates: {
-                "application/json": JSON.stringify({ statusCode: 200 }),
-              },
-            },
-          );
-          apiResourceIds.push(integration.id);
         }
 
         const bundlePath = path.join(DIST_BUNDLES_DIR, ...segments);
