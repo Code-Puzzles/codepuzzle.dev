@@ -43,6 +43,9 @@ export const buildProgram = (isLocalDev: boolean) => {
     const defaultValues: Record<keyof typeof params, string | undefined> = {
       sessionJwtPrivateKey: sessionKeys.privateKey,
       sessionJwtPublicKey: sessionKeys.publicKey,
+      githubOauthClientId: process.env["UNMOCK_LOGIN"]
+        ? undefined
+        : "mock_github_oauth_client_id",
       githubOauthClientSecret: process.env["UNMOCK_LOGIN"]
         ? undefined
         : "mock_github_oauth_client_secret",

@@ -1,16 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import {
-  GITHUB_OAUTH_CLIENT_ID,
-  GITHUB_OAUTH_MOCK_CODE,
-  LOG_PREFIX,
-} from "@jspuzzles/common";
+import { GITHUB_OAUTH_MOCK_CODE, LOG_PREFIX } from "@jspuzzles/common";
 import { Octokit } from "octokit";
 import { lambdaHandler } from "../../lambda/handler.js";
 import { IS_DEV } from "../../lambda/utils.js";
 import { User, UserRuntimeType } from "../../db/records/user.js";
 import { generateSessionCookieHeader } from "../../auth.js";
 import { getUserByLogin } from "../../db/queries.js";
+import { getParam } from "../../parameters.js";
 
 const GITHUB_LOGIN_PROVIDER = "GITHUB";
 
@@ -54,10 +51,6 @@ const fetchUserDetails = async (
     };
   }
 
-  const githubOauthSecret = process.env["GITHUB_OAUTH_CLIENT_SECRET"];
-  if (!githubOauthSecret)
-    throw new Error("GITHUB_OAUTH_CLIENT_SECRET env variable not set");
-
   const data = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
@@ -65,8 +58,8 @@ const fetchUserDetails = async (
       Accept: "application/json",
     },
     body: JSON.stringify({
-      client_id: GITHUB_OAUTH_CLIENT_ID,
-      client_secret: githubOauthSecret,
+      client_id: await getParam("githubOauthClientId"),
+      client_secret: await getParam("githubOauthClientSecret"),
       code: oauthCode,
     }),
     credentials: "include",

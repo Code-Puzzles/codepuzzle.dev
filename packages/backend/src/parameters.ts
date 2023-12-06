@@ -12,6 +12,9 @@ export const params = defineParameters({
   sessionJwtPublicKey: {
     envVar: "SESSION_JWT_PUBLIC_KEY",
   },
+  githubOauthClientId: {
+    envVar: "GITHUB_OAUTH_CLIENT_ID",
+  },
   githubOauthClientSecret: {
     isSecret: true,
     envVar: "GITHUB_OAUTH_CLIENT_SECRET",

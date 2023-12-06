@@ -13,9 +13,12 @@ export default defineConfig(({ mode }): UserConfig => {
   return {
     base: "https://js-puzzles.github.io/JS-Puzzles/",
     define: {
-      IS_LOCAL_DEV: isLocalDev,
+      IS_LOCAL_DEV: JSON.stringify(isLocalDev),
       API_BASE_URL: JSON.stringify(API_BASE_URL),
       MOCK_LOGIN: JSON.stringify(isLocalDev && !process.env["UNMOCK_LOGIN"]),
+      GITHUB_OAUTH_CLIENT_ID: JSON.stringify(
+        process.env["GITHUB_OAUTH_CLIENT_ID"] ?? "",
+      ),
     },
     plugins: [
       svelte({

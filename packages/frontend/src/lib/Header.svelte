@@ -1,9 +1,6 @@
 <script lang="ts">
   import type { UserRuntimeType } from "@jspuzzles/backend";
-  import {
-    GITHUB_OAUTH_CLIENT_ID,
-    GITHUB_OAUTH_MOCK_CODE,
-  } from "@jspuzzles/common";
+  import { GITHUB_OAUTH_MOCK_CODE } from "@jspuzzles/common";
   import {
     Navbar,
     NavBrand,
