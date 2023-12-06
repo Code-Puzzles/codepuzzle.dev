@@ -8,5 +8,5 @@ export const DOCKER_JUDGE_NAME = "js-puzzles-judge-dev";
 
 // NOTE: this should stay the same, unless we change the pulumi resource id of
 // the api gateway
-export const JUDGE_BASE_URL =
-  "https://y0fgcjkk2d.execute-api.us-east-1.amazonaws.com";
+export const API_BASE_URL =
+  "https://ivo7it01e6.execute-api.us-east-1.amazonaws.com/stage";
