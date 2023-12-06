@@ -245,7 +245,10 @@ export const buildProgram = (isLocalDev: boolean) => {
               },
               responseParameters: Object.fromEntries(
                 Object.entries(getCorsHeaders({ headers: {} }, false)).map(
-                  ([name, value]) => [`method.response.header.${name}`, value],
+                  ([name, value]) => [
+                    `method.response.header.${name}`,
+                    `'${value}'`,
+                  ],
                 ),
               ),
             },
