@@ -183,7 +183,7 @@ export const buildProgram = (isLocalDev: boolean) => {
             resourceId: resource.id,
             httpMethod: optionsMethod.httpMethod,
             type: "AWS_PROXY",
-            integrationHttpMethod: "OPTIONS",
+            integrationHttpMethod: "POST",
             uri: pulumi.interpolate`arn:aws:apigateway:${aws.config.requireRegion()}:lambda:path/2015-03-31/functions/${
               optionsFunc.arn
             }/invocations`,
