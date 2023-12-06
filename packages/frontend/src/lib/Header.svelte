@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { UserRuntimeType } from "@jspuzzles/backend";
-  import { GITHUB_OAUTH_MOCK_CODE } from "@jspuzzles/common";
+  import { FRONTEND_BASE_URL, GITHUB_OAUTH_MOCK_CODE } from "@jspuzzles/common";
   import {
     Navbar,
     NavBrand,
@@ -17,7 +17,7 @@
     ? `${GITHUB_LOGIN_PATH}?code=${GITHUB_OAUTH_MOCK_CODE}`
     : `https://github.com/login/oauth/authorize?${new URLSearchParams({
         client_id: GITHUB_OAUTH_CLIENT_ID,
-        redirect_uri: GITHUB_LOGIN_PATH,
+        redirect_uri: FRONTEND_BASE_URL,
         // TODO: Pass random state
       })}`;
 

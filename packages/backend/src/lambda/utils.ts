@@ -1,9 +1,11 @@
-import { FRONTEND_ORIGIN } from "@jspuzzles/common";
+import { FRONTEND_BASE_URL } from "@jspuzzles/common";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 export type LambdaHandler = (
   evt: APIGatewayProxyEvent,
 ) => Promise<APIGatewayProxyResult>;
+
+const FRONTEND_ORIGIN = new URL(FRONTEND_BASE_URL).origin;
 
 export const IS_DEV = process.env["IS_DEV"];
 
