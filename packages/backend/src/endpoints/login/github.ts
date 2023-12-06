@@ -28,7 +28,7 @@ export const handler = lambdaHandler({
     const user = await getAndUpdateOrCreateUser({
       loginProvider: GITHUB_LOGIN_PROVIDER,
       loginId: githubUser.id.toString(),
-      name: githubUser.name ?? `Github user #${githubUser.id}`,
+      name: githubUser.name ?? githubUser.login,
       profilePictureUrl: githubUser.avatar_url,
     });
 
@@ -43,11 +43,17 @@ export const handler = lambdaHandler({
 
 const fetchUserDetails = async (
   oauthCode: string,
-): Promise<{ id: number; name?: string | null; avatar_url?: string }> => {
+): Promise<{
+  id: number;
+  name?: string | null;
+  login: string;
+  avatar_url?: string;
+}> => {
   if (IS_DEV && oauthCode === GITHUB_OAUTH_MOCK_CODE) {
     return {
       id: 12345,
       name: "Mock Github User",
+      login: "mock-github-user",
     };
   }
 
