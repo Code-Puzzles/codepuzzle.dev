@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@jspuzzles/common";
+import { FRONTEND_ORIGIN } from "@jspuzzles/common";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 export type LambdaHandler = (
@@ -13,7 +13,7 @@ export const getCorsHeaders = (
 ): Record<string, string> => ({
   "Access-Control-Allow-Origin": isDev
     ? evt.headers["origin"] ?? "http://localhost:5173"
-    : API_BASE_URL,
+    : FRONTEND_ORIGIN,
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Accept",
   "Access-Control-Allow-Credentials": "true",

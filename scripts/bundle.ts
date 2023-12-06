@@ -43,8 +43,6 @@ export const bundle = async (
     ],
   });
 
-  console.log("==== node", process.version);
-
   console.log("Building bundles...");
   if (watchCallback) {
     console.log("Watching for changes...");

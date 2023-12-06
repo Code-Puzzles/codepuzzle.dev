@@ -10,3 +10,6 @@ export const DOCKER_JUDGE_NAME = "js-puzzles-judge-dev";
 // the api gateway
 export const API_BASE_URL =
   "https://ivo7it01e6.execute-api.us-east-1.amazonaws.com/stage";
+
+export const FRONTEND_BASE_URL = "https://js-puzzles.github.io/JS-Puzzles/";
+export const FRONTEND_ORIGIN = new URL(FRONTEND_BASE_URL).origin;
