@@ -26,12 +26,13 @@
   let submitting = false;
   let solution = "";
 
-  let loggedInUser: UserRuntimeType | undefined = undefined;
+  let loggedInUser: UserRuntimeType | "loading" | undefined = undefined;
   // TODO: get from backend
   const userState: UserState = {
     [puzzles[0]!.id]: { charCount: 2 },
   };
   const refreshLoginState = async () => {
+    loggedInUser = "loading";
     const res = await fetch(`${API_BASE_URL}/me`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -78,6 +79,7 @@
     const code = new URLSearchParams(window.location.search).get("code");
     if (!code) return;
 
+    loggedInUser = "loading";
     try {
       await fetch(`${API_BASE_URL}/login/github`, {
         method: "POST",

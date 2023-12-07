@@ -8,6 +8,7 @@
     NavUl,
     DarkMode,
     NavHamburger,
+    Spinner,
   } from "flowbite-svelte";
   import { SunSolid, MoonSolid, GithubSolid } from "flowbite-svelte-icons";
   import NavContainer from "flowbite-svelte/NavContainer.svelte";
@@ -23,7 +24,7 @@
 
   const headerClass = "w-full border-b-2 dark:border-gray-900";
 
-  export let loggedInUser: UserRuntimeType | undefined;
+  export let loggedInUser: UserRuntimeType | "loading" | undefined;
 </script>
 
 <header class={headerClass}>
@@ -74,7 +75,12 @@
             </NavLi>
           </svelte:fragment>
         </DarkMode>
-        {#if loggedInUser}
+        {#if loggedInUser === "loading"}
+          <NavLi>
+            <Spinner color="purple" size="5" />
+          </NavLi>
+        {:else if loggedInUser}
+          <!-- TODO: dropdown with details + log out button -->
           <NavLi>Logged in as: {loggedInUser.name}</NavLi>
         {:else}
           <NavLi href={loginUrl}>Login with GitHub</NavLi>
