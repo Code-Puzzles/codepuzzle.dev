@@ -39,7 +39,7 @@
       </NavBrand>
       <NavHamburger />
       <NavUl>
-        <NavLi href="https://github.com/js-puzzles/js-puzzles">
+        <NavLi href="https://github.com/js-puzzles/js-puzzles.github.io">
           <div class="flex justify-between">
             {#if !hidden}
               Open GitHub Repository
