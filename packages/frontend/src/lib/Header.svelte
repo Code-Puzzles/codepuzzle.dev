@@ -9,9 +9,14 @@
     DarkMode,
     NavHamburger,
     Spinner,
+    Avatar,
+    Dropdown,
+    DropdownItem,
   } from "flowbite-svelte";
   import { SunSolid, MoonSolid, GithubSolid } from "flowbite-svelte-icons";
   import NavContainer from "flowbite-svelte/NavContainer.svelte";
+
+  export let loggedInUser: UserRuntimeType | "loading" | undefined;
 
   const GITHUB_LOGIN_PATH = `${window.location.origin}/login/github`;
   const loginUrl = MOCK_LOGIN
@@ -23,8 +28,13 @@
       })}`;
 
   const headerClass = "w-full border-b-2 dark:border-gray-900";
+  let userDropdownOpen = false;
 
-  export let loggedInUser: UserRuntimeType | "loading" | undefined;
+  function signOut() {
+    userDropdownOpen = false;
+    // TODO: send request to sign out
+    // TODO: refresh user details
+  }
 </script>
 
 <header class={headerClass}>
@@ -80,8 +90,22 @@
             <Spinner color="purple" size="5" />
           </NavLi>
         {:else if loggedInUser}
-          <!-- TODO: dropdown with details + log out button -->
-          <NavLi>Logged in as: {loggedInUser.name}</NavLi>
+          <Avatar
+            class="cursor-pointer hover:brightness-125"
+            src={loggedInUser.profilePictureUrl}
+            size="xs"
+          />
+          <Dropdown bind:open={userDropdownOpen} placement="bottom-start">
+            <div slot="header" class="px-4 py-2">
+              <p class="block text-sm">
+                {loggedInUser.name ?? loggedInUser.loginId}
+              </p>
+              <p class="block text-xs font-medium text-gray-500 font-mono">
+                ({loggedInUser.loginProvider})
+              </p>
+            </div>
+            <DropdownItem on:click={signOut}>Sign Out</DropdownItem>
+          </Dropdown>
         {:else}
           <NavLi href={loginUrl}>Login with GitHub</NavLi>
         {/if}

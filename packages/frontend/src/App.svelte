@@ -42,7 +42,6 @@
     const { user } = (await res.json()) as { user?: UserRuntimeType };
     loggedInUser = user;
   };
-  onMount(refreshLoginState);
 
   const onChange: OnChangeCb = (value, selection) => {
     if (!puzzle) return;
@@ -77,7 +76,7 @@
 
   onMount(async () => {
     const code = new URLSearchParams(window.location.search).get("code");
-    if (!code) return;
+    if (!code) return await refreshLoginState();
 
     loggedInUser = "loading";
     try {
