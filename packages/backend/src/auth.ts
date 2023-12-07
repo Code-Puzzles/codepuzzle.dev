@@ -5,6 +5,7 @@ import * as jwt from "jsonwebtoken";
 
 import { ClientError } from "./lambda/common.js";
 import { getParam } from "./parameters.js";
+import { IS_DEV } from "./index.js";
 
 export interface SessionJwtPayload {
   id: string;
@@ -28,6 +29,8 @@ export const generateSessionCookieHeader = async (
     "Set-Cookie": cookie.serialize(SESSION_JWT_COOKIE, jwt, {
       path: "/",
       httpOnly: true,
+      sameSite: IS_DEV ? "lax" : "none",
+      secure: !IS_DEV,
       expires: expiresAt,
     }),
   };

@@ -11,15 +11,21 @@ export default defineConfig(({ mode }): UserConfig => {
     base: FRONTEND_BASE_URL,
     define: {
       IS_LOCAL_DEV: JSON.stringify(isLocalDev),
-      API_BASE_URL: JSON.stringify(
-        isLocalDev
-          ? "http://api.execute-api.localhost.localstack.cloud:4566/stage"
-          : API_BASE_URL,
-      ),
+      API_BASE_URL: JSON.stringify(isLocalDev ? "/stage" : API_BASE_URL),
       MOCK_LOGIN: JSON.stringify(isLocalDev && !process.env["UNMOCK_LOGIN"]),
       GITHUB_OAUTH_CLIENT_ID: JSON.stringify(
         process.env["GITHUB_OAUTH_CLIENT_ID"] ?? "",
       ),
+    },
+    server: {
+      proxy: {
+        "/stage": {
+          target:
+            "http://api.execute-api.localhost.localstack.cloud:4566/stage",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/stage/, ""),
+        },
+      },
     },
     plugins: [
       svelte({
