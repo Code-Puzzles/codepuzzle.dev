@@ -12,6 +12,7 @@ import { NODE_VERSION } from "./versions.js";
 import { createJudgeFuncs } from "./judge.js";
 import { DIST_BUNDLES_DIR } from "./paths.js";
 import { createMainTable } from "./db.js";
+import { DEV_FRONTEND_BASE_URL, FRONTEND_BASE_URL } from "@jspuzzles/common";
 
 interface EndpointsOrFuncs {
   [name: string]: Endpoint<unknown> | aws.lambda.Function | EndpointsOrFuncs;
@@ -33,12 +34,13 @@ const generateSessionKeys = () =>
     },
   });
 
-export const buildProgram = (isLocalDev: boolean) => {
+export const buildProgram = (isDev: boolean) => {
   const stackName = pulumi.getStack();
 
   const namePrefix = `${stackName}`;
+  const frontendOrigin = isDev ? DEV_FRONTEND_BASE_URL : FRONTEND_BASE_URL;
 
-  if (isLocalDev) {
+  if (isDev) {
     const sessionKeys = generateSessionKeys();
     const defaultValues: Record<keyof typeof params, string | undefined> = {
       sessionJwtPrivateKey: sessionKeys.privateKey,
@@ -120,38 +122,8 @@ export const buildProgram = (isLocalDev: boolean) => {
 
   const apiRest = new aws.apigateway.RestApi(
     `${namePrefix}-api-rest`,
-    isLocalDev ? { tags: { _custom_id_: "api" } } : {},
+    isDev ? { tags: { _custom_id_: "api" } } : {},
   );
-
-  // TODO: Only do this in dev and hardcode options prod response
-  const optionsBundlePath = path.join(DIST_BUNDLES_DIR, "options");
-  const optionsFunc = new aws.lambda.Function(`${namePrefix}-options-func`, {
-    architectures: ["x86_64"],
-    memorySize: 128,
-    role: lambdaRole.arn,
-    timeout: 5,
-    runtime: `nodejs${NODE_VERSION}.x`,
-    handler: "index.handler",
-    environment: {
-      variables: isLocalDev ? { IS_DEV: String(!!isLocalDev) } : undefined,
-    },
-    ...(isLocalDev
-      ? {
-          s3Bucket: "hot-reload",
-          s3Key: optionsBundlePath,
-        }
-      : {
-          code: new pulumi.asset.AssetArchive({
-            ".": new pulumi.asset.FileArchive(optionsBundlePath),
-          }),
-        }),
-  });
-  new aws.lambda.Permission(`${namePrefix}-options-permission`, {
-    action: "lambda:InvokeFunction",
-    function: optionsFunc.name,
-    principal: "apigateway.amazonaws.com",
-    sourceArn: pulumi.interpolate`${apiRest.executionArn}/*/*`,
-  });
 
   const apiResourceIds: pulumi.Input<string>[] = [];
   const buildRoutes = (
@@ -161,9 +133,9 @@ export const buildProgram = (isLocalDev: boolean) => {
   ) => {
     for (const [name, ep] of Object.entries(eps)) {
       const segments = [...pathSegments, name];
-      const namePostfix = segments.join("-").replace(/\W+/g, "-");
+      const nameSuffix = segments.join("-").replace(/\W+/g, "-");
       const resource = new aws.apigateway.Resource(
-        `${namePrefix}-api-resource-${namePostfix}`,
+        `${namePrefix}-api-resource-${nameSuffix}`,
         {
           restApi: apiRest.id,
           parentId: parentResourceId,
@@ -174,7 +146,7 @@ export const buildProgram = (isLocalDev: boolean) => {
 
       if (ep instanceof Endpoint || ep instanceof aws.lambda.Function) {
         const optionsMethod = new aws.apigateway.Method(
-          `${namePrefix}-api-options-method-${namePostfix}`,
+          `${namePrefix}-api-options-method-${nameSuffix}`,
           {
             restApi: apiRest.id,
             resourceId: resource.id,
@@ -185,7 +157,7 @@ export const buildProgram = (isLocalDev: boolean) => {
         apiResourceIds.push(optionsMethod.id);
 
         const method = new aws.apigateway.Method(
-          `${namePrefix}-api-method-${namePostfix}`,
+          `${namePrefix}-api-method-${nameSuffix}`,
           {
             restApi: apiRest.id,
             resourceId: resource.id,
@@ -198,85 +170,22 @@ export const buildProgram = (isLocalDev: boolean) => {
         );
         apiResourceIds.push(method.id);
 
-        if (isLocalDev) {
-          const optionsIntegration = new aws.apigateway.Integration(
-            `${namePrefix}-api-options-integration-${namePostfix}`,
-            {
-              restApi: apiRest.id,
-              resourceId: resource.id,
-              httpMethod: optionsMethod.httpMethod,
-              type: "AWS_PROXY",
-              integrationHttpMethod: "POST",
-              uri: pulumi.interpolate`arn:aws:apigateway:${aws.config.requireRegion()}:lambda:path/2015-03-31/functions/${
-                optionsFunc.arn
-              }/invocations`,
-            },
-          );
-          apiResourceIds.push(optionsIntegration.id);
-        } else {
-          const integration = new aws.apigateway.Integration(
-            `${namePrefix}-api-options-integration-${namePostfix}`,
-            {
-              restApi: apiRest.id,
-              resourceId: resource.id,
-              httpMethod: optionsMethod.httpMethod,
-              type: "MOCK",
-              passthroughBehavior: "WHEN_NO_MATCH",
-              requestTemplates: {
-                "application/json": JSON.stringify({ statusCode: 200 }),
-              },
-            },
-          );
-          apiResourceIds.push(integration.id);
-
-          const response200 = new aws.apigateway.MethodResponse(
-            `${namePrefix}-api-options-method-response-${namePostfix}`,
-            {
-              restApi: apiRest.id,
-              resourceId: resource.id,
-              httpMethod: optionsMethod.httpMethod,
-              statusCode: "200",
-              responseModels: {
-                "application/json": "Empty",
-              },
-              responseParameters: Object.fromEntries(
-                Object.keys(getCorsHeaders({ headers: {} }, false)).map(
-                  (name) => [`method.response.header.${name}`, false],
-                ),
-              ),
-            },
-          );
-          apiResourceIds.push(response200.id);
-
-          const integrationResponse = new aws.apigateway.IntegrationResponse(
-            `${namePrefix}-api-options-integration-response-${namePostfix}`,
-            {
-              restApi: apiRest.id,
-              resourceId: resource.id,
-              httpMethod: optionsMethod.httpMethod,
-              statusCode: "200",
-              responseTemplates: {
-                "application/json": "",
-              },
-              responseParameters: Object.fromEntries(
-                Object.entries(getCorsHeaders({ headers: {} }, false)).map(
-                  ([name, value]) => [
-                    `method.response.header.${name}`,
-                    `'${value}'`,
-                  ],
-                ),
-              ),
-            },
-            { dependsOn: integration },
-          );
-          apiResourceIds.push(integrationResponse.id);
-        }
+        apiResourceIds.push(
+          ...createMock({
+            apiRestId: apiRest.id,
+            resourceId: resource.id,
+            httpMethod: optionsMethod.httpMethod,
+            namePrefix,
+            nameSuffix,
+            frontendOrigin,
+          }),
+        );
 
         const bundlePath = path.join(DIST_BUNDLES_DIR, ...segments);
         const func =
           ep instanceof aws.lambda.Function
             ? ep
-            : new aws.lambda.Function(`${namePrefix}-func-${namePostfix}`, {
+            : new aws.lambda.Function(`${namePrefix}-func-${nameSuffix}`, {
                 architectures: ["x86_64"],
                 memorySize: 256,
                 role: lambdaRole.arn,
@@ -284,12 +193,13 @@ export const buildProgram = (isLocalDev: boolean) => {
                 runtime: `nodejs${NODE_VERSION}.x`,
                 handler: "index.handler",
                 environment: {
-                  variables: isLocalDev
-                    ? { IS_DEV: String(!!isLocalDev) }
-                    : undefined,
+                  variables: {
+                    FRONTEND_ORIGIN: frontendOrigin,
+                    ...(isDev ? { IS_DEV: String(!!isDev) } : undefined),
+                  },
                 },
                 ...ep.opts,
-                ...(isLocalDev
+                ...(isDev
                   ? {
                       s3Bucket: "hot-reload",
                       s3Key: bundlePath,
@@ -301,7 +211,7 @@ export const buildProgram = (isLocalDev: boolean) => {
                     }),
               });
 
-        new aws.lambda.Permission(`${namePrefix}-permission-${namePostfix}`, {
+        new aws.lambda.Permission(`${namePrefix}-permission-${nameSuffix}`, {
           action: "lambda:InvokeFunction",
           function: func.name,
           principal: "apigateway.amazonaws.com",
@@ -309,7 +219,7 @@ export const buildProgram = (isLocalDev: boolean) => {
         });
 
         const integration = new aws.apigateway.Integration(
-          `${namePrefix}-api-integration-${namePostfix}`,
+          `${namePrefix}-api-integration-${nameSuffix}`,
           {
             restApi: apiRest.id,
             resourceId: resource.id,
@@ -330,7 +240,7 @@ export const buildProgram = (isLocalDev: boolean) => {
 
   const mergedEndpoints: EndpointsOrFuncs = {
     ...endpoints,
-    judge: createJudgeFuncs(namePrefix, isLocalDev),
+    judge: createJudgeFuncs(namePrefix, !!isDev),
   };
   buildRoutes(mergedEndpoints, apiRest.rootResourceId, []);
 
@@ -355,8 +265,84 @@ export const buildProgram = (isLocalDev: boolean) => {
   });
 
   return {
-    url: isLocalDev
+    url: isDev
       ? pulumi.interpolate`http://${apiRest.id}.execute-api.localhost.localstack.cloud:4566/${apiStage.stageName}`
       : apiStage.invokeUrl,
   };
 };
+
+interface CreateMockOpts {
+  apiRestId: pulumi.Input<string>;
+  resourceId: pulumi.Input<string>;
+  httpMethod: pulumi.Input<string>;
+  namePrefix: string;
+  nameSuffix: string;
+  frontendOrigin: string;
+}
+
+function createMock({
+  apiRestId,
+  resourceId,
+  namePrefix,
+  nameSuffix,
+  httpMethod,
+  frontendOrigin,
+}: CreateMockOpts) {
+  const apiResourceIds = [];
+  const integration = new aws.apigateway.Integration(
+    `${namePrefix}-api-options-integration-${nameSuffix}`,
+    {
+      restApi: apiRestId,
+      resourceId: resourceId,
+      httpMethod: httpMethod,
+      type: "MOCK",
+      passthroughBehavior: "WHEN_NO_MATCH",
+      requestTemplates: {
+        "application/json": JSON.stringify({ statusCode: 200 }),
+      },
+    },
+  );
+  apiResourceIds.push(integration.id);
+
+  const response200 = new aws.apigateway.MethodResponse(
+    `${namePrefix}-api-options-method-response-${nameSuffix}`,
+    {
+      restApi: apiRestId,
+      resourceId: resourceId,
+      httpMethod: httpMethod,
+      statusCode: "200",
+      responseModels: {
+        "application/json": "Empty",
+      },
+      responseParameters: Object.fromEntries(
+        Object.keys(getCorsHeaders(frontendOrigin)).map((name) => [
+          `method.response.header.${name}`,
+          false,
+        ]),
+      ),
+    },
+  );
+  apiResourceIds.push(response200.id);
+
+  const integrationResponse = new aws.apigateway.IntegrationResponse(
+    `${namePrefix}-api-options-integration-response-${nameSuffix}`,
+    {
+      restApi: apiRestId,
+      resourceId: resourceId,
+      httpMethod: httpMethod,
+      statusCode: "200",
+      responseTemplates: {
+        "application/json": "",
+      },
+      responseParameters: Object.fromEntries(
+        Object.entries(getCorsHeaders(frontendOrigin)).map(([name, value]) => [
+          `method.response.header.${name}`,
+          `'${value}'`,
+        ]),
+      ),
+    },
+    { dependsOn: integration },
+  );
+  apiResourceIds.push(integrationResponse.id);
+  return apiResourceIds;
+}

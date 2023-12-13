@@ -44,6 +44,14 @@ export const lambdaHandler = <
   const innerHandler: LambdaHandler = async (evt) => {
     normalizeHeaders(evt);
 
+    const frontendOrigin = process.env["FRONTEND_ORIGIN"];
+    if (!frontendOrigin) {
+      return {
+        statusCode: 500,
+        body: "if you see this, then we are not as smart as we thought we were",
+      };
+    }
+
     let body: InputBody;
     try {
       const bodyText = evt.isBase64Encoded
@@ -53,7 +61,7 @@ export const lambdaHandler = <
     } catch (err) {
       return {
         statusCode: 400,
-        headers: getCommonHeaders(evt),
+        headers: getCommonHeaders(frontendOrigin),
         body: JSON.stringify({ error: String(err) }),
       };
     }
@@ -66,14 +74,14 @@ export const lambdaHandler = <
       });
       return {
         statusCode: result.statusCode ?? 200,
-        headers: { ...getCommonHeaders(evt), ...result.headers },
+        headers: { ...getCommonHeaders(frontendOrigin), ...result.headers },
         body: JSON.stringify(result.body),
       };
     } catch (err) {
       if (err instanceof ClientError) {
         return {
           statusCode: err.statusCode ?? 400,
-          headers: getCommonHeaders(evt),
+          headers: getCommonHeaders(frontendOrigin),
           body: JSON.stringify({ error: String(err) }),
         };
       }
@@ -81,7 +89,7 @@ export const lambdaHandler = <
       console.error("Uncaught error:", err);
       return {
         statusCode: 500,
-        headers: getCommonHeaders(evt),
+        headers: getCommonHeaders(frontendOrigin),
         body: JSON.stringify({ error: "Internal server error" }),
       };
     }

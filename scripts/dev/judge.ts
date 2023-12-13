@@ -1,5 +1,6 @@
 import { Transform, TransformCallback } from "node:stream";
 import {
+  DEV_FRONTEND_BASE_URL,
   DOCKER_JUDGE_NAME,
   DOCKER_NET_NAME,
   LOG_PREFIX,
@@ -10,8 +11,10 @@ import {
   DIST_BUNDLES_DIR,
   REPO_ROOT,
   BROWSER_CONFIGS,
+  FRONTEND_SERVER_FILE,
 } from "@jspuzzles/infrastructure";
 import { prefixProcessOutput } from "../utils";
+import { readFile } from "node:fs/promises";
 
 // NOTE: set this to true to have an interactive shell in the built image
 const interactive = process.argv.includes("--interactive");
@@ -54,6 +57,7 @@ const runContainer = () => {
     AWS_REGION: "us-east-1",
     AWS_ACCESS_KEY_ID: "test",
     AWS_SECRET_ACCESS_KEY: "test",
+    FRONTEND_ORIGIN: DEV_FRONTEND_BASE_URL,
     IS_DEV: "true",
   };
 

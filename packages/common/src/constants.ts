@@ -12,3 +12,7 @@ export const API_BASE_URL =
   "https://ivo7it01e6.execute-api.us-east-1.amazonaws.com/stage";
 
 export const FRONTEND_BASE_URL = "https://js-puzzles.github.io";
+
+export const DEV_FRONTEND_PORT = 1337;
+export const DEV_FRONTEND_HOST = "localhost";
+export const DEV_FRONTEND_BASE_URL = `http://${DEV_FRONTEND_HOST}:${DEV_FRONTEND_PORT}`;

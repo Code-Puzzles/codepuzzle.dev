@@ -9,6 +9,8 @@ export const PACKAGES_DIR = path.join(REPO_ROOT, "packages");
 
 export const INFRASTRUCTURE_DIR = path.join(PACKAGES_DIR, "infrastructure");
 export const BACKEND_DIR = path.join(PACKAGES_DIR, "backend");
+export const FRONTEND_DIR = path.join(PACKAGES_DIR, "frontend");
+export const FRONTEND_SERVER_FILE = path.join(FRONTEND_DIR, ".server");
 
 export const CONTAINERS_DIR = path.join(BACKEND_DIR, "containers");
 
