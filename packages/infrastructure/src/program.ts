@@ -297,15 +297,11 @@ export const buildProgram = (isDev: boolean) => {
     stageName: "stage",
   });
 
-  const apiCert = new aws.acm.Certificate(`${namePrefix}-api-cert`, {
-    domainName: API_DOMAIN_NAME,
-    validationMethod: "DNS",
-  });
-
   const apiDomainName = new aws.apigateway.DomainName(
     `${namePrefix}-api-domain`,
     {
-      certificateArn: apiCert.arn,
+      certificateArn:
+        "arn:aws:acm:us-east-1:237755930437:certificate/ee793a37-09a8-467d-beb0-8bf1a13f7cfe",
       domainName: API_DOMAIN_NAME,
     },
   );

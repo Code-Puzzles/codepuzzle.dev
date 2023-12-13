@@ -17,6 +17,10 @@ const stack = await pulumi.automation.LocalWorkspace.selectStack(
   { workDir: INFRASTRUCTURE_DIR },
 );
 
-await stack.up({
+const result = await stack.up({
   onOutput: (out) => console.log(out),
 });
+
+if (result.summary.result === "failed") {
+  throw new Error("Pulumi update failed");
+}
