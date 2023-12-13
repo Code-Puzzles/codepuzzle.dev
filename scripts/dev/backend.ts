@@ -4,8 +4,8 @@ import pulumi from "@pulumi/pulumi";
 import { $ } from "execa";
 import chalk from "chalk";
 import {
-  FRONTEND_SERVER_FILE,
   INFRASTRUCTURE_DIR,
+  PROJECT_NAME,
   buildProgram,
 } from "@jspuzzles/infrastructure";
 import { bundle } from "../bundle.js";
@@ -15,12 +15,7 @@ import {
   localstackLogCleaner,
   prefixProcessOutput,
 } from "../utils.js";
-import {
-  DEV_FRONTEND_BASE_URL,
-  DOCKER_LS_NAME,
-  DOCKER_NET_NAME,
-} from "@jspuzzles/common";
-import { readFile } from "node:fs/promises";
+import { DOCKER_LS_NAME, DOCKER_NET_NAME } from "@jspuzzles/common";
 
 // TODO: Store prod pulumi state in private repo or s3
 
@@ -33,7 +28,7 @@ await pulumiLogin;
 
 const stack = await pulumi.automation.LocalWorkspace.createOrSelectStack(
   {
-    projectName: "JS-Puzzles",
+    projectName: PROJECT_NAME,
     stackName: "local",
     program: async () => {
       return buildProgram(true);

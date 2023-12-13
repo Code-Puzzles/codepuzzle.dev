@@ -38,9 +38,9 @@
       <NavBrand href="/">
         <img src="logo.png" class="mr-3 h-6 sm:h-9" alt="logo" />
         <span
-          class="self-center whitespace-nowrap text-xl font-semibold dark:text-white"
+          class="self-center whitespace-nowrap text-xl font-mono dark:text-white"
         >
-          JS Puzzles
+          codepuzzle.dev
         </span>
       </NavBrand>
       <NavHamburger />

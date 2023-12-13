@@ -76,7 +76,7 @@ const fetchUserDetails = async (
   if (!accessToken) throw new Error("Missing access_token from response");
 
   const octokit = new Octokit({
-    userAgent: "js-puzzles/v0.0.0",
+    userAgent: "codepuzzle.dev/v0.0.0",
     auth: accessToken,
   });
 
