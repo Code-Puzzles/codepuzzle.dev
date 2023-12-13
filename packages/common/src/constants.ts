@@ -2,11 +2,11 @@ export const LOG_PREFIX = "====";
 
 export const GITHUB_OAUTH_MOCK_CODE = "mock_github_oauth_code";
 
-export const DOCKER_NET_NAME = "codepuzzles";
+export const DOCKER_NET_NAME = "codepuzzle";
 export const DOCKER_LS_NAME = `${DOCKER_NET_NAME}-localstack`;
 export const DOCKER_JUDGE_NAME = `${DOCKER_NET_NAME}-judge-dev`;
 
-export const API_DOMAIN_NAME = "api.codepuzzles.dev";
+export const API_DOMAIN_NAME = "api.codepuzzle.dev";
 export const API_BASE_URL = `https://${API_DOMAIN_NAME}`;
 
 export const FRONTEND_BASE_URL = "https://codepuzzle.dev";
