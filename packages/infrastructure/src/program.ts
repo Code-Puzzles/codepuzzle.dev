@@ -12,7 +12,11 @@ import { NODE_VERSION } from "./versions.js";
 import { createJudgeFuncs } from "./judge.js";
 import { DIST_BUNDLES_DIR } from "./paths.js";
 import { createMainTable } from "./db.js";
-import { DEV_FRONTEND_BASE_URL, FRONTEND_BASE_URL } from "@jspuzzles/common";
+import {
+  API_DOMAIN_NAME,
+  DEV_FRONTEND_BASE_URL,
+  FRONTEND_BASE_URL,
+} from "@jspuzzles/common";
 import { MockEndpoint } from "@jspuzzles/backend/endpoints";
 import type { APIGatewayProxyResult } from "aws-lambda";
 
@@ -291,6 +295,25 @@ export const buildProgram = (isDev: boolean) => {
     deployment: apiDeployment.id,
     restApi: apiRest.id,
     stageName: "stage",
+  });
+
+  const apiCert = new aws.acm.Certificate(`${namePrefix}-api-cert`, {
+    domainName: API_DOMAIN_NAME,
+    validationMethod: "DNS",
+  });
+
+  const apiDomainName = new aws.apigateway.DomainName(
+    `${namePrefix}-api-domain`,
+    {
+      certificateArn: apiCert.arn,
+      domainName: API_DOMAIN_NAME,
+    },
+  );
+
+  new aws.apigateway.BasePathMapping(`${namePrefix}-api-mapping`, {
+    restApi: apiRest.id,
+    stageName: apiStage.stageName,
+    domainName: apiDomainName.domainName,
   });
 
   return {

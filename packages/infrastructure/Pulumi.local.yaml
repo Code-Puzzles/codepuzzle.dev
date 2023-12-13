@@ -8,6 +8,7 @@ config:
     - dynamodb: http://localhost:4566
     - ssm: http://localhost:4566
     - ecr: http://localhost:4566
+    - acm: http://localhost:4566
   aws:region: us-east-1
   aws:secretKey: localSecretKey
   aws:skipCredentialsValidation: "true"
