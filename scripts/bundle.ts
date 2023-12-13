@@ -57,7 +57,6 @@ export const bundle = async (
 const entryPointsFromDir = async () => {
   const entryPoints: Record<string, string> = {
     ["judge/index"]: path.join(ENDPOINTS_DIR, "judge.ts"),
-    ["options/index"]: path.join(ENDPOINTS_DIR, "options.ts"),
   };
 
   const build = (eps: Endpoints) => {
