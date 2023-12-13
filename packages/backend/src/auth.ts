@@ -17,6 +17,12 @@ export interface SessionJwtPayload {
 const NOT_LOGGED_IN_ERROR = new ClientError("Not logged in", 401);
 const JWT_ALGORITHM: jwt.Algorithm = "ES256";
 const SESSION_JWT_COOKIE = "session";
+const COOKIE_OPTIONS: cookie.CookieSerializeOptions = {
+  path: "/",
+  httpOnly: true,
+  sameSite: IS_DEV ? "lax" : "none",
+  secure: !IS_DEV,
+};
 
 export const generateSessionCookieHeader = async (
   userId: string,
@@ -27,14 +33,18 @@ export const generateSessionCookieHeader = async (
   const jwt = await generateSessionJwt(userId, githubLoginId);
   return {
     "Set-Cookie": cookie.serialize(SESSION_JWT_COOKIE, jwt, {
-      path: "/",
-      httpOnly: true,
-      sameSite: IS_DEV ? "lax" : "none",
-      secure: !IS_DEV,
+      ...COOKIE_OPTIONS,
       expires: expiresAt,
     }),
   };
 };
+
+export const deleteSessionCookieHeader = (): Record<"Set-Cookie", string> => ({
+  "Set-Cookie": cookie.serialize(SESSION_JWT_COOKIE, "", {
+    ...COOKIE_OPTIONS,
+    expires: new Date(1),
+  }),
+});
 
 export const generateSessionJwt = async (
   userId: string,

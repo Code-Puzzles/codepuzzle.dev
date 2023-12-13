@@ -74,11 +74,7 @@
     sidebarOpen = false;
   }
 
-  onMount(async () => {
-    const code = new URLSearchParams(window.location.search).get("code");
-    if (!code) return await refreshLoginState();
-
-    loggedInUser = "loading";
+  async function login(code: string) {
     try {
       await fetch(`${API_BASE_URL}/login/github`, {
         method: "POST",
@@ -89,12 +85,28 @@
       history.replaceState(null, "", "/");
       await refreshLoginState();
     }
+  }
+
+  function logout() {
+    fetch(`${API_BASE_URL}/logout`, {
+      method: "POST",
+      body: "{}",
+      credentials: "include",
+    }).finally(() => refreshLoginState());
+  }
+
+  onMount(async () => {
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (!code) return await refreshLoginState();
+
+    loggedInUser = "loading";
+    await login(code);
   });
 </script>
 
 <svelte:window bind:innerWidth={width} />
 <div class="flex flex-col h-full">
-  <Header {loggedInUser} />
+  <Header {loggedInUser} onLogoutClick={() => logout()} />
 
   <div class="relative flex flex-1 min-h-0">
     <SidebarWrapper

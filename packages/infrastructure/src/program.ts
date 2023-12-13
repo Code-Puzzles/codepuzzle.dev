@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import {
-  Endpoint,
+  LambdaEndpoint,
   endpoints,
   getCorsHeaders,
   params,
@@ -13,9 +13,15 @@ import { createJudgeFuncs } from "./judge.js";
 import { DIST_BUNDLES_DIR } from "./paths.js";
 import { createMainTable } from "./db.js";
 import { DEV_FRONTEND_BASE_URL, FRONTEND_BASE_URL } from "@jspuzzles/common";
+import { MockEndpoint } from "@jspuzzles/backend/endpoints";
+import type { APIGatewayProxyResult } from "aws-lambda";
 
 interface EndpointsOrFuncs {
-  [name: string]: Endpoint<unknown> | aws.lambda.Function | EndpointsOrFuncs;
+  [name: string]:
+    | MockEndpoint
+    | LambdaEndpoint<unknown>
+    | aws.lambda.Function
+    | EndpointsOrFuncs;
 }
 
 const defineInlinePolicyDocument = (policy: aws.iam.PolicyDocument) =>
@@ -144,7 +150,11 @@ export const buildProgram = (isDev: boolean) => {
       );
       apiResourceIds.push(resource.id);
 
-      if (ep instanceof Endpoint || ep instanceof aws.lambda.Function) {
+      if (
+        ep instanceof MockEndpoint ||
+        ep instanceof LambdaEndpoint ||
+        ep instanceof aws.lambda.Function
+      ) {
         const optionsMethod = new aws.apigateway.Method(
           `${namePrefix}-api-options-method-${nameSuffix}`,
           {
@@ -170,16 +180,35 @@ export const buildProgram = (isDev: boolean) => {
         );
         apiResourceIds.push(method.id);
 
+        // create hardcoded options mock
         apiResourceIds.push(
           ...createMock({
             apiRestId: apiRest.id,
             resourceId: resource.id,
             httpMethod: optionsMethod.httpMethod,
-            namePrefix,
+            namePrefix: `${namePrefix}-api-options`,
             nameSuffix,
-            frontendOrigin,
+            result: {
+              statusCode: 200,
+              headers: getCorsHeaders(frontendOrigin),
+              body: "{}",
+            },
           }),
         );
+
+        if (ep instanceof MockEndpoint) {
+          apiResourceIds.push(
+            ...createMock({
+              apiRestId: apiRest.id,
+              resourceId: resource.id,
+              httpMethod: method.httpMethod,
+              namePrefix: `${namePrefix}-api-mock`,
+              nameSuffix,
+              result: ep.opts.getResponse(frontendOrigin),
+            }),
+          );
+          continue;
+        }
 
         const bundlePath = path.join(DIST_BUNDLES_DIR, ...segments);
         const func =
@@ -277,7 +306,7 @@ interface CreateMockOpts {
   httpMethod: pulumi.Input<string>;
   namePrefix: string;
   nameSuffix: string;
-  frontendOrigin: string;
+  result: APIGatewayProxyResult;
 }
 
 function createMock({
@@ -286,11 +315,11 @@ function createMock({
   namePrefix,
   nameSuffix,
   httpMethod,
-  frontendOrigin,
+  result,
 }: CreateMockOpts) {
   const apiResourceIds = [];
   const integration = new aws.apigateway.Integration(
-    `${namePrefix}-api-options-integration-${nameSuffix}`,
+    `${namePrefix}-integration-${nameSuffix}`,
     {
       restApi: apiRestId,
       resourceId: resourceId,
@@ -305,17 +334,17 @@ function createMock({
   apiResourceIds.push(integration.id);
 
   const response200 = new aws.apigateway.MethodResponse(
-    `${namePrefix}-api-options-method-response-${nameSuffix}`,
+    `${namePrefix}-method-response-${nameSuffix}`,
     {
       restApi: apiRestId,
       resourceId: resourceId,
       httpMethod: httpMethod,
-      statusCode: "200",
+      statusCode: result.statusCode.toString(),
       responseModels: {
         "application/json": "Empty",
       },
       responseParameters: Object.fromEntries(
-        Object.keys(getCorsHeaders(frontendOrigin)).map((name) => [
+        Object.keys(result.headers ?? {}).map((name) => [
           `method.response.header.${name}`,
           false,
         ]),
@@ -325,17 +354,17 @@ function createMock({
   apiResourceIds.push(response200.id);
 
   const integrationResponse = new aws.apigateway.IntegrationResponse(
-    `${namePrefix}-api-options-integration-response-${nameSuffix}`,
+    `${namePrefix}-integration-response-${nameSuffix}`,
     {
       restApi: apiRestId,
       resourceId: resourceId,
       httpMethod: httpMethod,
-      statusCode: "200",
+      statusCode: result.statusCode.toString(),
       responseTemplates: {
-        "application/json": "",
+        "application/json": result.body,
       },
       responseParameters: Object.fromEntries(
-        Object.entries(getCorsHeaders(frontendOrigin)).map(([name, value]) => [
+        Object.entries(result.headers ?? {}).map(([name, value]) => [
           `method.response.header.${name}`,
           `'${value}'`,
         ]),

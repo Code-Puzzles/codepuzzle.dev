@@ -3,8 +3,11 @@ import type * as aws from "@pulumi/aws";
 import type { handler as healthcheckHandler } from "./endpoints/healthcheck.js";
 import type { handler as loginGithubHandler } from "./endpoints/login/github.js";
 import type { handler as meHandler } from "./endpoints/me.js";
+import { APIGatewayProxyResult } from "aws-lambda";
+import { deleteSessionCookieHeader } from "./auth.js";
+import { getCommonHeaders } from "./index.js";
 
-export class Endpoint<Handler> {
+export class LambdaEndpoint<Handler> {
   __handlerType!: Handler;
   path: string;
   constructor(
@@ -17,14 +20,34 @@ export class Endpoint<Handler> {
   }
 }
 
+export class MockEndpoint {
+  constructor(
+    public opts: {
+      method: string;
+      getResponse: (frontendOrigin: string) => APIGatewayProxyResult;
+    },
+  ) {}
+}
+
 export interface Endpoints {
-  [name: string]: Endpoint<unknown> | Endpoints;
+  [name: string]: MockEndpoint | LambdaEndpoint<unknown> | Endpoints;
 }
 
 export const endpoints = {
-  healthcheck: new Endpoint<typeof healthcheckHandler>("healthcheck.ts"),
+  healthcheck: new LambdaEndpoint<typeof healthcheckHandler>("healthcheck.ts"),
   login: {
-    github: new Endpoint<typeof loginGithubHandler>("login/github.ts"),
+    github: new LambdaEndpoint<typeof loginGithubHandler>("login/github.ts"),
   },
-  me: new Endpoint<typeof meHandler>("me.ts"),
+  logout: new MockEndpoint({
+    method: "POST",
+    getResponse: (frontendOrigin) => ({
+      statusCode: 200,
+      body: "{}",
+      headers: {
+        ...getCommonHeaders(frontendOrigin),
+        ...deleteSessionCookieHeader(),
+      },
+    }),
+  }),
+  me: new LambdaEndpoint<typeof meHandler>("me.ts"),
 } satisfies Endpoints;

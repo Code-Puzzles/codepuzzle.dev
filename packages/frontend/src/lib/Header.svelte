@@ -17,6 +17,7 @@
   import NavContainer from "flowbite-svelte/NavContainer.svelte";
 
   export let loggedInUser: UserRuntimeType | "loading" | undefined;
+  export let onLogoutClick: () => void;
 
   const GITHUB_LOGIN_PATH = `${window.location.origin}/login/github`;
   const loginUrl = MOCK_LOGIN
@@ -29,12 +30,6 @@
 
   const headerClass = "w-full border-b-2 dark:border-gray-900";
   let userDropdownOpen = false;
-
-  function signOut() {
-    userDropdownOpen = false;
-    // TODO: send request to sign out
-    // TODO: refresh user details
-  }
 </script>
 
 <header class={headerClass}>
@@ -104,7 +99,14 @@
                 ({loggedInUser.loginProvider})
               </p>
             </div>
-            <DropdownItem on:click={signOut}>Sign Out</DropdownItem>
+            <DropdownItem
+              on:click={() => {
+                userDropdownOpen = false;
+                onLogoutClick();
+              }}
+            >
+              Sign Out
+            </DropdownItem>
           </Dropdown>
         {:else}
           <NavLi href={loginUrl}>Login with GitHub</NavLi>

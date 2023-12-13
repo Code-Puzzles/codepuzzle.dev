@@ -7,7 +7,8 @@ import {
   ENDPOINTS_DIR,
   NODE_VERSION,
 } from "@jspuzzles/infrastructure";
-import { endpoints, Endpoint, Endpoints } from "../packages/backend/src";
+import { endpoints, LambdaEndpoint, Endpoints } from "../packages/backend/src";
+import { MockEndpoint } from "../packages/backend/src/endpoints";
 
 export const bundle = async (
   watchCallback?: (result: BuildResult) => Promise<boolean>,
@@ -61,7 +62,8 @@ const entryPointsFromDir = async () => {
 
   const build = (eps: Endpoints) => {
     for (const ep of Object.values(eps)) {
-      if (ep instanceof Endpoint) {
+      if (ep instanceof MockEndpoint) continue;
+      if (ep instanceof LambdaEndpoint) {
         const outfile = `${ep.relativePath.replace(/\.ts$/, "")}/index`;
         entryPoints[outfile] = ep.path;
       } else {
