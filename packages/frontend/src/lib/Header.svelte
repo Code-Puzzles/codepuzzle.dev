@@ -44,7 +44,9 @@
         </span>
       </NavBrand>
       <NavHamburger />
-      <NavUl>
+      <NavUl
+        ulClass="flex flex-col md:flex-row md:space-x-8 md:text-sm md:font-medium items-center"
+      >
         <NavLi href="https://github.com/js-puzzles/js-puzzles.github.io">
           <div class="flex justify-between">
             {#if !hidden}
@@ -109,7 +111,15 @@
             </DropdownItem>
           </Dropdown>
         {:else}
-          <NavLi href={loginUrl}>Login with GitHub</NavLi>
+          <NavLi>
+            <a
+              href={loginUrl}
+              class="text-white bg-[#24292F] hover:bg-[#373f47] font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-centerdark:hover:bg-[#050708]/30 gap-2"
+            >
+              <GithubSolid class="inline-block" />
+              Sign in with Github
+            </a>
+          </NavLi>
         {/if}
       </NavUl>
     </NavContainer>
