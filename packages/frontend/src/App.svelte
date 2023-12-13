@@ -90,7 +90,6 @@
   function logout() {
     fetch(`${API_BASE_URL}/logout`, {
       method: "POST",
-      body: "{}",
       credentials: "include",
     }).finally(() => refreshLoginState());
   }
