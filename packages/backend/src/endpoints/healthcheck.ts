@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LOG_PREFIX } from "@jspuzzles/common";
+import { LOG_PREFIX } from "@codepuzzles/common";
 import { lambdaHandler } from "../lambda/handler.js";
 
 const healthcheckOptsShape = z.object({});

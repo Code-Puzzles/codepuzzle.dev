@@ -5,8 +5,8 @@
     type JudgeResultWithCount,
     puzzlesAsMap,
     type UserState,
-  } from "@jspuzzles/common";
-  import type { UserRuntimeType } from "@jspuzzles/backend";
+  } from "@codepuzzles/common";
+  import type { UserRuntimeType } from "@codepuzzles/backend";
   import { onMount } from "svelte";
   import { evalInBrowser, submitToBackend } from "./lib/submit";
   import Sidebar from "./lib/Sidebar.svelte";

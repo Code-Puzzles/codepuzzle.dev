@@ -8,7 +8,7 @@ import { test, expect, describe } from "vitest";
 import { puzzleReadOnlyExtension } from "./readonly-puzzle";
 import { indentRange, indentUnit } from "@codemirror/language";
 import { javascript } from "@codemirror/lang-javascript";
-import { PuzzleGroup } from "@jspuzzles/common";
+import { PuzzleGroup } from "@codepuzzles/common";
 
 const puzzleSource = `a;
 {

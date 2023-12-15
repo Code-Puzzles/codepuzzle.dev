@@ -4,7 +4,7 @@
     PuzzleGroup,
     puzzlesInGroups,
     type UserState,
-  } from "@jspuzzles/common";
+  } from "@codepuzzles/common";
   import {
     Sidebar,
     SidebarDropdownWrapper,

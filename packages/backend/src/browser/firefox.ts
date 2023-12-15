@@ -3,7 +3,7 @@ import path from "node:path";
 import { ChildProcess, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { Browser } from "./types.js";
-import { LOG_PREFIX } from "@jspuzzles/common";
+import { LOG_PREFIX } from "@codepuzzles/common";
 
 const sleep = promisify(setTimeout);
 
@@ -69,8 +69,8 @@ export class FirefoxBrowser extends Browser {
             FirefoxBrowser.geckodriverProc?.exitCode
               ? ` (exit code: ${FirefoxBrowser.geckodriverProc?.exitCode})`
               : FirefoxBrowser.geckodriverProc?.signalCode
-              ? ` (signal: ${FirefoxBrowser.geckodriverProc?.signalCode})`
-              : ""
+                ? ` (signal: ${FirefoxBrowser.geckodriverProc?.signalCode})`
+                : ""
           }`,
         );
 

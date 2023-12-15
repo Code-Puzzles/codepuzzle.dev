@@ -1,5 +1,5 @@
 {
-  "name": "@jspuzzles/common",
+  "name": "@codepuzzles/common",
   "type": "module",
   "private": true,
   "main": "src/index.ts",

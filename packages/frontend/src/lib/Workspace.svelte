@@ -3,7 +3,7 @@
     JudgeResultWithCount,
     Puzzle,
     UserState,
-  } from "@jspuzzles/common";
+  } from "@codepuzzles/common";
   import CodeMirror from "./CodeMirror.svelte";
   import CodeMirrorBar from "./CodeMirrorBar.svelte";
   import Results from "./Results.svelte";

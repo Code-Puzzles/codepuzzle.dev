@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { JudgeResultWithCount } from "@jspuzzles/common";
+  import type { JudgeResultWithCount } from "@codepuzzles/common";
   import { P, Tooltip, Spinner } from "flowbite-svelte";
   import {
     CheckCircleSolid,

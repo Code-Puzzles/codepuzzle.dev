@@ -1,4 +1,4 @@
-import type { JudgeResultWithCount, Puzzle } from "@jspuzzles/common";
+import type { JudgeResultWithCount, Puzzle } from "@codepuzzles/common";
 
 // TODO: can we make this not block the browser?
 export function evalInBrowser(

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { twMerge } from "tailwind-merge";
-  import { type Puzzle } from "@jspuzzles/common";
+  import { type Puzzle } from "@codepuzzles/common";
   import { onMount } from "svelte";
   import { CodeMirror } from "./CodeMirror/index.js";
   import { Button, Input, Label, Modal, P } from "flowbite-svelte";

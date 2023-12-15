@@ -1,5 +1,5 @@
 import path from "node:path";
-import { BrowserName } from "@jspuzzles/backend";
+import { BrowserName } from "@codepuzzles/backend";
 import { CONTAINERS_DIR } from "./paths.js";
 
 export interface BrowserBuildConfig {

@@ -17,7 +17,7 @@ import {
   keymap,
   type DecorationSet,
 } from "@codemirror/view";
-import type { Puzzle } from "@jspuzzles/common";
+import type { Puzzle } from "@codepuzzles/common";
 
 export interface SimpleRange {
   from: number;

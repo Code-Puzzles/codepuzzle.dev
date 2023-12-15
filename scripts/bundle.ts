@@ -6,7 +6,7 @@ import {
   DIST_BUNDLES_DIR,
   ENDPOINTS_DIR,
   NODE_VERSION,
-} from "@jspuzzles/infrastructure";
+} from "@codepuzzles/infrastructure";
 import { endpoints, LambdaEndpoint, Endpoints } from "../packages/backend/src";
 import { MockEndpoint } from "../packages/backend/src/endpoints";
 

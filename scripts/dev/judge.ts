@@ -5,14 +5,14 @@ import {
   DOCKER_LS_NAME,
   DOCKER_NET_NAME,
   LOG_PREFIX,
-} from "@jspuzzles/common";
+} from "@codepuzzles/common";
 import { $, ExecaChildProcess } from "execa";
 import chalk from "chalk";
 import {
   DIST_BUNDLES_DIR,
   REPO_ROOT,
   BROWSER_CONFIGS,
-} from "@jspuzzles/infrastructure";
+} from "@codepuzzles/infrastructure";
 import { prefixProcessOutput } from "../utils";
 
 // NOTE: set this to true to have an interactive shell in the built image

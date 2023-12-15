@@ -1,11 +1,11 @@
 {
-  "name": "@jspuzzles/infrastructure",
+  "name": "@codepuzzles/infrastructure",
   "type": "module",
   "private": true,
   "main": "src/index.ts",
   "dependencies": {
-    "@jspuzzles/backend": "*",
-    "@jspuzzles/common": "*"
+    "@codepuzzles/backend": "*",
+    "@codepuzzles/common": "*"
   },
   "devDependencies": {
     "@aws-sdk/client-ecr": "^3.441.0",

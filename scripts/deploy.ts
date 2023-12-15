@@ -3,7 +3,7 @@ import {
   INFRASTRUCTURE_DIR,
   PROJECT_NAME,
   buildProgram,
-} from "@jspuzzles/infrastructure";
+} from "@codepuzzles/infrastructure";
 
 const stackName = process.argv[2];
 if (!stackName) throw new Error("Stack name argument not provided");

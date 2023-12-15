@@ -2,11 +2,11 @@ import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as docker from "@pulumi/docker";
 import { ECR } from "@aws-sdk/client-ecr";
-import { LambdaHandler } from "@jspuzzles/backend";
+import { LambdaHandler } from "@codepuzzles/backend";
 import { BROWSER_CONFIGS } from "./browsers.js";
 import { REPO_ROOT } from "./paths.js";
 import { NODE_VERSION } from "./versions.js";
-import { DOCKER_JUDGE_NAME } from "@jspuzzles/common";
+import { DOCKER_JUDGE_NAME } from "@codepuzzles/common";
 import type { APIGatewayProxyResult } from "aws-lambda";
 
 const localDevLambdaHandler: LambdaHandler = async (evt) => {

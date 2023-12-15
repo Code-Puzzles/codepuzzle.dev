@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { GITHUB_OAUTH_MOCK_CODE, LOG_PREFIX } from "@jspuzzles/common";
+import { GITHUB_OAUTH_MOCK_CODE, LOG_PREFIX } from "@codepuzzles/common";
 import { Octokit } from "octokit";
 import { lambdaHandler } from "../../lambda/handler.js";
 import { IS_DEV } from "../../lambda/utils.js";

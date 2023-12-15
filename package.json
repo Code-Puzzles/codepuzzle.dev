@@ -1,5 +1,5 @@
 {
-  "name": "@jspuzzles/monorepo",
+  "name": "@codepuzzles/monorepo",
   "private": true,
   "version": "0.0.1",
   "description": "JavaScript puzzles (code golf, return true to win, etc.)",

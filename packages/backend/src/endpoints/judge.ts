@@ -4,7 +4,7 @@ import {
   JudgeResultWithCount,
   LOG_PREFIX,
   puzzlesAsMap,
-} from "@jspuzzles/common";
+} from "@codepuzzles/common";
 import { Browser } from "../browser/types.js";
 import { lambdaHandler, withTimeout } from "../lambda/handler.js";
 import { BrowserName, BROWSERS } from "../browser/browsers.js";

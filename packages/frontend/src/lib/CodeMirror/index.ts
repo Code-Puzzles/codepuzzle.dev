@@ -10,7 +10,7 @@ import {
 import { EditorView, keymap } from "@codemirror/view";
 import { indentRange, indentUnit } from "@codemirror/language";
 import { basicSetup } from "codemirror";
-import { type Puzzle } from "@jspuzzles/common";
+import { type Puzzle } from "@codepuzzles/common";
 import {
   getSolution,
   puzzleReadOnlyExtension,

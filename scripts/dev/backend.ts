@@ -7,7 +7,7 @@ import {
   INFRASTRUCTURE_DIR,
   PROJECT_NAME,
   buildProgram,
-} from "@jspuzzles/infrastructure";
+} from "@codepuzzles/infrastructure";
 import { bundle } from "../bundle.js";
 import { judgeDevLoop } from "./judge.js";
 import {
@@ -15,7 +15,7 @@ import {
   localstackLogCleaner,
   prefixProcessOutput,
 } from "../utils.js";
-import { DOCKER_LS_NAME, DOCKER_NET_NAME } from "@jspuzzles/common";
+import { DOCKER_LS_NAME, DOCKER_NET_NAME } from "@codepuzzles/common";
 
 // TODO: Store prod pulumi state in private repo or s3
 

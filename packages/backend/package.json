@@ -1,5 +1,5 @@
 {
-  "name": "@jspuzzles/backend",
+  "name": "@codepuzzles/backend",
   "type": "module",
   "private": true,
   "exports": {
@@ -10,7 +10,7 @@
     "@aws-sdk/client-dynamodb": "^3.454.0",
     "@aws-sdk/client-ssm": "^3.461.0",
     "@aws-sdk/lib-dynamodb": "^3.454.0",
-    "@jspuzzles/common": "*",
+    "@codepuzzles/common": "*",
     "cookie": "^0.6.0",
     "jsonwebtoken": "^9.0.2",
     "octokit": "^3.1.2",

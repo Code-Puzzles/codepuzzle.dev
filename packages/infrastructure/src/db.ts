@@ -1,6 +1,6 @@
 import * as aws from "@pulumi/aws";
 
-import { mainTable, AnyDbTable } from "@jspuzzles/backend";
+import { mainTable, AnyDbTable } from "@codepuzzles/backend";
 
 export const createTable = (table: AnyDbTable) =>
   new aws.dynamodb.Table("main-table", {

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import type * as aws from "@pulumi/aws";
-import { LOG_PREFIX } from "@jspuzzles/common";
+import { LOG_PREFIX } from "@codepuzzles/common";
 import { SessionJwtPayload, requireAuth } from "../auth.js";
 import { ClientError } from "./common.js";
 import { LambdaHandler, normalizeHeaders, getCommonHeaders } from "./utils.js";

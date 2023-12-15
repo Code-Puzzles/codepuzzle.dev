@@ -7,7 +7,7 @@ import {
   endpoints,
   getCorsHeaders,
   params,
-} from "@jspuzzles/backend";
+} from "@codepuzzles/backend";
 import { NODE_VERSION } from "./versions.js";
 import { createJudgeFuncs } from "./judge.js";
 import { DIST_BUNDLES_DIR } from "./paths.js";
@@ -16,8 +16,8 @@ import {
   API_DOMAIN_NAME,
   DEV_FRONTEND_BASE_URL,
   FRONTEND_BASE_URL,
-} from "@jspuzzles/common";
-import { MockEndpoint } from "@jspuzzles/backend/endpoints";
+} from "@codepuzzles/common";
+import { MockEndpoint } from "@codepuzzles/backend/endpoints";
 import type { APIGatewayProxyResult } from "aws-lambda";
 
 interface EndpointsOrFuncs {

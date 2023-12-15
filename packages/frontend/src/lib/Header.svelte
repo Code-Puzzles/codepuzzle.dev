@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { UserRuntimeType } from "@jspuzzles/backend";
-  import { FRONTEND_BASE_URL, GITHUB_OAUTH_MOCK_CODE } from "@jspuzzles/common";
+  import type { UserRuntimeType } from "@codepuzzles/backend";
+  import { FRONTEND_BASE_URL, GITHUB_OAUTH_MOCK_CODE } from "@codepuzzles/common";
   import {
     Navbar,
     NavBrand,

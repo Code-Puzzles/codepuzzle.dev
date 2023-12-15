@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import * as pulumi from "@pulumi/pulumi";
-import { INFRASTRUCTURE_DIR, PROJECT_NAME } from "@jspuzzles/infrastructure";
+import { INFRASTRUCTURE_DIR, PROJECT_NAME } from "@codepuzzles/infrastructure";
 
 const PROTECTED_STACK_NAME = `${PROJECT_NAME}/prod`;
 
