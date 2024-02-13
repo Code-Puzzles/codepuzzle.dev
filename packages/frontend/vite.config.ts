@@ -17,6 +17,9 @@ export default defineConfig(({ mode }): UserConfig => {
   return {
     base: FRONTEND_BASE_URL,
     define: {
+      FRONTEND_BASE_URL: JSON.stringify(
+        isLocalDev ? DEV_FRONTEND_BASE_URL : FRONTEND_BASE_URL,
+      ),
       IS_LOCAL_DEV: JSON.stringify(isLocalDev),
       API_BASE_URL: JSON.stringify(isLocalDev ? "/stage" : API_BASE_URL),
       MOCK_LOGIN: JSON.stringify(isLocalDev && !process.env["UNMOCK_LOGIN"]),

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <script>
+      window.addEventListener("message", (event) => {
+        try {
+          parent.postMessage({ result: (void 0, eval)(event.data) }, "*");
+        } catch (err) {
+          parent.postMessage({ error: err.message }, "*");
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -43,15 +43,23 @@
     loggedInUser = user;
   };
 
+  let evalPromise: Promise<JudgeResultWithCount> = Promise.reject();
   const onChange: OnChangeCb = (value, selection) => {
     if (!puzzle) return;
 
     // eval locally
     solution = value.trim();
-    localResult = solution ? evalInBrowser(puzzle, solution) : undefined;
-
-    // save to drafts
-    $drafts[puzzle.id] = { solution, selection: selection.toJSON() };
+    if (solution) {
+      const curr = (evalPromise = evalInBrowser(puzzle, solution));
+      curr.then((result) => {
+        if (evalPromise === curr) {
+          localResult = result;
+          $drafts[puzzle!.id] = { solution, selection: selection.toJSON() };
+        }
+      });
+    } else {
+      localResult = undefined;
+    }
   };
 
   function onSubmit() {
