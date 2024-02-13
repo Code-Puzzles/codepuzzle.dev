@@ -26,7 +26,7 @@
     <Button
       size="sm"
       on:click={() => (showDisclaimer = !showDisclaimer)}
-      class="text-yellow-200"
+      color="yellow"
       outline
     >
       <ExclamationCircleSolid />
