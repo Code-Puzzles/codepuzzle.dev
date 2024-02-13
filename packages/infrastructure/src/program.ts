@@ -300,12 +300,8 @@ export const buildProgram = (isDev: boolean) => {
   const apiDomainName = new aws.apigateway.DomainName(
     `${namePrefix}-api-domain`,
     {
-      certificateArn: aws.acm
-        .getCertificate(
-          { domain: API_DOMAIN_NAME, mostRecent: true },
-          { async: true },
-        )
-        .then((cert) => cert.arn),
+      certificateArn:
+        "arn:aws:acm:us-east-1:237755930437:certificate/ee793a37-09a8-467d-beb0-8bf1a13f7cfe",
       domainName: API_DOMAIN_NAME,
     },
   );
