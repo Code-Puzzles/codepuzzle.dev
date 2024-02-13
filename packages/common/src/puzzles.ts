@@ -20,40 +20,40 @@ export const puzzles: Puzzle[] = [
   {
     id: "aad5a036-f677-402b-b48f-13393a8cde9a",
     group: PuzzleGroup.Beginner,
-    name: "id",
-    source: `function id(x) {
+    name: "simple",
+    source: `function simple(x) {
   return x;
 }`,
   },
   {
     id: "531b0815-744a-4e27-b7a6-4fc89d3125bd",
     group: PuzzleGroup.Beginner,
-    name: "reflexive",
-    source: `function reflexive(x) {
+    name: "identityCrisis",
+    source: `function identityCrisis(x) {
   return x != x;
 }`,
   },
   {
     id: "582c046c-9937-412e-8742-28516cb08e76",
     group: PuzzleGroup.Beginner,
-    name: "infinity",
-    source: `function infinity(x, y) {
+    name: "sameSameButDifferent",
+    source: `function sameSameButDifferent(x, y) {
   return x === y && 1/x < 1/y
 }`,
   },
   {
     id: "c1ee858e-6838-4161-bf62-89be0fca23d0",
     group: PuzzleGroup.Beginner,
-    name: "transitive",
-    source: `function transitive(x,y,z) {
+    name: "contradiction",
+    source: `function contradiction(x,y,z) {
   return x && x == y && y == z && x != z;
 }`,
   },
   {
     id: "333c52ae-d933-44e7-8cd8-95017ee736dd",
     group: PuzzleGroup.Beginner,
-    name: "counter",
-    source: `function counter(f) {
+    name: "countingClosures",
+    source: `function countingClosures(f) {
   var a = f(), b = f();
   return a() == 1 && a() == 2 && a() == 3
       && b() == 1 && b() == 2;
@@ -62,8 +62,8 @@ export const puzzles: Puzzle[] = [
   {
     id: "cb1de7f3-852b-4558-a691-43931d5caed9",
     group: PuzzleGroup.Beginner,
-    name: "peano",
-    source: `function peano(x) {
+    name: "safety",
+    source: `function safety(x) {
   return (x++ !== x) && (x++ === x);
 }`,
   },
@@ -79,8 +79,8 @@ export const puzzles: Puzzle[] = [
   {
     id: "6ad14ec8-282e-4281-be36-bb3685805e03",
     group: PuzzleGroup.Objects,
-    name: "instance",
-    source: `function instance(x,y) {
+    name: "chickenOrEgg",
+    source: `function chickenOrEgg(x,y) {
   return x instanceof y && y instanceof x && x !== y;
 }`,
   },
