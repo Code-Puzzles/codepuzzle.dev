@@ -35,17 +35,18 @@ function evalInIframe(code: string): Promise<unknown> {
 
     let id = 0;
     const waitForMessage = (event: MessageEvent<unknown>) => {
-      clearTimeout(id);
       if (
         event.source === iframe.contentWindow ||
         event.source === iframe.contentDocument
       ) {
+        clearTimeout(id);
+        window.removeEventListener("message", waitForMessage);
+        iframe.remove();
+
         const obj = event.data && typeof event.data === "object";
         if (obj && "result" in event.data) resolve(Boolean(event.data.result));
         else if (obj && "error" in event.data) reject(String(event.data.error));
         else reject(new Error("Unknown error executing code"));
-        window.removeEventListener("message", waitForMessage);
-        iframe.remove();
       }
     };
     window.addEventListener("message", waitForMessage);
