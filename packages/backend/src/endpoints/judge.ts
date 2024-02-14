@@ -94,7 +94,14 @@ function evaluateSolution(
   function stringify(value: unknown) {
     try {
       if (value instanceof Error) return toString(value);
-      return jsonStringify(value);
+      if (typeof value === "number") {
+        if (value === 0 && 1 / value === -Infinity) return "-0";
+        if (isNaN(value) || value === Infinity || value === -Infinity)
+          return toString(value);
+      }
+
+      var maybeString = jsonStringify(value);
+      return typeof maybeString !== "string" ? toString(value) : maybeString;
     } catch {
       return toString(value);
     }

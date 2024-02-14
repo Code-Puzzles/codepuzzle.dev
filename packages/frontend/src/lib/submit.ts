@@ -1,4 +1,8 @@
-import { type JudgeResultWithCount, type Puzzle } from "@codepuzzles/common";
+import {
+  type JudgeResult,
+  type JudgeResultWithCount,
+  type Puzzle,
+} from "@codepuzzles/common";
 
 // TODO: can we make this not block the browser?
 export async function evalInBrowser(
@@ -10,9 +14,11 @@ export async function evalInBrowser(
   try {
     const { name, source } = puzzle;
     const code = `var ${name} = (function () { ${source}; return ${name}; })(); ${name}(${solution});`;
-    const value = await evalInIframe(code);
-    const passed = value === true;
-    return { passed, value: String(value), numChars };
+    const result = await evalInIframe(code);
+    return {
+      ...result,
+      numChars,
+    };
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
     return { passed: false, error, numChars };
@@ -33,7 +39,7 @@ export async function evalInBrowser(
  * since this is a local run. We have other mitigations for that when we submit
  * the code to the backend
  */
-function evalInIframe(code: string): Promise<unknown> {
+function evalInIframe(code: string): Promise<JudgeResult> {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement("iframe");
     const src =
@@ -63,10 +69,11 @@ function evalInIframe(code: string): Promise<unknown> {
         window.removeEventListener("message", waitForMessage);
         iframe.remove();
 
-        const obj = event.data && typeof event.data === "object";
-        if (obj && "result" in event.data) resolve(event.data.result);
-        else if (obj && "error" in event.data) reject(String(event.data.error));
-        else reject(new Error("Unknown error executing code"));
+        if (!event.data || typeof event.data !== "object") {
+          return reject(new Error("Received unexpected response"));
+        }
+
+        return resolve(event.data as JudgeResult);
       }
     };
     window.addEventListener("message", waitForMessage);

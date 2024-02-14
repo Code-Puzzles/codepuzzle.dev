@@ -18,7 +18,7 @@ export default defineConfig(({ mode }): UserConfig => {
   return {
     base: FRONTEND_BASE_URL,
     define: {
-      FRONTEND_FRAME_EVAL_URL: JSON.stringify(
+      FRONTEND_IFRAME_EVAL_URL: JSON.stringify(
         isLocalDev ? null : IFRAME_EVAL_URL,
       ),
       FRONTEND_BASE_URL: JSON.stringify(

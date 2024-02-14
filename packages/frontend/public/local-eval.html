@@ -5,13 +5,40 @@
   </head>
   <body>
     <script>
-      window.addEventListener("message", (event) => {
-        try {
-          parent.postMessage({ result: (void 0, eval)(event.data) }, "*");
-        } catch (err) {
-          parent.postMessage({ error: err.message }, "*");
+      (function () {
+        var jsonStringify = JSON.stringify;
+        var numStringify = Number.prototype.toString;
+        var toString = String;
+        function stringify(value) {
+          try {
+            if (value instanceof Error) return toString(value);
+            if (typeof value === "number") {
+              if (value === 0 && 1 / value === -Infinity) return "-0";
+              if (isNaN(value) || value === Infinity || value === -Infinity)
+                return toString(value);
+            }
+
+            var maybeString = jsonStringify(value);
+            return typeof maybeString !== "string"
+              ? toString(value)
+              : maybeString;
+          } catch {
+            return toString(value);
+          }
         }
-      });
+
+        window.addEventListener("message", (event) => {
+          try {
+            var value = (void 0, eval)(event.data);
+            parent.postMessage(
+              { passed: value === true, value: stringify(value) },
+              "*",
+            );
+          } catch (err) {
+            parent.postMessage({ passed: false, error: stringify(err) }, "*");
+          }
+        });
+      })();
     </script>
   </body>
 </html>
