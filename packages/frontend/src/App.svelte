@@ -43,7 +43,7 @@
     loggedInUser = user;
   };
 
-  let evalPromise: Promise<JudgeResultWithCount> = Promise.reject();
+  let evalPromise: Promise<JudgeResultWithCount> | null = null;
   const onChange: OnChangeCb = (value, selection) => {
     if (!puzzle) return;
 

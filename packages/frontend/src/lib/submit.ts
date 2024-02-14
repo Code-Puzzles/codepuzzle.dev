@@ -19,11 +19,32 @@ export async function evalInBrowser(
   }
 }
 
+const iframeContent = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <script>
+      window.addEventListener("message", (event) => {
+        try {
+          parent.postMessage({ result: (void 0, eval)(event.data) }, "*");
+        } catch (err) {
+          parent.postMessage({ error: err.message }, "*");
+        }
+      });
+    </script>
+  </body>
+</html>
+`;
+
 function evalInIframe(code: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement("iframe");
-    const src = `${FRONTEND_BASE_URL}/submit.html`;
-    iframe.setAttribute("src", src);
+    iframe.setAttribute(
+      "src",
+      `data:text/html;charset=utf-8,${encodeURIComponent(iframeContent)}`,
+    );
     iframe.setAttribute("sandbox", "allow-scripts");
     document.body.append(iframe);
     iframe.onerror = function (err) {
@@ -44,7 +65,7 @@ function evalInIframe(code: string): Promise<unknown> {
         iframe.remove();
 
         const obj = event.data && typeof event.data === "object";
-        if (obj && "result" in event.data) resolve(Boolean(event.data.result));
+        if (obj && "result" in event.data) resolve(event.data.result);
         else if (obj && "error" in event.data) reject(String(event.data.error));
         else reject(new Error("Unknown error executing code"));
       }
