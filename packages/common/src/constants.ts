@@ -12,5 +12,8 @@ export const API_BASE_URL = `https://${API_DOMAIN_NAME}`;
 export const FRONTEND_BASE_URL = "https://codepuzzle.dev";
 
 export const DEV_FRONTEND_PORT = 1337;
-export const DEV_FRONTEND_HOST = "localhost";
+export const DEV_FRONTEND_HOST = "127.0.0.1";
 export const DEV_FRONTEND_BASE_URL = `http://${DEV_FRONTEND_HOST}:${DEV_FRONTEND_PORT}`;
+
+export const LOCAL_EVAL_URL =
+  "https://code-puzzles.github.io/evaluator/index.html";

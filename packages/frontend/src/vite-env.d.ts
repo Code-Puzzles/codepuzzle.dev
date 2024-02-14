@@ -1,6 +1,7 @@
 /// <reference types="svelte" />
 /// <reference types="vite/client" />
 
+declare const FRONTEND_LOCAL_EVAL_URL: string | null;
 declare const FRONTEND_BASE_URL: string;
 declare const IS_LOCAL_DEV: boolean;
 declare const API_BASE_URL: string;

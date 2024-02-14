@@ -1,4 +1,4 @@
-import type { JudgeResultWithCount, Puzzle } from "@codepuzzles/common";
+import { type JudgeResultWithCount, type Puzzle } from "@codepuzzles/common";
 
 // TODO: can we make this not block the browser?
 export async function evalInBrowser(
@@ -36,10 +36,13 @@ export async function evalInBrowser(
 function evalInIframe(code: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement("iframe");
-    iframe.setAttribute(
-      "src",
-      "https://code-puzzles.github.io/evaluator/index.html",
-    );
+    const src =
+      // ensure in local-dev that we open the iframe on a different domain
+      FRONTEND_LOCAL_EVAL_URL ?? window.location.host.includes("localhost")
+        ? `http://127.0.0.1:${window.location.port}/local-eval.html`
+        : `http://localhost:${window.location.port}/local-eval.html`;
+
+    iframe.setAttribute("src", src);
     iframe.setAttribute("sandbox", "allow-scripts");
     document.body.append(iframe);
     iframe.onerror = function (err) {

@@ -7,6 +7,7 @@ import {
   DEV_FRONTEND_PORT,
   DEV_FRONTEND_HOST,
   DEV_FRONTEND_BASE_URL,
+  LOCAL_EVAL_URL,
 } from "../common/src/constants.js";
 import { AddressInfo } from "net";
 
@@ -17,6 +18,9 @@ export default defineConfig(({ mode }): UserConfig => {
   return {
     base: FRONTEND_BASE_URL,
     define: {
+      FRONTEND_LOCAL_EVAL_URL: JSON.stringify(
+        isLocalDev ? LOCAL_EVAL_URL : null,
+      ),
       FRONTEND_BASE_URL: JSON.stringify(
         isLocalDev ? DEV_FRONTEND_BASE_URL : FRONTEND_BASE_URL,
       ),
