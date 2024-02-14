@@ -24,7 +24,7 @@ function evalInIframe(code: string): Promise<unknown> {
     const iframe = document.createElement("iframe");
     iframe.setAttribute(
       "src",
-      `https://raw.githubusercontent.com/Code-Puzzles/codepuzzle.dev/main/packages/frontend/public/local-eval.html`,
+      "https://code-puzzles.github.io/evaluator/index.html",
     );
     iframe.setAttribute("sandbox", "allow-scripts");
     document.body.append(iframe);
