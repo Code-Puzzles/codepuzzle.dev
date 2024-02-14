@@ -50,3 +50,6 @@ jobs:
       - name: Deploy Frontend (GitHub Pages)
         id: deployment
         uses: actions/deploy-pages@v2
+
+      # TODO: update https://github.com/Code-Puzzles/evaluator repository with
+      # latest `packages/frontend/public/local-eval.html` if it's changed
