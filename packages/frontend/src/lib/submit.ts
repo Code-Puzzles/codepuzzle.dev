@@ -38,9 +38,10 @@ function evalInIframe(code: string): Promise<unknown> {
     const iframe = document.createElement("iframe");
     const src =
       // ensure in local-dev that we open the iframe on a different domain
-      FRONTEND_LOCAL_EVAL_URL ?? window.location.host.includes("localhost")
+      FRONTEND_IFRAME_EVAL_URL ??
+      (window.location.host.includes("localhost")
         ? `http://127.0.0.1:${window.location.port}/local-eval.html`
-        : `http://localhost:${window.location.port}/local-eval.html`;
+        : `http://localhost:${window.location.port}/local-eval.html`);
 
     iframe.setAttribute("src", src);
     iframe.setAttribute("sandbox", "allow-scripts");
