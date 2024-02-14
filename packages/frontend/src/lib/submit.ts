@@ -19,31 +19,12 @@ export async function evalInBrowser(
   }
 }
 
-const iframeContent = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-  </head>
-  <body>
-    <script>
-      window.addEventListener("message", (event) => {
-        try {
-          parent.postMessage({ result: (void 0, eval)(event.data) }, "*");
-        } catch (err) {
-          parent.postMessage({ error: err.message }, "*");
-        }
-      });
-    </script>
-  </body>
-</html>
-`;
-
 function evalInIframe(code: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement("iframe");
     iframe.setAttribute(
       "src",
-      `data:text/html;charset=utf-8,${encodeURIComponent(iframeContent)}`,
+      `https://raw.githubusercontent.com/Code-Puzzles/codepuzzle.dev/main/packages/frontend/public/local-eval.html`,
     );
     iframe.setAttribute("sandbox", "allow-scripts");
     document.body.append(iframe);
@@ -74,6 +55,7 @@ function evalInIframe(code: string): Promise<unknown> {
 
     id = window.setTimeout(() => {
       window.removeEventListener("message", waitForMessage);
+      iframe.remove();
       reject(new Error("Timed out"));
     }, 5_000);
   });
