@@ -19,6 +19,20 @@ export async function evalInBrowser(
   }
 }
 
+/**
+ * When running the code locally, we evaluate it in an iframe that's running on
+ * a separate eTLD. We run it in the iframe so when user's modify JavaScript
+ * globals, they don't affect the frontend app. We run it on a different eTLD
+ * so if they write code that causes an infinite blocking loop, it runs on a
+ * separate browser process and avoids freezing the frontend app.
+ * See:
+ * - https://webperf.tips/tip/iframe-multi-process/
+ * - https://web.dev/articles/origin-agent-cluster
+ *
+ * We're not overly concerned with defending against people trying to cheat,
+ * since this is a local run. We have other mitigations for that when we submit
+ * the code to the backend
+ */
 function evalInIframe(code: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement("iframe");
