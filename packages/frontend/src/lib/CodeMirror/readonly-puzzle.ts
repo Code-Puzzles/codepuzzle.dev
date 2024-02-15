@@ -16,6 +16,7 @@ import {
   EditorView,
   keymap,
   type DecorationSet,
+  type Command,
 } from "@codemirror/view";
 import type { Puzzle } from "@codepuzzles/common";
 
@@ -165,102 +166,153 @@ const roField = StateField.define<ReadOnlyField>({
       decorations: ro.decorations.map(tr.changes),
     };
   },
-  provide: (field) => [
-    // this state field manages the iife decorations
-    iifeField,
-
-    // this filter makes everything readonly
-    EditorState.transactionFilter.of((tr: Transaction): TransactionSpec => {
-      // allow all undo/redo transactions, since the transactions that created them
-      // should already have been processed by us
-      // https://discuss.codemirror.net/t/detect-if-transaction-is-an-undo-redo-event/7421
-      if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
-        return tr;
-      }
-
-      // get the bounds before this transaction would be applied
-      // const bounds = getBounds(p, tr.startState.doc.length);
-      const bounds = tr.startState.field(field).editableBounds();
-
-      // iterate over the changes this transaction applies to check if any of
-      // the changes are out of bounds
-      let oob = false;
-      const trChanges: (SimpleRange & { inserted: Text })[] = [];
-      tr.changes.iterChanges((from, to, _, __, inserted) => {
-        // check changes would be out of bounds in new document
-        oob = oob || from < bounds.from || to > bounds.to;
-        // save initial positions of all changes
-        trChanges.push({ from, to, inserted });
-      });
-
-      // no changes were out of bounds, so allow this change
-      if (!oob) return tr;
-
-      // otherwise, clip the changes to within bounds before the transaction
-      // so when it's applied they are still within bounds
-      const clip = makeClipper(bounds);
-      const changes = tr.startState.changes(
-        trChanges.map((change) => ({
-          from: clip(change.from),
-          to: clip(change.to),
-          insert: change.inserted,
-        })),
-      );
-
-      // update selection to be within bounds
-      let selection: EditorSelection;
-      if (changes.empty) {
-        // if the change is empty, then clip to within bounds what the
-        // transaction thought the selection would be
-        selection = tr.newSelection;
-        // NOTE: iterate in reverse order to not interfere with other ranges
-        const ranges = Array.from(selection.ranges.entries()).reverse();
-        for (const [i, r] of ranges) {
-          selection = selection.replaceRange(
-            EditorSelection.range(clip(r.anchor), clip(r.head)),
-            i,
-          );
+  provide: (field) => {
+    function moveToBoundary(key: keyof SimpleRange): Command {
+      return (view) => {
+        const bounds = view.state.field(field).editableBounds();
+        const { selection } = view.state;
+        if (
+          selection.ranges.length === 1 &&
+          selection.main.from === bounds[key] &&
+          selection.main.to === bounds[key]
+        ) {
+          return false;
         }
-      } else {
-        // if there was a change applied, then infer the selections from the
-        // changes themselves
-        let ranges: SelectionRange[] = [];
-        changes.iterChanges((_, __, from, ___, inserted) => {
-          const pos = from + inserted.length;
-          ranges.push(EditorSelection.range(pos, pos));
+
+        view.dispatch({ selection: EditorSelection.single(bounds[key]) });
+        return true;
+      };
+    }
+
+    function selectToBoundary(key: keyof SimpleRange): Command {
+      return (view) => {
+        const bounds = view.state.field(field).editableBounds();
+        const { selection } = view.state;
+        if (selection.ranges.length !== 1) {
+          return false;
+        }
+
+        const r = selection.ranges[0]!;
+        view.dispatch({
+          selection: EditorSelection.single(
+            key === "from" ? Math.max(r.from, r.to) : Math.min(r.from, r.to),
+            bounds[key],
+          ),
         });
-        selection = EditorSelection.create(ranges);
-      }
+        return true;
+      };
+    }
 
-      return { changes, selection };
-    }),
-    // override the "select all" command to switch between selecting the editable
-    // region and the entire document
-    keymap.of([
-      {
-        key: "Mod-a",
-        run: (view) => {
-          const { from, to } = view.state.field(field).editableBounds();
-          const { selection } = view.state;
-          if (
-            selection.ranges.length === 1 &&
-            selection.main.from === from &&
-            selection.main.to === to
-          ) {
-            return false;
+    return [
+      // this state field manages the iife decorations
+      iifeField,
+
+      // this filter makes everything readonly
+      EditorState.transactionFilter.of((tr: Transaction): TransactionSpec => {
+        // allow all undo/redo transactions, since the transactions that created them
+        // should already have been processed by us
+        // https://discuss.codemirror.net/t/detect-if-transaction-is-an-undo-redo-event/7421
+        if (tr.isUserEvent("undo") || tr.isUserEvent("redo")) {
+          return tr;
+        }
+
+        // get the bounds before this transaction would be applied
+        // const bounds = getBounds(p, tr.startState.doc.length);
+        const bounds = tr.startState.field(field).editableBounds();
+
+        // iterate over the changes this transaction applies to check if any of
+        // the changes are out of bounds
+        let oob = false;
+        const trChanges: (SimpleRange & { inserted: Text })[] = [];
+        tr.changes.iterChanges((from, to, _, __, inserted) => {
+          // check changes would be out of bounds in new document
+          oob = oob || from < bounds.from || to > bounds.to;
+          // save initial positions of all changes
+          trChanges.push({ from, to, inserted });
+        });
+
+        // no changes were out of bounds, so allow this change
+        if (!oob) return tr;
+
+        // otherwise, clip the changes to within bounds before the transaction
+        // so when it's applied they are still within bounds
+        const clip = makeClipper(bounds);
+        const changes = tr.startState.changes(
+          trChanges.map((change) => ({
+            from: clip(change.from),
+            to: clip(change.to),
+            insert: change.inserted,
+          })),
+        );
+
+        // update selection to be within bounds
+        let selection: EditorSelection;
+        if (changes.empty) {
+          // if the change is empty, then clip to within bounds what the
+          // transaction thought the selection would be
+          selection = tr.newSelection;
+          // NOTE: iterate in reverse order to not interfere with other ranges
+          const ranges = Array.from(selection.ranges.entries()).reverse();
+          for (const [i, r] of ranges) {
+            selection = selection.replaceRange(
+              EditorSelection.range(clip(r.anchor), clip(r.head)),
+              i,
+            );
           }
+        } else {
+          // if there was a change applied, then infer the selections from the
+          // changes themselves
+          let ranges: SelectionRange[] = [];
+          changes.iterChanges((_, __, from, ___, inserted) => {
+            const pos = from + inserted.length;
+            ranges.push(EditorSelection.range(pos, pos));
+          });
+          selection = EditorSelection.create(ranges);
+        }
 
-          view.dispatch({ selection: EditorSelection.single(from, to) });
-          return true;
+        return { changes, selection };
+      }),
+
+      keymap.of([
+        // override the "select all" command to switch between selecting the editable
+        // region and the entire document
+        {
+          key: "Mod-a",
+          run: (view) => {
+            const { from, to } = view.state.field(field).editableBounds();
+            const { selection } = view.state;
+            if (
+              selection.ranges.length === 1 &&
+              selection.main.from === from &&
+              selection.main.to === to
+            ) {
+              return false;
+            }
+
+            view.dispatch({ selection: EditorSelection.single(from, to) });
+            return true;
+          },
         },
-      },
-      // TODO: also override "go to start/end of line" commands to go to the
-      // start/end of the editable bounds if the cursor is on the same line
-    ]),
-    // tell the editor view to mark our ranges as decorations (and thus create
-    // the dom classes)
-    EditorView.decorations.of((view) => view.state.field(field).decorations),
-  ],
+        // override "go to start/end of line" commands to go to the start/end of
+        // the editable bounds
+        {
+          key: "Home",
+          mac: "Mod-ArrowLeft",
+          shift: selectToBoundary("from"),
+          run: moveToBoundary("from"),
+        },
+        {
+          key: "End",
+          mac: "Mod-ArrowRight",
+          shift: selectToBoundary("to"),
+          run: moveToBoundary("to"),
+        },
+      ]),
+      // tell the editor view to mark our ranges as decorations (and thus create
+      // the dom classes)
+      EditorView.decorations.of((view) => view.state.field(field).decorations),
+    ];
+  },
 });
 
 export interface PuzzleReadOnlyExtension {
