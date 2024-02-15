@@ -100,7 +100,11 @@ function evaluateSolution(
           return toString(value);
       }
 
-      var maybeString = jsonStringify(value);
+      var maybeString = jsonStringify(value, function (_, val) {
+        if (typeof val === "function") return toString(val);
+        return value;
+      });
+
       return typeof maybeString !== "string" ? toString(value) : maybeString;
     } catch {
       return toString(value);
