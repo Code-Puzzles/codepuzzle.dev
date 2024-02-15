@@ -188,11 +188,11 @@ const roField = StateField.define<ReadOnlyField>({
       return (view) => {
         const bounds = view.state.field(field).editableBounds();
         const { selection } = view.state;
-        if (selection.ranges.length !== 1) {
+        const r = selection.main;
+        if (selection.ranges.length !== 1 || r.head === bounds[key]) {
           return false;
         }
 
-        const r = selection.ranges[0]!;
         view.dispatch({
           selection: EditorSelection.single(
             key === "from" ? Math.max(r.from, r.to) : Math.min(r.from, r.to),
