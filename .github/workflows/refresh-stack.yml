@@ -17,9 +17,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Install dependencies
-        run: npm install && curl -fsSL https://get.pulumi.com | sh
+        run: curl -fsSL https://get.pulumi.com | sh
       - name: Refresh
-        run: pulumi refresh --stack JS-Puzzles/prod
+        run: pulumi refresh --stack JS-Puzzles/prod --yes
         working-directory: ./packages/infrastructure
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
