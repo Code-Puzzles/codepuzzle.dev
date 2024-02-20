@@ -298,6 +298,9 @@ function createMock({
       resourceId: resourceId,
       httpMethod: httpMethod,
       type: "MOCK",
+      requestTemplates: {
+        "application/json": JSON.stringify({ statusCode: 200 }),
+      },
     },
   );
   apiResourceIds.push(integration.id);
